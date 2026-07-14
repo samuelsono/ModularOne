@@ -1,0 +1,103 @@
+import { VerticalBarChart, getNextColor } from "@fluentui/react-charts";
+import { Body1, Button, Card, CardHeader, Subtitle2, Text } from "@fluentui/react-components";
+import { MoreHorizontal20Regular } from "@fluentui/react-icons/svg/more-horizontal";
+import React from "react";
+
+import { SystemAlertTable } from "../components/SystemAlertTable";
+
+const Dashboard = () => {
+  return (<div className="flex flex-col h-full">
+
+    
+
+    <div className="flex flex-col gap-3 w-full h-full px-16 pt-3 overflow-y-hidden">
+        <Subtitle2 className="mb-1 mx-3">Dashboard</Subtitle2>
+
+        <div className="grid grid-cols-4 gap-3">
+                <section className="flex flex-col  gap-3 h-full">
+                   <MetricCard title="Total Vehicles" value="100" description="Since last month" />
+                   <MetricCard title="Total Vehicles" value="100" description="Since last month" />
+                </section>
+                <section>
+                   <MetricCard title="Active Vehicles" value="80" description="Since last month" />
+                </section>
+                <section className="col-span-2">
+                  
+                   <MetricCardChart chart={<MyChart />} title="Pending Vehicles" value="10" description="Since last month" />
+                </section>
+        </div>
+
+        <div className="flex flex-col w-full bg-white rounded shadow overflow-x-hidden">
+            <div className="p-3 border-b border-[#e3e5e7]">
+                <Subtitle2 className="">System Alerts</Subtitle2>
+            </div>
+
+            <SystemAlertTable />
+        </div>
+    </div>
+  </div>
+
+  );
+};
+
+export default Dashboard;
+
+
+const MetricCard = ({ title, value, description }: Record<string, string>) => {
+
+  return (
+    <Card className={"h-full"}>
+      <CardHeader
+        header={<Text weight="semibold">{title}</Text>}
+        description={<Body1 className={"font-thin!"}>{description}</Body1>}
+        action={
+          <Button
+            appearance="transparent"
+            icon={<MoreHorizontal20Regular />}
+            aria-label="More options"
+          />
+        }
+      />
+      <p className={"text-4xl text-left font-thin"}>
+        {value}
+      </p>
+    </Card>
+  );
+};
+
+export const MetricCardChart = ({ title, value, description, chart }: { title: string; value: string; description: string; chart: React.ReactNode }) => {
+
+  return (
+    <Card className={"h-full"}>
+      <CardHeader
+        header={<Text weight="semibold">{title}</Text>}
+        description={<Body1 className={"font-thin!"}>{description}</Body1>}
+        action={
+          <Button
+            appearance="transparent"
+            icon={<MoreHorizontal20Regular />}
+            aria-label="More options"
+          />
+        }
+      />
+        {chart}
+    </Card>
+  );
+};
+
+function MyChart() {
+  return (
+    <VerticalBarChart
+      height={200}
+      width={600}
+      data={[
+        { x: 'Monday', y: 6, legend: 'Monday', color: getNextColor(0) },
+        { x: 'Tuesday', y: 11, legend: 'Tuesday', color: getNextColor(1) },
+        { x: 'Wednesday', y: 2, legend: 'Wednesday', color: getNextColor(2) },
+        { x: 'Thursday', y: 7, legend: 'Thursday', color: getNextColor(3) },
+        { x: 'Friday', y: 12, legend: 'Friday', color: getNextColor(4) },
+        { x: 'Saturday', y: 3, legend: 'Saturday', color: getNextColor(5) },
+      ]}
+    />
+  );
+}

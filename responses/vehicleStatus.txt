@@ -1,0 +1,68 @@
+{
+  "data": [
+    {
+      "vehicle_id": 654321,
+      "registration": "ABX123",
+      "engine_type": "Electric",
+      "chassis_number": "1HGCM82633A123456",
+      "event_ts": "2023-01-01 12:00:00+00:00",
+      "bearing": 100,
+      "speed": 60,
+      "ignition": true,
+      "idling": false,
+      "odometer": 1000,
+      "clock": 100500,
+      "altitude": 152,
+      "rpm": 764,
+      "road_speed": 70,
+      "vext": 4.04,
+      "temp1": 0,
+      "temp2": 0,
+      "temp3": 0,
+      "temp4": 0,
+      "last_identification_tag_id": "62462fcf-0938-11ec-8c4d-a4bf016cd6b2",
+      "io_panic": "HIGH",
+      "io_disarm": "HIGH",
+      "dynamic1": 1,
+      "dynamic2": 0,
+      "dynamic3": 0,
+      "dynamic4": 0,
+      "input_state": 1601,
+      "input_state2": -2147483648,
+      "input_state3": -1,
+      "central_locking_status": true,
+      "tcu_battery_percentage": 85,
+      "driver": {
+        "driver_id": "62462fcf-0938-11ec-8c4d-a4bf016cd6b2",
+        "first_name": "John",
+        "last_name": "Doe",
+        "id_number": "ABC12345678",
+        "license_number": "D1234567",
+        "tag_id": "62462fcf-0938-11ec-8c4d-a4bf016cd6b2",
+        "phone_number": "+27123456789"
+      },
+      "fuel": {
+        "updated": "2023-01-01 12:00:00+00:00",
+        "level": 75,
+        "percentage_left": 55.5,
+        "total_consumed": 12453.7
+      },
+      "electric": {
+        "battery_percentage_left": 85,
+        "battery_ts": "2023-01-01 12:00:00+00:00",
+        "charging_status": "PLUGGED_CHARGING",
+        "charging_status_ts": "2023-01-01 12:00:00+00"
+      },
+      "location": {
+        "updated": "2023-01-01 12:00:00+00:00",
+        "longitude": 28.0473,
+        "latitude": -26.2041,
+        "gps_fix_type": 3,
+        "position_description": "221B Baker Street, London, UK",
+        "geofence_ids": [
+          "123e4567-e89b-12d3-a456-426614174000"
+        ]
+      }
+    }
+  ]
+}

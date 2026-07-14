@@ -1,0 +1,62 @@
+{
+  "data": [
+    {
+      "trip_id": 123456,
+      "vehicle_id": 654321,
+      "registration": "ABX123",
+      "chassis_number": "1HGCM82633A123456",
+      "terminal_id": 123456789,
+      "terminal_serial": "TS123456789",
+      "start_timestamp": "2022-01-01 12:00:01",
+      "end_timestamp": "2022-01-01 12:00:01",
+      "trip_duration": "00:20:11",
+      "trip_duration_seconds": 1211,
+      "start_location": "LOCATION X",
+      "start_coordinates": {
+        "latitude": 1.373211,
+        "longitude": 103.955124
+      },
+      "end_location": "LOCATION Y",
+      "end_coordinates": {
+        "latitude": 1.31974,
+        "longitude": 103.889633
+      },
+      "start_odometer": 10100,
+      "end_odometer": 10230,
+      "trip_distance": 130,
+      "start_geofence_name": "GEOFENCE NAME A",
+      "end_geofence_name": "GEOFENCE NAME B",
+      "clock_start": 1200,
+      "clock_end": 1303,
+      "thresholds_speeding_events": 2,
+      "thresholds_speeding_duration_seconds": 60,
+      "road_speeding_events": 5,
+      "road_speeding_duration_seconds": 120,
+      "max_speed": 4,
+      "harsh_braking_events": 1,
+      "harsh_cornering_events": 0,
+      "harsh_acceleration_events": 2,
+      "idle_time": "00:01:08",
+      "idle_time_seconds": 68,
+      "events_idle": 3,
+      "driver_id": "f3a42187-0c6e-11ec-aa41-a4bf016cd6b2",
+      "driver_name": "Donald Smith",
+      "driver_surname": "Smith",
+      "identification_tag_id": "f3a42187-0c6e-11ec-aa41-a4bf016cd6b2",
+      "driver_tag_description": "Donald's Tag ID",
+      "trip_title": "Delivery",
+      "trip_extra_notes": "Deliver package A to customer X",
+      "trip_type": "Business",
+      "is_private": false,
+      "ev_battery": "Unknown Type: object,null"
+    }
+  ],
+  "meta": {
+    "from": 1,
+    "to": 15,
+    "current_page": 1,
+    "per_page": 15,
+    "last_page": 3,
+    "total": 45
+  }
+}

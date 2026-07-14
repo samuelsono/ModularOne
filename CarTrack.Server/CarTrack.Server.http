@@ -1,0 +1,48 @@
+@Server_HostAddress = http://localhost:5566
+@accessToken = {{login.response.body.accessToken}}
+@refreshToken = {{login.response.body.refreshToken}}
+
+### Login as seeded admin
+# @name login
+POST {{Server_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin123!",
+  "rememberMe": true
+}
+
+### Refresh access token
+POST {{Server_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Current user
+GET {{Server_HostAddress}}/api/auth/me
+Authorization: Bearer {{accessToken}}
+
+### Logout
+POST {{Server_HostAddress}}/api/auth/logout
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Forgot password
+POST {{Server_HostAddress}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "admin@cartrack.local"
+}
+
+### Protected weather forecast
+GET {{Server_HostAddress}}/api/weatherforecast/
+Authorization: Bearer {{accessToken}}
+Accept: application/json

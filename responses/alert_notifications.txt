@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "vehicle_id": 654321,
+      "registration": "ABX123",
+      "trigger_description": "IGNITION_ON_OFF",
+      "notification_contact": "mark.steven@example.com",
+      "name": "Vehicles geofence entries alert.",
+      "contact_description": "E-Mail Message",
+      "notification_msg": "ABC1234X igition turned off at x timestamp",
+      "status": "Sent",
+      "event_ts": "2022-12-01 14:14:10+02",
+      "geofence_id": "75a2c190-6a14-11ee-8977-005056a8f0a1",
+      "latitude": "-25.00225",
+      "longitude": "30.114089",
+      "odometer": 73213,
+      "speed": 22
+    }
+  ],
+  "meta": {
+    "from": 1,
+    "to": 15,
+    "current_page": 1,
+    "per_page": 15,
+    "last_page": 3,
+    "total": 45
+  }
+}

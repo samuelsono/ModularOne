@@ -1,0 +1,6 @@
+{
+  "appHost": {
+    "path": "CarTrack.AppHost/CarTrack.AppHost.csproj"
+  },
+  "channel": "stable"
+}

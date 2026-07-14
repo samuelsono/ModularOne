@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "alert_id": "62462fcf-0938-11ec-8c4d-a4bf016cd6b2",
+      "name": "This is an API alert for Gofence 0724",
+      "any_vehicle": true,
+      "vehicles": [
+        {
+          "vehicle_id": 789123,
+          "registration": "ABCE8901",
+          "chassis_number": "TEST-123456"
+        }
+      ],
+      "ignition_trigger_id": 1,
+      "sensor_trigger_id": 1,
+      "geofence_trigger_id": 3,
+      "geofence_ids": [
+        "62462fcf-0938-11ec-8c4d-a4bf016cd6b2"
+      ],
+      "geofence_group_ids": [
+        123456
+      ],
+      "inside_geofence": true,
+      "create_ts": "2023-01-01 12:00:00",
+      "subuser_id": "544ecaf4-fc35-11ec-9059-506b8db42dc2",
+      "contact_type": {
+        "contact_type_id": 1,
+        "values": [
+          "abccorp@company.com"
+        ],
+        "priority_id": 123456
+      }
+    }
+  ],
+  "meta": {
+    "from": 1,
+    "to": 15,
+    "current_page": 1,
+    "per_page": 15,
+    "last_page": 3,
+    "total": 45
+  }
+}
