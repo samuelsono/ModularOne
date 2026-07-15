@@ -3,46 +3,26 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import type { TableColumnDefinition, TableColumnSizingOptions } from '@fluentui/react-components';
 
 import {
-
   Body1,
   Button,
-
   Card,
-
   CardHeader,
-
   Dialog,
-
   DialogActions,
-
   DialogBody,
-
   DialogContent,
-
   DialogSurface,
-
   DialogTitle,
-
   Dropdown,
-
   Field,
-
   Input,
-
   MessageBar,
-
   MessageBarBody,
-
   Option,
-
   Spinner,
-
   Subtitle2,
-
   Text,
-
   Title3,
-
 } from '@fluentui/react-components';
 
 import { ApiError } from '../../services/apiClient';
@@ -83,6 +63,8 @@ import {
 } from '../../components/leave/leaveTableUtils';
 
 import { useLeaveActions } from '../../hooks/useLeaveActions';
+import { ScrollableDiv } from './LeaveReportsPage';
+import { LeaveSummaryCard } from '../../components/reportCards/SummaryCard';
 
 
 function BalanceCard({ balance }: { balance: LeaveBalance }) {
@@ -398,18 +380,15 @@ function LeaveRequestSection({
         <Text className="text-sm text-neutral-foreground-3">{emptyMessage}</Text>
 
       ) : (
-
-        <AutoFitDataGrid
-
-          items={items}
-
-          columns={columns}
-
-          getRowId={(item) => item.id}
-
-          columnSizingOptions={leaveTableColumnSizing}
-
-        />
+          <ScrollableDiv>
+                  <AutoFitDataGrid
+                    items={items}
+                    columns={columns}
+                    getRowId={(item) => item.id}
+                    columnSizingOptions={leaveTableColumnSizing}
+                    size="small"
+                  />
+          </ScrollableDiv>
 
       )}
 
@@ -767,10 +746,10 @@ export default function LeaveBalancesPage() {
 
             selectedCard ? (
         <div className='grid grid-cols-4 w-full gap-3 mx-auto max-w-7xl py-6'>
-           <SummaryCard label="Total Used" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.used ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
-           <SummaryCard label="Allocated Balance" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.allocated ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
-           <SummaryCard canAdjust={canAdjust} onSelectTarget={() => setAdjustTarget(selectedCard)} label="Remaining Balance" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.remaining ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
-           <SummaryCard label="Pending" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.pending ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
+           <LeaveSummaryCard label="Total Used" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.used ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
+           <LeaveSummaryCard label="Allocated Balance" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.allocated ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
+           <LeaveSummaryCard canAdjust={canAdjust} onSelectTarget={() => setAdjustTarget(selectedCard)} label="Remaining Balance" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.remaining ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
+           <LeaveSummaryCard label="Pending" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.pending ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
         </div>) :
         (
           <div className='grid grid-cols-4 w-full gap-3 mx-auto max-w-7xl py-6'>
@@ -830,15 +809,14 @@ export default function LeaveBalancesPage() {
           )}
 
 
-
-          <LeaveRequestSection
-            title="Pending approvals"
-            emptyMessage="You have no leave requests awaiting approval."
-            items={pendingRequests}
-            columns={requestColumns}
-          />
-
-
+          <ScrollableDiv>
+              <LeaveRequestSection
+                title="Pending approvals"
+                emptyMessage="You have no leave requests awaiting approval."
+                items={pendingRequests}
+                columns={requestColumns}
+              />
+          </ScrollableDiv>
 
           {runningLeave.length > 0 ? (
             <MessageBar intent="success">
@@ -869,6 +847,7 @@ export default function LeaveBalancesPage() {
                 columns={leaveBalanceLiabilityColumns}
                 getRowId={(item) => item.id}
                 columnSizingOptions={leaveTableColumnSizing}
+                size="small"
               />
             )}
 

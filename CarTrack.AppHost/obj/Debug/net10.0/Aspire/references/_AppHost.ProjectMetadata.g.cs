@@ -17,5 +17,5 @@ public class CarTrack_AppHost
     /// <summary>
     /// The path to the Aspire Host project.
     /// </summary>
-    public static string ProjectPath => """/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost""";
+    public static string ProjectPath => """/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.AppHost""";
 }

@@ -54,6 +54,7 @@ export function AutoFitDataGrid<TItem>({
         focusMode="composite"
         selectionMode={selectionMode}
         selectedItems={selectedIds}
+       
         onSelectionChange={(_, data) => {
           onSelectionChange?.(Array.from(data.selectedItems, String));
         }}
@@ -61,7 +62,7 @@ export function AutoFitDataGrid<TItem>({
           ? {
             resizableColumns: true,
             columnSizingOptions: resolvedColumnSizing,
-            resizableColumnsOptions: { autoFitColumns: true },
+            resizableColumnsOptions: { autoFitColumns: false },
           }
           : {})}
         style={{ width: '100%' }}

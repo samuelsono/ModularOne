@@ -22,7 +22,7 @@ import {
   Tooltip,
   createTableColumn,
 } from '@fluentui/react-components';
-import type { JSXElement, TableColumnDefinition, TableRowId } from '@fluentui/react-components';
+import type { JSXElement, TableColumnDefinition, TableColumnSizingOptions, TableRowId } from '@fluentui/react-components';
 import {
   EditRegular,
   EyeRegular,
@@ -73,6 +73,21 @@ function formatDateTime(value: string | null): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+
+const employeeSizingOption: TableColumnSizingOptions = {
+   name: { minWidth: 320, idealWidth: 220, defaultWidth: 360 },
+   email: { minWidth: 320, idealWidth: 210, defaultWidth: 360 },
+   company: { minWidth: 150, idealWidth: 200, defaultWidth: 360 },
+   department: { minWidth: 120, idealWidth: 200, defaultWidth: 360 },
+   position: { minWidth: 120, idealWidth: 200, defaultWidth: 360 },
+   roles: { minWidth: 220, idealWidth: 200, defaultWidth: 360 },
+   createdAt: { minWidth: 140, idealWidth: 200, defaultWidth: 360 },
+   updatedAt: { minWidth: 140, idealWidth: 200, defaultWidth: 360 },
+   createdBy: { minWidth: 150, idealWidth: 200, defaultWidth: 360 },
+   updatedBy: { minWidth: 150, idealWidth: 200, defaultWidth: 360 },
+
 }
 
 const EmployeeActions = ({
@@ -298,6 +313,10 @@ export function EmployeesTable({
           onSelectionChange?.(Array.from(data.selectedItems, String));
         }}
         focusMode="composite"
+        columnSizingOptions={employeeSizingOption}
+        resizableColumnsOptions={{
+          autoFitColumns: false,
+        }}
         size="medium"
         style={{ minWidth: '900px' }}
         resizableColumns

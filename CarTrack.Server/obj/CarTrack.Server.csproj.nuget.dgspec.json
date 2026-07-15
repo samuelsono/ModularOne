@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj": {}
+    "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.Server/CarTrack.Server.csproj": {}
   },
   "projects": {
-    "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj": {
+    "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.Server/CarTrack.Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj",
+        "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.Server/CarTrack.Server.csproj",
         "projectName": "CarTrack.Server",
-        "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj",
+        "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.Server/CarTrack.Server.csproj",
         "packagesPath": "/Users/datsu/.nuget/packages/",
-        "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/obj/",
+        "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.Server/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/NuGet.Config",
+          "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/NuGet.Config",
           "/Users/datsu/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [

@@ -15,15 +15,15 @@ using System.Reflection;
     "dcp"))]
 [assembly: System.Reflection.AssemblyMetadata("dcpextensionpaths", ("/Users/datsu/.nuget/packages/aspire.hosting.orchestration.osx-arm64/13.4.6/tools/" +
     "ext/"))]
-[assembly: System.Reflection.AssemblyMetadata("apphostprojectpath", "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost")]
+[assembly: System.Reflection.AssemblyMetadata("apphostprojectpath", "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.AppHost")]
 [assembly: System.Reflection.AssemblyMetadata("apphostprojectname", "CarTrack.AppHost.csproj")]
 [assembly: System.Reflection.AssemblyMetadata("aspiredashboardpath", ("/Users/datsu/.nuget/packages/aspire.dashboard.sdk.osx-arm64/13.4.6/tools/Aspire.D" +
     "ashboard.dll"))]
-[assembly: System.Reflection.AssemblyMetadataAttribute("apphostprojectbaseintermediateoutputpath", "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/")]
+[assembly: System.Reflection.AssemblyMetadataAttribute("apphostprojectbaseintermediateoutputpath", "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.AppHost/obj/")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarTrack.AppHost")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d6c677e9ff4876ad978d87ad454551076a199ed5")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarTrack.AppHost")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarTrack.AppHost")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

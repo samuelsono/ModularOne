@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9JawFM9lZGE=",
+  "dgSpecHash": "bELFtaRpd9U=",
   "success": true,
-  "projectFilePath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj",
+  "projectFilePath": "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.Server/CarTrack.Server.csproj",
   "expectedPackageFiles": [
     "/Users/datsu/.nuget/packages/aspire.npgsql.entityframeworkcore.postgresql/13.4.6/aspire.npgsql.entityframeworkcore.postgresql.13.4.6.nupkg.sha512",
     "/Users/datsu/.nuget/packages/aspire.stackexchange.redis/13.4.6/aspire.stackexchange.redis.13.4.6.nupkg.sha512",
@@ -80,9 +80,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'Microsoft.OpenApi' 2.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc",
-      "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj",
+      "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.Server/CarTrack.Server.csproj",
       "warningLevel": 1,
-      "filePath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj",
+      "filePath": "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.Server/CarTrack.Server.csproj",
       "libraryId": "Microsoft.OpenApi",
       "targetGraphs": [
         "net10.0"

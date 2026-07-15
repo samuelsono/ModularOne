@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/CarTrack.AppHost.csproj": {}
+    "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.AppHost/CarTrack.AppHost.csproj": {}
   },
   "projects": {
-    "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/CarTrack.AppHost.csproj": {
+    "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.AppHost/CarTrack.AppHost.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/CarTrack.AppHost.csproj",
+        "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.AppHost/CarTrack.AppHost.csproj",
         "projectName": "CarTrack.AppHost",
-        "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/CarTrack.AppHost.csproj",
+        "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.AppHost/CarTrack.AppHost.csproj",
         "packagesPath": "/Users/datsu/.nuget/packages/",
-        "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/",
+        "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.AppHost/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/NuGet.Config",
+          "/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/NuGet.Config",
           "/Users/datsu/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, MessageBar, MessageBarBody, Spinner, createTableColumn, type TableColumnDefinition } from '@fluentui/react-components';
+import { Button, MessageBar, MessageBarBody, Spinner, createTableColumn, type TableColumnDefinition, type TableColumnSizingOptions } from '@fluentui/react-components';
 import { AddRegular, EditRegular } from '@fluentui/react-icons';
 import AppTitle from '../../components/common/AppTitle';
 import { AutoFitDataGrid } from '../../components/common/AutoFitDataGrid';
@@ -13,11 +13,10 @@ import { getPositions } from '../../services/coreHrService';
 import type { Position, SavePositionRequest } from '../../types/coreHr';
 import { matchesSearchQuery } from '../../utils/searchText';
 import AppFilters from '../../components/AppFilters';
+import { filterPositions } from '../../utils/pageSearch';
 
 function filterItems(items: Position[], query: string): Position[] {
-  const normalized = query.trim();
-  if (!normalized) return items;
-  return items.filter((item) => matchesSearchQuery(normalized, [item.name, item.code, item.companyName, item.departmentName, item.description, item.isActive ? 'active' : 'inactive']));
+  return filterPositions(items, query);
 }
 
 const filters = [
@@ -31,6 +30,15 @@ const filters = [
     ],
   },
 ];
+
+
+const positionSizingOptions: TableColumnSizingOptions = {
+  driverId: { minWidth: 110, idealWidth: 140, defaultWidth: 120 },
+  description: { minWidth: 200, idealWidth: 200, defaultWidth: 200 },
+  actions: { minWidth: 100, idealWidth: 200, defaultWidth: 200 },
+  createdAt: { minWidth: 140, idealWidth: 200, defaultWidth: 140 },
+  updatedAt: { minWidth: 140, idealWidth: 200, defaultWidth: 140 },
+};
 
 
 export default function PositionsPage() {
@@ -92,7 +100,13 @@ export default function PositionsPage() {
       {error ? <MessageBar intent="error" className="mx-3"><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
       <div className="flex-1 min-h-0 overflow-auto">
         {isLoading ? <Spinner label="Loading positions..." /> : (
-          <AutoFitDataGrid items={filteredItems} columns={columns} getRowId={(item) => item.id} size="small" />
+          <AutoFitDataGrid 
+             items={filteredItems} 
+             columns={columns} 
+             getRowId={(item) => item.id} 
+             size="small" 
+             columnSizingOptions={positionSizingOptions}
+             selectionMode="multiselect" />
         )}
       </div>
       <PositionFormDialog open={dialogOpen} initial={editing} onClose={() => setDialogOpen(false)} onSaved={() => void loadItems()} />

@@ -15,7 +15,7 @@ public class CarTrack_Server : global::Aspire.Hosting.IProjectMetadata
     /// <summary>
     /// The path to the CarTrack_Server project.
     /// </summary>
-    public string ProjectPath => """/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj""";
+    public string ProjectPath => """/Users/datsu/Sites/NICE_LAYOUTS/ModularOne/CarTrack.Server/CarTrack.Server.csproj""";
 
     /// <summary>
     /// Gets a value indicating whether building the project before running it should be suppressed.

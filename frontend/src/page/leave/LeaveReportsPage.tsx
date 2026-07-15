@@ -55,7 +55,7 @@ import {
   filterLeaveLiabilityRows,
   filterLeaveRequests,
 } from '../../utils/pageSearch';
-import SummaryCard from '../../components/reportCards/SummaryCard';
+import SummaryCard, { LeaveSummaryCard } from '../../components/reportCards/SummaryCard';
 
 function getLiabilityRowId(item: LeaveLiabilityRow): string {
   return `${item.userId}-${item.leaveTypeName}`;
@@ -412,15 +412,15 @@ export default function LeaveReportsPage() {
       {isLoading ? (
         <Spinner label="Loading reports..." />
       ) : (
-        <div className='flex flex-col max-h-[80vh] overflow-y-scroll pb-32'>
+        <div className='flex flex-col max-h-[80vh] overflow-y-scroll pb-32 oveflow-x-hidden'>
          <div className='flex flex-col gap-4 px-4'>
 
           {summary ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full max-w-6xl mx-auto mt-10">
-              <SummaryCard label="Pending approvals" value={summary.pendingCount} />
-              <SummaryCard label="On leave today" value={summary.onLeaveTodayCount} />
-              <SummaryCard label="Annual leave remaining" value={summary.remainingAnnualDays.toFixed(1)}  />
-              <SummaryCard label="Sick leave remaining" value={summary.remainingSickDays.toFixed(1)} other={{ label: "Other Leave", value: summary.remainingOtherDays.toFixed(1) }} />
+              <LeaveSummaryCard label="Pending approvals" value={summary.pendingCount} />
+              <LeaveSummaryCard label="On leave today" value={summary.onLeaveTodayCount} />
+              <LeaveSummaryCard label="Annual leave remaining" value={summary.remainingAnnualDays.toFixed(1)}  />
+              <LeaveSummaryCard label="Sick leave remaining" value={summary.remainingSickDays.toFixed(1)} other={{ label: "Other Leave", value: summary.remainingOtherDays.toFixed(1) }} />
             </div>
           ) : null}
 
@@ -507,14 +507,17 @@ export default function LeaveReportsPage() {
               onBulkAction={requestAction}
               
             />
-            <LeaveSelectableDataGrid
-              items={filteredHistory}
-              columns={historyColumns}
-              selectedIds={selectedHistoryIds}
-              onSelectionChange={setSelectedHistoryIds}
-              getRowId={(item) => item.id}
-              columnSizingOptions={leaveTableColumnSizing}
-            />
+
+            <ScrollableDiv>
+                <LeaveSelectableDataGrid
+                  items={filteredHistory}
+                  columns={historyColumns}
+                  selectedIds={selectedHistoryIds}
+                  onSelectionChange={setSelectedHistoryIds}
+                  getRowId={(item) => item.id}
+                  columnSizingOptions={leaveTableColumnSizing}
+                />
+            </ScrollableDiv>
           </div>
 
           <div className="flex flex-col gap-3 max-w-8xl mx-auto w-full mb-3">
@@ -526,6 +529,7 @@ export default function LeaveReportsPage() {
               disabled={isWorking}
               onBulkAction={requestAction}
             />
+            <ScrollableDiv>
             <LeaveSelectableDataGrid
               items={filteredPending}
               columns={pendingColumns}
@@ -533,6 +537,8 @@ export default function LeaveReportsPage() {
               onSelectionChange={setSelectedPendingIds}
               getRowId={(item) => item.id}
             />
+            </ScrollableDiv>
+
           </div>
 
           <div className="flex flex-col gap-3 max-w-8xl mx-auto w-full mb-3">
@@ -554,6 +560,8 @@ export default function LeaveReportsPage() {
               </Field>
             </div>
 
+            <ScrollableDiv>
+
             <LeaveSelectableDataGrid
               items={paginatedLiability}
               columns={liabilityColumns}
@@ -562,6 +570,8 @@ export default function LeaveReportsPage() {
               getRowId={getLiabilityRowId}
               enableColumnSizing={false}
             />
+            </ScrollableDiv>
+
 
             {filteredLiability.length > 0 ? (
               <div className="flex flex-wrap items-center justify-between gap-3 px-6">
@@ -653,3 +663,10 @@ export default function LeaveReportsPage() {
     </div>
   );
 }
+
+
+export const ScrollableDiv = ({ children }: { children: React.ReactNode }) => (
+  <div className="w-full overflow-x-scroll">
+    {children}
+  </div>
+);

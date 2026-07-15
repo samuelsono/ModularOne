@@ -13,6 +13,11 @@ import type { Report } from '../types/report';
 import type { Vehicle } from '../types/vehicle';
 import type { UserListItem } from '../types/user';
 import { matchesSearchQuery } from './searchText';
+import type { Position } from '../types/coreHr';
+
+function isCoreHrPath(pathname: string): boolean {
+  return pathname === '/core' || pathname.startsWith('/core/');
+}
 
 function isLeavePath(pathname: string): boolean {
   return pathname === '/leave' || pathname.startsWith('/leave/');
@@ -95,6 +100,10 @@ export function getPageSearchPlaceholder(pathname: string): string {
     return 'Search by name, email, role, or manager';
   }
 
+  if (pathname.startsWith('/core/employees')) {
+    return 'Search by name, email, role, or manager';
+  }
+
   if (pathname.startsWith('/reports')) {
     return 'Search by report or dashboard name';
   }
@@ -112,8 +121,10 @@ export function isPageSearchEnabled(pathname: string): boolean {
     || pathname.startsWith('/live-tracking')
     || pathname.startsWith('/drivers')
     || pathname.startsWith('/employees')
+    || pathname.startsWith('/core/employees')
     || pathname.startsWith('/reports')
     || pathname.startsWith('/settings')
+    || pathname.startsWith('/core/positions')
     || isLeavePath(pathname)
     || isExpensePath(pathname);
 }
@@ -301,6 +312,19 @@ export function filterLeaveCalendarEntries<T extends {
     entry.status,
     entry.startDate,
     entry.endDate,
+  ]));
+}
+
+export function filterPositions(positions: Position[], query: string): Position[] {
+  const normalized = query.trim();
+  if (!normalized) {
+    return positions;
+  }
+  return positions.filter((position) => matchesSearchQuery(normalized, [
+    position.name,
+    position.code,
+    position.departmentName,
+    position.companyName
   ]));
 }
 
