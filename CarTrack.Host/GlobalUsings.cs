@@ -1,0 +1,14 @@
+global using CarTrack.Core;
+global using CarTrack.Infrastructure.Persistence;
+global using CarTrack.Api;
+global using CarTrack.Identity.Contracts;
+global using CarTrack.Modules.CoreHr;
+global using CarTrack.Modules.Expense;
+global using CarTrack.Modules.Fleet;
+global using CarTrack.Modules.Help;
+global using CarTrack.Modules.Leave;
+global using CarTrack.Modules.Notifications;
+global using CarTrack.Modules.Reporting;
+global using CarTrack.Modules.Settings;
+global using CarTrack.Modules.Support;
+global using CarTrack.Modules.Users;

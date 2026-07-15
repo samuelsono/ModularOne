@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "CarTrack",
+  "classifications": ["Web", "ASP.NET", "CarTrack", "Modular"],
+  "name": "CarTrack Module",
+  "identity": "CarTrack.Templates.Module",
+  "groupIdentity": "CarTrack.Module",
+  "shortName": "cartrack-module",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "ModuleName",
+  "preferNameDirectory": true,
+  "symbols": {
+    "moduleKey": {
+      "type": "parameter",
+      "datatype": "string",
+      "description": "Stable module key used by IModule.Name (lowercase, e.g. invoicing).",
+      "replaces": "modulekey",
+      "defaultValue": "modulename"
+    }
+  }
+}

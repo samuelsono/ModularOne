@@ -1,0 +1,29 @@
+  Determining projects to restore...
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj : warning NU1903: Package 'Microsoft.OpenApi' 2.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc
+  All projects are up-to-date for restore.
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj : warning NU1903: Package 'Microsoft.OpenApi' 2.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc
+  CarTrack.Core -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/bin/Debug/net10.0/CarTrack.Core.dll
+  CarTrack.Infrastructure -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/bin/Debug/net10.0/CarTrack.Infrastructure.dll
+  CarTrack.Identity -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Identity/bin/Debug/net10.0/CarTrack.Identity.dll
+  CarTrack.Api -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Api/bin/Debug/net10.0/CarTrack.Api.dll
+  CarTrack.Modules.Support -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Support/bin/Debug/net10.0/CarTrack.Modules.Support.dll
+  CarTrack.Modules.Reporting -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Reporting/bin/Debug/net10.0/CarTrack.Modules.Reporting.dll
+  CarTrack.Modules.Users -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Users/bin/Debug/net10.0/CarTrack.Modules.Users.dll
+  CarTrack.Modules.Notifications -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Notifications/bin/Debug/net10.0/CarTrack.Modules.Notifications.dll
+  CarTrack.Modules.Expense -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Expense/bin/Debug/net10.0/CarTrack.Modules.Expense.dll
+  CarTrack.Modules.Fleet -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Fleet/bin/Debug/net10.0/CarTrack.Modules.Fleet.dll
+  CarTrack.Modules.Help -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Help/bin/Debug/net10.0/CarTrack.Modules.Help.dll
+  CarTrack.Modules.Leave -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Leave/bin/Debug/net10.0/CarTrack.Modules.Leave.dll
+  CarTrack.Modules.Settings -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Settings/bin/Debug/net10.0/CarTrack.Modules.Settings.dll
+  CarTrack.Modules.CoreHr -> /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.CoreHr/bin/Debug/net10.0/CarTrack.Modules.CoreHr.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/LegacyModule.cs(58,34): error CS1061: 'DatabaseFacade' does not contain a definition for 'MigrateAsync' and no accessible extension method 'MigrateAsync' accepting a first argument of type 'DatabaseFacade' could be found (are you missing a using directive or an assembly reference?) [/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj]
+
+Build FAILED.
+
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj : warning NU1903: Package 'Microsoft.OpenApi' 2.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj : warning NU1903: Package 'Microsoft.OpenApi' 2.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/LegacyModule.cs(58,34): error CS1061: 'DatabaseFacade' does not contain a definition for 'MigrateAsync' and no accessible extension method 'MigrateAsync' accepting a first argument of type 'DatabaseFacade' could be found (are you missing a using directive or an assembly reference?) [/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Server/CarTrack.Server.csproj]
+    2 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:04:20.47

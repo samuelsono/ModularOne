@@ -7,7 +7,7 @@ var postgres = builder.AddPostgres("postgres")
 
 var cartrackDb = postgres.AddDatabase("cartrack");
 
-var server = builder.AddProject<Projects.CarTrack_Server>("server")
+var server = builder.AddProject<Projects.CarTrack_Host>("server")
     .WithReference(cache)
     .WithReference(cartrackDb)
     .WaitFor(cache)

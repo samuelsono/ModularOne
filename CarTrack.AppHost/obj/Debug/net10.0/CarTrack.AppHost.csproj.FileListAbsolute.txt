@@ -137,7 +137,6 @@
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/Debug/net10.0/CarTrack.AppHost.AssemblyInfoInputs.cache
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/Debug/net10.0/CarTrack.AppHost.AssemblyInfo.cs
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/Debug/net10.0/CarTrack.AppHost.csproj.CoreCompileInputs.cache
-/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/Debug/net10.0/Aspire/references/CarTrack_Server.ProjectMetadata.g.cs
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/Debug/net10.0/Aspire/references/_AppHost.ProjectMetadata.g.cs
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/Debug/net10.0/CarTrack.F85941BC.Up2Date
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/Debug/net10.0/CarTrack.AppHost.dll
@@ -148,3 +147,5 @@
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/bin/Debug/net10.0/Aspire.Hosting.PostgreSQL.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/bin/Debug/net10.0/HealthChecks.NpgSql.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/bin/Debug/net10.0/Npgsql.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/Debug/net10.0/CarTrack.AppHost.sourcelink.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.AppHost/obj/Debug/net10.0/Aspire/references/CarTrack_Host.ProjectMetadata.g.cs

@@ -1,4 +1,4 @@
-import { webLightTheme, webDarkTheme, type BrandVariants, type Theme, createLightTheme, createDarkTheme } from '@fluentui/react-components';
+import { type BrandVariants, type Theme, createLightTheme, createDarkTheme } from '@fluentui/react-components';
 
 
 const nelotecGreenTheme: BrandVariants = { 
@@ -51,7 +51,7 @@ const bronzeTheme: BrandVariants = {
   160: "#E4DDC6"
 };
 
- const lightTheme: Theme = {
+ const _lightTheme: Theme = {
    ...createLightTheme(bronzeTheme), 
 };
 
@@ -78,7 +78,7 @@ const talisGroupTheme: BrandVariants = {
   160: "#D7D7D7"
 };
 
- const talisLightTheme: Theme = {
+ const _talisLightTheme: Theme = {
    ...createLightTheme(talisGroupTheme), 
 };
 

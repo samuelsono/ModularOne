@@ -1,0 +1,15 @@
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/bin/Debug/net10.0/CarTrack.Core.deps.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/bin/Debug/net10.0/CarTrack.Core.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/bin/Debug/net10.0/CarTrack.Core.pdb
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/Debug/net10.0/CarTrack.Core.GeneratedMSBuildEditorConfig.editorconfig
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/Debug/net10.0/CarTrack.Core.AssemblyInfoInputs.cache
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/Debug/net10.0/CarTrack.Core.AssemblyInfo.cs
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/Debug/net10.0/CarTrack.Core.csproj.CoreCompileInputs.cache
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/Debug/net10.0/CarTrack.Core.sourcelink.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/Debug/net10.0/CarTrack.Core.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/Debug/net10.0/refint/CarTrack.Core.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/Debug/net10.0/CarTrack.Core.pdb
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/Debug/net10.0/ref/CarTrack.Core.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/.build-out/leave/CarTrack.Core.deps.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/.build-out/leave/CarTrack.Core.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/.build-out/leave/CarTrack.Core.pdb
