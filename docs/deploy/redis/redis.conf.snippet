@@ -1,0 +1,27 @@
+# Snippet for /etc/redis/redis.conf (Ubuntu redis-server package)
+# After editing: sudo systemctl restart redis-server
+
+# Bind to loopback only on a single-host deploy.
+bind 127.0.0.1 ::1
+protected-mode yes
+
+# Require a password (must match ConnectionStrings__cache in /etc/cartrack/config.env).
+requirepass CHANGE_ME_REDIS_PASSWORD
+
+# Persistence (AOF + RDB) — adjust for your RPO.
+appendonly yes
+save 900 1
+save 300 10
+save 60 10000
+
+# Memory ceiling example (tune for the host).
+maxmemory 256mb
+maxmemory-policy allkeys-lru
+
+# Disable dangerous remote commands if Redis is ever exposed beyond localhost.
+rename-command FLUSHDB ""
+rename-command FLUSHALL ""
+rename-command CONFIG ""
+
+# Example ConnectionStrings__cache value:
+# localhost:6379,password=CHANGE_ME_REDIS_PASSWORD,abortConnect=False

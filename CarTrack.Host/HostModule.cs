@@ -18,6 +18,9 @@ public sealed class HostModule : IModule
 {
     public string Name => "host";
 
+    private const string MigrationsHistoryTable = "__EFMigrationsHistory";
+    private const string ProbeTable = "AspNetUsers";
+
     public void AddModule(IHostApplicationBuilder builder)
     {
         builder.Services.AddSingleton<AuditableEntityInterceptor>();
@@ -47,7 +50,7 @@ public sealed class HostModule : IModule
     {
         await using var scope = services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.Database.MigrateAsync(cancellationToken);
+        await dbContext.MigrateModuleAsync(MigrationsHistoryTable, ProbeTable, cancellationToken);
     }
 
     public Task SeedAsync(IServiceProvider services, CancellationToken cancellationToken = default) =>

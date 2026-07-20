@@ -1,0 +1,35 @@
+[Unit]
+Description=CarTrack ASP.NET Core host
+After=network.target postgresql.service redis-server.service
+Wants=postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=cartrack
+Group=cartrack
+WorkingDirectory=/opt/cartrack/current
+ExecStart=/usr/bin/dotnet /opt/cartrack/current/CarTrack.Host.dll
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=30
+SyslogIdentifier=cartrack
+
+# Secrets and connection strings — never world-readable.
+EnvironmentFile=/etc/cartrack/config.env
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/cartrack/current/App_Data /var/log/cartrack
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictRealtime=true
+
+[Install]
+WantedBy=multi-user.target
