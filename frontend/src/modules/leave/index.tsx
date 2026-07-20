@@ -1,4 +1,5 @@
 import type { ModuleDefinition } from '@platform/module/types';
+import { withAnyPermission, withPermission } from '@platform/permissions/PermissionGate';
 import LeaveLayout from './pages/LeaveLayout';
 import LeaveReportsPage from './pages/LeaveReportsPage';
 import LeaveRequestsPage from './pages/LeaveRequestsPage';
@@ -14,17 +15,28 @@ export const leaveModule: ModuleDefinition = {
       path: 'leave',
       element: <LeaveLayout />,
       children: [
-        { index: true, element: <LeaveReportsPage /> },
-        { path: 'requests', element: <LeaveRequestsPage /> },
-        { path: 'approvals', element: <LeaveApprovalsPage /> },
-        { path: 'calendar', element: <LeaveCalendarPage /> },
-        { path: 'policies', element: <LeavePoliciesPage /> },
-        { path: 'balances', element: <LeaveBalancesPage /> },
+        {
+          index: true,
+          element: withAnyPermission(
+            ['leave.reports.read', 'leave.requests.read'],
+            <LeaveReportsPage />,
+          ),
+        },
+        { path: 'requests', element: withPermission('leave.requests.read', <LeaveRequestsPage />) },
+        { path: 'approvals', element: withPermission('leave.approvals.read', <LeaveApprovalsPage />) },
+        { path: 'calendar', element: withPermission('leave.calendar.read', <LeaveCalendarPage />) },
+        { path: 'policies', element: withPermission('leave.policies.read', <LeavePoliciesPage />) },
+        { path: 'balances', element: withPermission('leave.balances.read', <LeaveBalancesPage />) },
       ],
     },
   ],
   navItems: [
-    { path: '/leave', label: 'Dashboard', shortLabel: 'Home', permission: 'leave.reports.read' },
+    {
+      path: '/leave',
+      label: 'Dashboard',
+      shortLabel: 'Home',
+      anyPermissions: ['leave.reports.read', 'leave.requests.read'],
+    },
     { path: '/leave/requests', label: 'Requests', shortLabel: 'Requests', permission: 'leave.requests.read' },
     { path: '/leave/approvals', label: 'Approvals', shortLabel: 'Approve', permission: 'leave.approvals.read' },
     { path: '/leave/calendar', label: 'Calendar', shortLabel: 'Calendar', permission: 'leave.calendar.read' },

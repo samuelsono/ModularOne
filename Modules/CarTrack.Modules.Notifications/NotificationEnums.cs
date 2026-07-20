@@ -21,6 +21,7 @@ public enum NotificationActionType
     LeaveApproved,
     LeaveRejected,
     LeaveCancelled,
+    TenderMatchFound,
     Custom,
 }
 

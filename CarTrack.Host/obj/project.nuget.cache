@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "SZX7OtLI4gI=",
+  "dgSpecHash": "hCt3qo3WBF4=",
   "success": true,
   "projectFilePath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/CarTrack.Host.csproj",
   "expectedPackageFiles": [
@@ -73,7 +73,8 @@
     "/Users/datsu/.nuget/packages/system.composition.runtime/9.0.0/system.composition.runtime.9.0.0.nupkg.sha512",
     "/Users/datsu/.nuget/packages/system.composition.typedparts/9.0.0/system.composition.typedparts.9.0.0.nupkg.sha512",
     "/Users/datsu/.nuget/packages/system.identitymodel.tokens.jwt/8.0.1/system.identitymodel.tokens.jwt.8.0.1.nupkg.sha512",
-    "/Users/datsu/.nuget/packages/system.io.hashing/10.0.8/system.io.hashing.10.0.8.nupkg.sha512"
+    "/Users/datsu/.nuget/packages/system.io.hashing/10.0.8/system.io.hashing.10.0.8.nupkg.sha512",
+    "/Users/datsu/.nuget/packages/system.servicemodel.syndication/10.0.0/system.servicemodel.syndication.10.0.0.nupkg.sha512"
   ],
   "logs": [
     {

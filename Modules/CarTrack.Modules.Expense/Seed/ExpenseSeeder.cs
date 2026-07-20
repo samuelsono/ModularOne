@@ -35,6 +35,9 @@ public static class ExpenseSeeder
                     Description = category.Description,
                     IsActive = true,
                     SortOrder = category.SortOrder,
+                    RequiresReceipt = category.Code is "ACCOMMODATION" or "FUEL" or "PETTY_CASH",
+                    RequiresTravelDetails = category.Code is "TRAVEL" or "FUEL",
+                    PaysByKilometer = category.Code is "TRAVEL" or "FUEL",
                 });
             }
 

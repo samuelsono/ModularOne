@@ -78,13 +78,13 @@ export function UpcomingHolidaysList() {
       </div>
 
       {error ? (
-        <MessageBar intent="error">
+        <MessageBar intent="error" className='mt-38'>
           <MessageBarBody>{error}</MessageBarBody>
         </MessageBar>
       ) : null}
 
       {isLoading ? (
-        <Spinner label="Loading holidays..." size="small" />
+        <Spinner label="Loading holidays..." size="small"  className='mt-38'/>
       ) : holidays.length === 0 ? (
         <Text className="text-sm text-neutral-foreground-3">No upcoming holidays in this range.</Text>
       ) : (

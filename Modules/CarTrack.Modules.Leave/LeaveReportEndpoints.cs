@@ -9,16 +9,16 @@ public static class LeaveReportEndpoints
     public static RouteGroupBuilder MapLeaveReportEndpoints(this RouteGroupBuilder group)
     {
         group.MapGet("/reports/summary", GetSummaryAsync)
-            .RequirePermission("leave.reports.read");
+            .RequireAnyPermission("leave.reports.read", "leave.requests.read");
 
         group.MapGet("/reports/history", GetHistoryAsync)
-            .RequirePermission("leave.reports.read");
+            .RequireAnyPermission("leave.reports.read", "leave.requests.read");
 
         group.MapGet("/reports/liability", GetLiabilityAsync)
-            .RequirePermission("leave.reports.read");
+            .RequireAnyPermission("leave.reports.read", "leave.requests.read");
 
         group.MapGet("/reports/pending", GetPendingAsync)
-            .RequirePermission("leave.reports.read");
+            .RequireAnyPermission("leave.reports.read", "leave.requests.read");
 
         return group;
     }

@@ -20,20 +20,30 @@ import { ApprovalsStubPanel } from '@modules/expense/components/ApprovalsStubPan
 import { AccountProfilePanel } from '@modules/settings/components/AccountProfilePanel';
 import { AccountSecurityPanel } from '@modules/settings/components/AccountSecurityPanel';
 import { CarTrackCredentialsForm } from '@modules/settings/components/CarTrackCredentialsForm';
+import { GoogleAuthCredentialsForm } from '@modules/settings/components/GoogleAuthCredentialsForm';
+import { MicrosoftAuthCredentialsForm } from '@modules/settings/components/MicrosoftAuthCredentialsForm';
 import { SecurityAuditPanel } from '@modules/users/components/SecurityAuditPanel';
 import { PlatformApplicationsPanel } from '@modules/settings/components/PlatformApplicationsPanel';
+import { InstalledAppsPanel } from '@modules/settings/components/InstalledAppsPanel';
+import { ExpenseMileageRatePanel } from '@modules/settings/components/ExpenseMileageRatePanel';
 import { UsersSettingsPanel } from '@modules/users/components/UsersSettingsPanel';
+import type { UserListItem } from '@modules/users/types/user';
 import { SendNotificationDialog } from '@modules/notifications/components/SendNotificationDialog';
 import { SupportTicketsManager } from '@modules/support/components/SupportTicketsManager';
 import { TicketCategoriesManager } from '@modules/support/components/TicketCategoriesManager';
 import { HelpArticlesManager } from '@modules/help/components/HelpArticlesManager';
+import { AdjustUserLeaveBalancesDialog } from './components/AdjustUserLeaveBalancesDialog';
 
 type SettingsCategoryId = 'general' | 'integrations' | 'account' | 'access' | 'approvals' | 'helpSupport';
 type SettingsSectionId =
   | 'appearance'
   | 'applications'
+  | 'installedApps'
+  | 'expenseMileageRate'
   | 'notifications'
   | 'cartrack'
+  | 'googleAuth'
+  | 'microsoftAuth'
   | 'profile'
   | 'security'
   | 'users'
@@ -63,6 +73,8 @@ const SETTINGS_CATEGORIES: SettingsCategory[] = [
     sections: [
       { id: 'appearance', label: 'Appearance' },
       { id: 'applications', label: 'Applications' },
+      { id: 'installedApps', label: 'Installed apps' },
+      { id: 'expenseMileageRate', label: 'Expense mileage rate' },
       { id: 'notifications', label: 'Notifications' },
     ],
   },
@@ -72,6 +84,8 @@ const SETTINGS_CATEGORIES: SettingsCategory[] = [
     icon: PlugConnectedRegular,
     sections: [
       { id: 'cartrack', label: 'CarTrack API' },
+      { id: 'googleAuth', label: 'Google Auth' },
+      { id: 'microsoftAuth', label: 'Microsoft Auth' },
     ],
   },
   {
@@ -142,25 +156,40 @@ function AccountProfileSection() {
 function SettingsContent({
   sectionId,
   searchQuery,
+  onAdjustLeave,
 }: {
   sectionId: SettingsSectionId;
   searchQuery: string;
+  onAdjustLeave: (user: UserListItem) => void;
 }) {
   switch (sectionId) {
     case 'appearance':
       return <GeneralAppearancePanel />;
     case 'applications':
       return <PlatformApplicationsPanel />;
+    case 'installedApps':
+      return <InstalledAppsPanel />;
+    case 'expenseMileageRate':
+      return <ExpenseMileageRatePanel />;
     case 'notifications':
       return <GeneralNotificationsPanel />;
     case 'cartrack':
       return <CarTrackCredentialsForm />;
+    case 'googleAuth':
+      return <GoogleAuthCredentialsForm />;
+    case 'microsoftAuth':
+      return <MicrosoftAuthCredentialsForm />;
     case 'profile':
       return <AccountProfileSection />;
     case 'security':
       return <AccountSecurityPanel />;
     case 'users':
-      return <UsersSettingsPanel searchQuery={searchQuery} />;
+      return (
+        <UsersSettingsPanel
+          searchQuery={searchQuery}
+          onAdjustLeave={onAdjustLeave}
+        />
+      );
     case 'auditLog':
       return <SecurityAuditPanel />;
     case 'approvalQueues':
@@ -179,26 +208,29 @@ function SettingsContent({
 export default function SettingsPage() {
   const navigate = useNavigate();
   const search = usePageSearchQuery();
-  const { canManageUsers, hasPermission } = usePermissions();
+  const { canManageUsers, hasPermission, isAdmin } = usePermissions();
   const canEditPlatformSettings = hasPermission('platform.settings.write');
+  const canEditExpenseSettings = hasPermission('expense.settings.write');
   const canManageSupport = hasPermission('platform.support.write');
   const canManageHelp = hasPermission('platform.help.write');
-  const canViewApprovals = hasPermission('leave.approvals.read')
-    || hasPermission('expense.approvals.read')
-    || hasPermission('leave.requests.write')
-    || hasPermission('expense.claims.write');
   const [activeCategoryId, setActiveCategoryId] = useState<SettingsCategoryId>('integrations');
   const [activeSectionId, setActiveSectionId] = useState<SettingsSectionId>('cartrack');
+  const [leaveAdjustmentUser, setLeaveAdjustmentUser] = useState<UserListItem | null>(null);
 
   const availableCategories = useMemo(
     () => SETTINGS_CATEGORIES
       .filter((category) => {
         if (category.id === 'access') {
+          // Users & Access: Admin and HR only (via platform.settings.users.*).
           return canManageUsers;
         }
 
         if (category.id === 'approvals') {
-          return canViewApprovals;
+          return isAdmin;
+        }
+
+        if (category.id === 'integrations') {
+          return isAdmin;
         }
 
         if (category.id === 'helpSupport') {
@@ -210,8 +242,12 @@ export default function SettingsPage() {
       .map((category) => ({
         ...category,
         sections: category.sections.filter((section) => {
-          if (section.id === 'applications') {
+          if (section.id === 'applications' || section.id === 'installedApps') {
             return canEditPlatformSettings;
+          }
+
+          if (section.id === 'expenseMileageRate') {
+            return canEditExpenseSettings;
           }
 
           if (section.id === 'supportTickets' || section.id === 'ticketCategories') {
@@ -226,7 +262,7 @@ export default function SettingsPage() {
         }),
       }))
       .filter((category) => category.sections.length > 0),
-    [canManageUsers, canViewApprovals, canEditPlatformSettings, canManageSupport, canManageHelp],
+    [canManageUsers, isAdmin, canEditPlatformSettings, canEditExpenseSettings, canManageSupport, canManageHelp],
   );
 
   const filteredCategories = useMemo(() => {
@@ -326,9 +362,21 @@ export default function SettingsPage() {
           {activeSection?.id !== 'profile' && (
             <Subtitle2 className="mb-4 block">{activeSection?.label}</Subtitle2>
           )}
-          {activeSection && <SettingsContent sectionId={activeSection.id} searchQuery={search} />}
+          {activeSection && (
+            <SettingsContent
+              sectionId={activeSection.id}
+              searchQuery={search}
+              onAdjustLeave={setLeaveAdjustmentUser}
+            />
+          )}
         </main>
       </div>
+
+      <AdjustUserLeaveBalancesDialog
+        open={leaveAdjustmentUser !== null}
+        user={leaveAdjustmentUser}
+        onClose={() => setLeaveAdjustmentUser(null)}
+      />
     </div>
   );
 }

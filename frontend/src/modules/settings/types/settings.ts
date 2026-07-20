@@ -25,9 +25,40 @@ export interface AppSettingsOverview {
 
 export interface PlatformSettings {
   defaultModuleSlug: string;
+  installedAppSlugs: string[];
   updatedAt: string | null;
 }
 
+export interface ExpenseSettings {
+  kilometerRate: number;
+  updatedAt: string | null;
+}
+
+export interface UpdateExpenseSettingsRequest {
+  kilometerRate: number;
+}
+
 export interface UpdatePlatformSettingsRequest {
-  defaultModuleSlug: string;
+  defaultModuleSlug?: string;
+  installedAppSlugs?: string[];
+}
+
+export interface ExternalAuthSettings {
+  provider: string;
+  clientId: string;
+  tenantId: string | null;
+  hasClientSecret: boolean;
+  isActivated: boolean;
+  updatedAt: string | null;
+}
+
+export interface UpdateExternalAuthSettingsRequest {
+  clientId: string;
+  clientSecret?: string;
+  tenantId?: string | null;
+}
+
+export interface ExternalAuthProviderStatus {
+  provider: string;
+  isActivated: boolean;
 }

@@ -16,6 +16,8 @@ public class StaffProfile : IAuditable
 
     public string? Branch { get; set; }
 
+    public string Gender { get; set; } = "Unspecified";
+
     /// <summary>Opaque CoreHr company id (no cross-module navigation).</summary>
     public Guid? CompanyId { get; set; }
 

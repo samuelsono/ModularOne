@@ -230,6 +230,13 @@ namespace CarTrack.Modules.Users.Persistence.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("Unspecified");
+
                     b.Property<string>("JobTitle")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");

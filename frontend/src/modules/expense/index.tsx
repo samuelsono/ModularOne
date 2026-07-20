@@ -1,4 +1,5 @@
 import type { ModuleDefinition } from '@platform/module/types';
+import { withAnyPermission, withPermission } from '@platform/permissions/PermissionGate';
 import ExpenseLayout from './pages/ExpenseLayout';
 import ExpenseClaimsPage from './pages/ExpenseClaimsPage';
 import ExpenseApprovalsPage from './pages/ExpenseApprovalsPage';
@@ -13,16 +14,27 @@ export const expenseModule: ModuleDefinition = {
       path: 'expense',
       element: <ExpenseLayout />,
       children: [
-        { index: true, element: <ExpenseClaimsPage /> },
-        { path: 'approvals', element: <ExpenseApprovalsPage /> },
-        { path: 'categories', element: <ExpenseCategoriesPage /> },
-        { path: 'reports', element: <ExpenseReportsPage /> },
-        { path: 'balances', element: <ExpenseBalancesPage /> },
+        { index: true, element: withPermission('expense.claims.read', <ExpenseClaimsPage />) },
+        { path: 'approvals', element: withPermission('expense.approvals.read', <ExpenseApprovalsPage />) },
+        { path: 'categories', element: withPermission('expense.categories.read', <ExpenseCategoriesPage />) },
+        {
+          path: 'reports',
+          element: withAnyPermission(
+            ['expense.reports.read', 'expense.claims.read'],
+            <ExpenseReportsPage />,
+          ),
+        },
+        { path: 'balances', element: withPermission('expense.claims.read', <ExpenseBalancesPage />) },
       ],
     },
   ],
   navItems: [
-    { path: '/expense/reports', label: 'Home', shortLabel: 'Home', permission: 'expense.reports.read' },
+    {
+      path: '/expense/reports',
+      label: 'Home',
+      shortLabel: 'Home',
+      anyPermissions: ['expense.reports.read', 'expense.claims.read'],
+    },
     { path: '/expense', label: 'Claims', shortLabel: 'Claims', permission: 'expense.claims.read' },
     { path: '/expense/approvals', label: 'Approvals', shortLabel: 'Approve', permission: 'expense.approvals.read' },
     { path: '/expense/categories', label: 'Categories', shortLabel: 'Category', permission: 'expense.categories.read' },
@@ -33,7 +45,7 @@ export const expenseModule: ModuleDefinition = {
     description: 'Submit and manage expense claims',
     slug: 'expense',
     image: '/apps/3.png',
-    homePath: '/expense',
+    homePath: '/expense/reports',
   },
   searchProviders: [
     {

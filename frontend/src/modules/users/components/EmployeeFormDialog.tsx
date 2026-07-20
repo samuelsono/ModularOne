@@ -52,6 +52,7 @@ interface EmployeeFormState {
   jobTitle: string;
   department: string;
   branch: string;
+  gender: 'Male' | 'Female' | 'Unspecified';
   managerUserId: string;
   companyId: string;
   departmentId: string;
@@ -79,6 +80,7 @@ const emptyFormState = (): EmployeeFormState => ({
   jobTitle: '',
   department: '',
   branch: '',
+  gender: 'Unspecified',
   managerUserId: '',
   companyId: '',
   departmentId: '',
@@ -170,6 +172,7 @@ export function EmployeeFormDialog({
         jobTitle: detail.staffProfile?.jobTitle ?? '',
         department: detail.staffProfile?.department ?? '',
         branch: detail.staffProfile?.branch ?? '',
+        gender: detail.staffProfile?.gender ?? 'Unspecified',
         managerUserId: detail.staffProfile?.managerUserId ?? '',
         companyId: detail.staffProfile?.companyId ?? '',
         departmentId: detail.staffProfile?.departmentId ?? '',
@@ -234,6 +237,7 @@ export function EmployeeFormDialog({
         jobTitle: formState.jobTitle.trim() || null,
         department: formState.department.trim() || null,
         branch: formState.branch.trim() || null,
+        gender: formState.gender,
         managerUserId: formState.managerUserId || null,
         companyId: formState.companyId || null,
         departmentId: formState.departmentId || null,
@@ -485,6 +489,24 @@ export function EmployeeFormDialog({
                       onChange={(_, data) => setFormState((current) => ({ ...current, branch: data.value }))}
                       disabled={!canEditUsers || isSaving}
                     />
+                  </Field>
+                  <Field
+                    label="Gender"
+                    hint="Used to enforce gender-specific leave eligibility."
+                  >
+                    <Dropdown
+                      value={formState.gender}
+                      selectedOptions={[formState.gender]}
+                      onOptionSelect={(_, data) => setFormState((current) => ({
+                        ...current,
+                        gender: (data.optionValue ?? 'Unspecified') as EmployeeFormState['gender'],
+                      }))}
+                      disabled={!canEditUsers || isSaving}
+                    >
+                      <Option value="Unspecified">Unspecified</Option>
+                      <Option value="Male">Male</Option>
+                      <Option value="Female">Female</Option>
+                    </Dropdown>
                   </Field>
                 </div>
 

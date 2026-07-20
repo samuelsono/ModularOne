@@ -91,6 +91,19 @@ export default function ExpenseCategoriesPage() {
       renderCell: (item) => item.description ?? '—',
     }),
     createTableColumn<ExpenseCategory>({
+      columnId: 'policy',
+      renderHeaderCell: () => 'Policy',
+      renderCell: (item) => {
+        const flags = [
+          item.requiresReceipt ? 'Receipt' : null,
+          item.requiresTravelDetails ? 'Travel details' : null,
+          item.paysByKilometer ? 'Per km rate' : null,
+        ].filter(Boolean);
+
+        return flags.length > 0 ? flags.join(', ') : '—';
+      },
+    }),
+    createTableColumn<ExpenseCategory>({
       columnId: 'sortOrder',
       renderHeaderCell: () => 'Sort',
       renderCell: (item) => item.sortOrder,
@@ -117,6 +130,9 @@ export default function ExpenseCategoriesPage() {
                     description: item.description,
                     isActive: item.isActive,
                     sortOrder: item.sortOrder,
+                    requiresReceipt: item.requiresReceipt,
+                    requiresTravelDetails: item.requiresTravelDetails,
+                    paysByKilometer: item.paysByKilometer,
                   });
                   setDialogOpen(true);
                 }}

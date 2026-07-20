@@ -90,6 +90,10 @@ Not allowed:
 
 If the shell must compose UI from several modules (settings hub, fleet home + reporting), put that screen under `src/app/` — not inside a feature module.
 
+### 5. Activate top-bar search for a route
+
+Register `searchProviders` on the module and consume `usePageSearchQuery()` on the page. Step-by-step: [frontend-page-search.md](./frontend-page-search.md).
+
 ---
 
 ## Verify

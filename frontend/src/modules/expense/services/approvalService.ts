@@ -11,5 +11,9 @@ export function createExpenseClaim(request: CreateExpenseClaimRequest): Promise<
     notes: request.notes ?? null,
     amount: request.amount,
     currency: request.currency ?? 'ZAR',
+    kilometersTravelled: request.kilometersTravelled ?? null,
+    travelStartPoint: request.travelStartPoint ?? null,
+    travelDestination: request.travelDestination ?? null,
+    travelWaypoints: request.travelWaypoints ?? null,
   });
 }

@@ -1,8 +1,12 @@
+using CarTrack.Server.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarTrack.Modules.Leave;
 
-public class LeaveBalanceService(LeaveDbContext dbContext, IOrgDirectory orgDirectory) : ILeaveBalanceService, ILeaveBalanceStore
+public class LeaveBalanceService(
+    LeaveDbContext dbContext,
+    IOrgDirectory orgDirectory,
+    ICurrentUserScope currentUserScope) : ILeaveBalanceService, ILeaveBalanceStore
 {
     public async Task<IReadOnlyList<LeaveBalanceDto>> GetMyBalancesAsync(
         string userId,
@@ -28,6 +32,14 @@ public class LeaveBalanceService(LeaveDbContext dbContext, IOrgDirectory orgDire
         AdjustLeaveBalanceRequest request,
         CancellationToken cancellationToken = default)
     {
+        var scope = await currentUserScope.GetAsync(cancellationToken);
+        var canAdjust = scope.BypassRowLevelSecurity
+            || scope.Roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase));
+        if (!canAdjust)
+        {
+            throw new UnauthorizedAccessException("Only administrators and HR can adjust leave balances.");
+        }
+
         if (!DateOnly.TryParse(request.CycleStart, out var cycleStart)
             || !DateOnly.TryParse(request.CycleEnd, out var cycleEnd))
         {
@@ -37,16 +49,19 @@ public class LeaveBalanceService(LeaveDbContext dbContext, IOrgDirectory orgDire
         {
             throw new InvalidOperationException("Cycle end must be on or after cycle start.");
         }
-        var leaveTypeExists = await dbContext.LeaveTypes
-            .AnyAsync(type => type.Id == request.LeaveTypeId, cancellationToken);
-        if (!leaveTypeExists)
-        {
-            throw new InvalidOperationException("Leave type was not found.");
-        }
+        var leaveType = await dbContext.LeaveTypes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(type => type.Id == request.LeaveTypeId, cancellationToken)
+            ?? throw new InvalidOperationException("Leave type was not found.");
         var userExists = await orgDirectory.UserExistsAsync(request.UserId, cancellationToken);
         if (!userExists)
         {
             throw new InvalidOperationException("User was not found.");
+        }
+        var staffInfo = await orgDirectory.GetStaffOrgInfoAsync(request.UserId, cancellationToken);
+        if (!LeaveTypeGenderEligibility.IsEligible(leaveType.EligibleGender, staffInfo?.Gender))
+        {
+            throw new InvalidOperationException("The user is not eligible for the selected leave type.");
         }
         var balance = await GetOrCreateBalanceAsync(
             request.UserId,
@@ -115,12 +130,16 @@ public class LeaveBalanceService(LeaveDbContext dbContext, IOrgDirectory orgDire
         CancellationToken cancellationToken)
     {
         var (cycleStart, cycleEnd) = GetCycleForYear(year);
+        var staffInfo = await orgDirectory.GetStaffOrgInfoAsync(userId, cancellationToken);
+        var gender = staffInfo?.Gender;
         return await dbContext.LeaveBalances
             .AsNoTracking()
             .Include(balance => balance.LeaveType)
             .Where(balance => balance.UserId == userId
                 && balance.CycleStart == cycleStart
-                && balance.CycleEnd == cycleEnd)
+                && balance.CycleEnd == cycleEnd
+                && (balance.LeaveType.EligibleGender == LeaveTypeGenderEligibility.Any
+                    || balance.LeaveType.EligibleGender == gender))
             .OrderBy(balance => balance.LeaveType.SortOrder)
             .ThenBy(balance => balance.LeaveType.Name)
             .ToListAsync(cancellationToken);
@@ -131,9 +150,14 @@ public class LeaveBalanceService(LeaveDbContext dbContext, IOrgDirectory orgDire
         CancellationToken cancellationToken)
     {
         var (cycleStart, cycleEnd) = GetCycleForYear(year);
+        var staffInfo = await orgDirectory.GetStaffOrgInfoAsync(userId, cancellationToken);
+        var gender = staffInfo?.Gender;
         var deductingTypes = await dbContext.LeaveTypes
             .AsNoTracking()
-            .Where(type => type.IsActive && type.DeductsBalance)
+            .Where(type => type.IsActive
+                && type.DeductsBalance
+                && (type.EligibleGender == LeaveTypeGenderEligibility.Any
+                    || type.EligibleGender == gender))
             .ToListAsync(cancellationToken);
         var existingTypeIds = await dbContext.LeaveBalances
             .AsNoTracking()

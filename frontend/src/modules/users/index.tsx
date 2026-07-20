@@ -1,10 +1,17 @@
 import type { ModuleDefinition } from '@platform/module/types';
+import { withAnyPermission } from '@platform/permissions/PermissionGate';
 import EmployeesList from './pages/EmployeesList';
 
 export const usersModule: ModuleDefinition = {
   id: 'users',
   routes: [
-    { path: 'employees', element: <EmployeesList /> },
+    {
+      path: 'employees',
+      element: withAnyPermission(
+        ['platform.settings.users.read', 'core.employees.read'],
+        <EmployeesList />,
+      ),
+    },
   ],
   navItems: [],
   searchProviders: [

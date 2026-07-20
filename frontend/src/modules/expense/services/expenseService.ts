@@ -5,13 +5,26 @@ import type {
   ExpenseCategoryBalance,
   ExpenseClaim,
   ExpenseReportSummary,
+  ExpenseSettings,
   SaveExpenseCategoryRequest,
   UpdateExpenseClaimRequest,
+  UpdateExpenseSettingsRequest,
 } from '@modules/expense/types/expense';
 import { authorizedFetch } from '@platform/api/authService';
 
 export function getExpenseCategories(): Promise<ExpenseCategory[]> {
   return authorizedFetch<ExpenseCategory[]>('/api/expense/categories');
+}
+
+export function getExpenseSettings(): Promise<ExpenseSettings> {
+  return authorizedFetch<ExpenseSettings>('/api/expense/settings');
+}
+
+export function updateExpenseSettings(request: UpdateExpenseSettingsRequest): Promise<ExpenseSettings> {
+  return authorizedFetch<ExpenseSettings>('/api/expense/settings', {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  });
 }
 
 export function getAdminExpenseCategories(): Promise<ExpenseCategory[]> {
@@ -43,6 +56,16 @@ export function updateExpenseClaim(id: string, request: UpdateExpenseClaimReques
   return authorizedFetch<ExpenseClaim>(`/api/expense/claims/${encodeURIComponent(id)}`, {
     method: 'PUT',
     body: JSON.stringify(request),
+  });
+}
+
+export function uploadExpenseReceipt(id: string, receipt: File): Promise<ExpenseClaim> {
+  const formData = new FormData();
+  formData.append('receipt', receipt);
+
+  return authorizedFetch<ExpenseClaim>(`/api/expense/claims/${encodeURIComponent(id)}/receipt`, {
+    method: 'POST',
+    body: formData,
   });
 }
 

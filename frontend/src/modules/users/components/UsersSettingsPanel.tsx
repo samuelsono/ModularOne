@@ -26,7 +26,7 @@ import {
   Text,
   createTableColumn,
 } from '@fluentui/react-components';
-import { AddRegular, EditRegular, PersonAddRegular } from '@fluentui/react-icons';
+import { CalendarRegular, EditRegular, PersonAddRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
 import { getDrivers, type DirectoryDriver } from '@platform/org/directoryApi';
 import {
@@ -49,6 +49,7 @@ import type {
 } from '@modules/users/types/user';
 import { APP_ROLES } from '@modules/users/types/user';
 import { usePermissions } from '@platform/permissions/usePermissions';
+import { useActiveApp } from '@platform/shell/ActiveAppContext';
 import { UserOrgChart } from './UserOrgChart';
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
 import { matchesSearchQuery } from '@platform/search/searchText';
@@ -96,6 +97,7 @@ interface UserFormState {
   jobTitle: string;
   department: string;
   branch: string;
+  gender: 'Male' | 'Female' | 'Unspecified';
   managerUserId: string;
   driverId: string;
 }
@@ -114,12 +116,22 @@ const emptyFormState = (): UserFormState => ({
   jobTitle: '',
   department: '',
   branch: '',
+  gender: 'Unspecified',
   managerUserId: '',
   driverId: '',
 });
 
-export function UsersSettingsPanel({ searchQuery = '' }: { searchQuery?: string }) {
-  const { canEditUsers } = usePermissions();
+export function UsersSettingsPanel({
+  searchQuery = '',
+  onAdjustLeave,
+}: {
+  searchQuery?: string;
+  onAdjustLeave?: (user: UserListItem) => void;
+}) {
+  const { canEditUsers, isAdmin, isHr } = usePermissions();
+  const { visibleModules } = useActiveApp();
+  const canAdjustLeave = (isAdmin || isHr)
+    && visibleModules.some((module) => module.slug === 'leave');
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -210,6 +222,7 @@ export function UsersSettingsPanel({ searchQuery = '' }: { searchQuery?: string 
         jobTitle: detail.staffProfile?.jobTitle ?? '',
         department: detail.staffProfile?.department ?? '',
         branch: detail.staffProfile?.branch ?? '',
+        gender: detail.staffProfile?.gender ?? 'Unspecified',
         managerUserId: detail.staffProfile?.managerUserId ?? '',
         driverId: detail.driverLink?.driverId ?? '',
       });
@@ -270,20 +283,36 @@ export function UsersSettingsPanel({ searchQuery = '' }: { searchQuery?: string 
     createTableColumn<UserListItem>({
       columnId: 'actions',
       renderHeaderCell: () => '',
-      renderCell: (item) => canEditUsers ? (
-        <Button
-          appearance="subtle"
-          icon={<EditRegular />}
-          onClick={(event) => {
-            event.stopPropagation();
-            void openEditDialog(item);
-          }}
-        >
-          Edit
-        </Button>
-      ) : null,
+      renderCell: (item) => (
+        <div className="flex items-center gap-1">
+          {canAdjustLeave ? (
+            <Button
+              appearance="subtle"
+              icon={<CalendarRegular />}
+              onClick={(event) => {
+                event.stopPropagation();
+                onAdjustLeave?.(item);
+              }}
+            >
+              Adjust leave
+            </Button>
+          ) : null}
+          {canEditUsers ? (
+            <Button
+              appearance="subtle"
+              icon={<EditRegular />}
+              onClick={(event) => {
+                event.stopPropagation();
+                void openEditDialog(item);
+              }}
+            >
+              Edit
+            </Button>
+          ) : null}
+        </div>
+      ),
     }),
-  ], [canEditUsers, openEditDialog]);
+  ], [canAdjustLeave, canEditUsers, onAdjustLeave, openEditDialog]);
 
   async function handleSave() {
     setFormError(null);
@@ -301,6 +330,7 @@ export function UsersSettingsPanel({ searchQuery = '' }: { searchQuery?: string 
             jobTitle: formState.jobTitle.trim() || null,
             department: formState.department.trim() || null,
             branch: formState.branch.trim() || null,
+            gender: formState.gender,
             managerUserId: formState.managerUserId || null,
           },
           driverId: formState.driverId || null,
@@ -328,6 +358,7 @@ export function UsersSettingsPanel({ searchQuery = '' }: { searchQuery?: string 
             jobTitle: formState.jobTitle.trim() || null,
             department: formState.department.trim() || null,
             branch: formState.branch.trim() || null,
+            gender: formState.gender,
             managerUserId: formState.managerUserId || null,
           },
           driverId: formState.driverId || null,
@@ -533,6 +564,23 @@ export function UsersSettingsPanel({ searchQuery = '' }: { searchQuery?: string 
                     onChange={(_, data) => setFormState((current) => ({ ...current, branch: data.value }))}
                   />
                 </Field>
+                <Field
+                  label="Gender"
+                  hint="Used to enforce gender-specific leave eligibility."
+                >
+                  <Dropdown
+                    value={formState.gender}
+                    selectedOptions={[formState.gender]}
+                    onOptionSelect={(_, data) => setFormState((current) => ({
+                      ...current,
+                      gender: (data.optionValue ?? 'Unspecified') as UserFormState['gender'],
+                    }))}
+                  >
+                    <Option value="Unspecified">Unspecified</Option>
+                    <Option value="Male">Male</Option>
+                    <Option value="Female">Female</Option>
+                  </Dropdown>
+                </Field>
               </div>
 
               <Field label="Manager">
@@ -602,6 +650,7 @@ export function UsersSettingsPanel({ searchQuery = '' }: { searchQuery?: string 
           </DialogBody>
         </DialogSurface>
       </Dialog>
+
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   Select,
   Spinner,
   createTableColumn,
+  tokens,
   type TableColumnDefinition,
 } from '@fluentui/react-components';
 import AppTitle from '@platform/ui/AppTitle';
@@ -15,6 +16,7 @@ import { AutoFitDataGrid } from '@platform/ui/AutoFitDataGrid';
 import { ExpenseCategoryName, ExpenseStatusBadge } from '@modules/expense/components/expenseBadges';
 import { withAuditableColumns } from '@platform/ui/auditTableColumns';
 import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
+import { usePermissions } from '@platform/permissions/usePermissions';
 import { ApiError } from '@platform/api/apiClient';
 import { getExpenseHistory, getExpenseReportSummary } from '@modules/expense/services/expenseService';
 import type { ExpenseClaim, ExpenseReportAmount, ExpenseReportSummary } from '@modules/expense/types/expense';
@@ -22,6 +24,9 @@ import { EXPENSE_STATUS_FILTERS, expenseStatusLabel } from '@modules/expense/typ
 import { matchesSearchQuery } from '@platform/search/searchText';
 import SummaryCard from '@platform/ui/SummaryCard';
 import AppPagination from '@platform/ui/AppPagination';
+import { DonutChart } from '@fluentui/react-charts';
+import { REPORT_CHART_COLORS } from '@modules/reporting/utils/chartColors';
+import DataReload from '../components/DataReload';
 
 const zarFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -61,6 +66,11 @@ function filterExpenseHistory(items: ExpenseClaim[], query: string): ExpenseClai
 
 export default function ExpenseReportsPage() {
   const searchQuery = usePageSearchQuery();
+  const { isAdmin, isHr, isManager, user } = usePermissions();
+  const isElevatedViewer = isAdmin
+    || isHr
+    || isManager
+    || Boolean(user?.roles.some((role) => role === 'Finance'));
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const [statusFilter, setStatusFilter] = useState('All');
@@ -169,12 +179,46 @@ export default function ExpenseReportsPage() {
     }),
   ]), []);
 
+  const getChartData = useCallback((items: Array<{ label: string; count: number }> | null | undefined) => {
+      if (!items || items.length === 0) {
+        return [];
+      }
+  
+     const height = 100;
+  
+  
+      return {
+          chartTitle: "",
+          height: height,
+          innerRadius: height / 1.6 ,
+          hideLegend: true,
+          legendsOverflowText: `+${items.length - 3}more`,
+          valueInsideDonut: `${items.reduce((sum, item) => sum + item.count, 0)}`,
+          data: {
+            chartData: items.map((item, index) => ({
+              legend: item.label,
+              data: item.count,
+              color: REPORT_CHART_COLORS[index % REPORT_CHART_COLORS.length],
+            }))
+          }
+     }
+    }, []);
+
   return (
     <div className="flex flex-col gap-4 h-full min-h-0">
-      <div className="flex items-start justify-between gap-4 px-3">
-        <AppTitle title="Expense dashboard" subtitle="Track submitted, pending, and approved spend across your main business claim categories." />
-        <div className="flex gap-5">
-          <Field label="Status" orientation="horizontal">
+      <div className="flex items-end justify-between gap-4 px-3">
+        <AppTitle
+          title="Expense dashboard"
+          subtitle={
+            isElevatedViewer
+              ? 'Track submitted, pending, and approved spend across your main business claim categories.'
+              : 'Track your submitted, pending, and approved expense claims.'
+          }
+        />
+        <div className="flex items-end gap-2">
+          <DataReload onReload={loadData} />
+
+          <Field label="Status">
             <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
               {EXPENSE_STATUS_FILTERS.map((status) => (
                 <option key={status} value={status}>
@@ -183,7 +227,7 @@ export default function ExpenseReportsPage() {
               ))}
             </Select>
           </Field>
-          <Field label="Year" orientation="horizontal">
+          <Field label="Year">
             <Select value={String(year)} onChange={(event) => setYear(Number(event.target.value))}>
               {[currentYear, currentYear - 1, currentYear - 2].map((value) => (
                 <option key={value} value={String(value)}>{value}</option>
@@ -214,7 +258,7 @@ export default function ExpenseReportsPage() {
           </div>
 
           <div className="grid gap-4 xl:grid-cols-7 container max-w-8xl mx-auto">
-            <Card className='px-0! col-span-5'> 
+            <Card className='px-0! col-span-3'> 
               <div className='px-4'>
                  <AppTitle title="Spend by category" subtitle="Approved, pending, rejected, and cancelled submissions grouped by claim category." />
               </div>
@@ -228,15 +272,23 @@ export default function ExpenseReportsPage() {
                 />
               </div>
             </Card>
-
+            
+            <div className='col-span-2 shadow-md rounded p-3 min-h-[240px] h-full flex items-center justify-center border' style={{ borderColor: tokens.colorNeutralStroke2  }}>
+            { summary.byCategory.length > 0 && <DonutChart
+                                          culture={
+                                              typeof window !== "undefined" ? window.navigator.language : "en-us"
+                                            }
+                                            {...getChartData(summary.byCategory)} /> 
+                              }
+            </div>
             <Card className='col-span-2'>
               <div className='px-4'>
                  <AppTitle title="Status snapshot" subtitle="Current count of claim outcomes in the selected reporting period." />
               </div>
 
-              <div className="p-4 flex flex-col gap-3">
+              <div className="p-4 flex flex-col gap-2 ">
                 {summary.byStatus.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between border-b border-neutral-stroke-2 pb-2 last:border-b-0">
+                  <div key={item.label} className="flex items-center justify-between border-b pb-1 last:border-b-0" style={{ borderColor: tokens.colorNeutralStroke2 }}>
                     <ExpenseStatusBadge status={item.label} />
                     <Badge>{item.count}</Badge>
                   </div>
@@ -246,7 +298,16 @@ export default function ExpenseReportsPage() {
           </div>
 
             <div className='px-4 mt-6'>
-                 <AppTitle title="Claim history" subtitle="Your expense claims and those of people you manage, including requester and audit trail." />
+                 <AppTitle
+                   title="Claim history"
+                   subtitle={
+                     isAdmin || isHr
+                       ? 'Organisation-wide expense claims, including requester and audit trail.'
+                       : isElevatedViewer
+                         ? 'Your expense claims and those of people you manage, including requester and audit trail.'
+                         : 'Your expense claims, including status and audit trail.'
+                   }
+                 />
             </div>
             <div className="">
               <AutoFitDataGrid

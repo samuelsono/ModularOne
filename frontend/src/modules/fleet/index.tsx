@@ -1,4 +1,5 @@
 import type { ModuleDefinition } from '@platform/module/types';
+import { withPermission } from '@platform/permissions/PermissionGate';
 import Dashboard from './pages/Dashboard';
 import VehicleList from './pages/VehicleList';
 import LiveTracking from './pages/LiveTracking';
@@ -7,10 +8,10 @@ import DriversList from './pages/DriversList';
 export const fleetModule: ModuleDefinition = {
   id: 'fleet',
   routes: [
-    { index: true, element: <Dashboard /> },
-    { path: 'vehicle-list', element: <VehicleList /> },
-    { path: 'live-tracking', element: <LiveTracking /> },
-    { path: 'drivers', element: <DriversList /> },
+    { index: true, element: withPermission('fleet.dashboard.read', <Dashboard />) },
+    { path: 'vehicle-list', element: withPermission('fleet.vehicles.read', <VehicleList />) },
+    { path: 'live-tracking', element: withPermission('fleet.tracking.read', <LiveTracking />) },
+    { path: 'drivers', element: withPermission('fleet.drivers.read', <DriversList />) },
   ],
   navItems: [
     { path: '/', label: 'Home', shortLabel: 'Home', permission: 'fleet.dashboard.read' },

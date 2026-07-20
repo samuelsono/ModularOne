@@ -201,6 +201,13 @@ namespace CarTrack.Modules.Leave.Persistence.Migrations
                     b.Property<bool>("DeductsBalance")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("EligibleGender")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("Any");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 

@@ -47,6 +47,10 @@ public sealed class UsersDbContext(DbContextOptions<UsersDbContext> options) : M
             entity.Property(profile => profile.JobTitle).HasMaxLength(128);
             entity.Property(profile => profile.Department).HasMaxLength(128);
             entity.Property(profile => profile.Branch).HasMaxLength(128);
+            entity.Property(profile => profile.Gender)
+                .HasMaxLength(16)
+                .HasDefaultValue("Unspecified")
+                .IsRequired();
             entity.Property(profile => profile.EmploymentStatus).HasMaxLength(32).IsRequired();
 
             entity.HasIndex(profile => profile.CompanyId);

@@ -1,25 +1,36 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Button,
+  Dialog,
+  DialogActions,
+  DialogBody,
+  DialogContent,
+  DialogSurface,
+  DialogTitle,
   Field,
   MessageBar,
   MessageBarBody,
   Select,
   Spinner,
+  Textarea,
+  ToggleButton,
+  Tooltip,
 } from '@fluentui/react-components';
-import { AddRegular, ReceiptRegular } from '@fluentui/react-icons';
+import { AddRegular, PeopleRegular, PersonRegular, ReceiptRegular } from '@fluentui/react-icons';
 import { createTableColumn, type TableColumnDefinition } from '@fluentui/react-components';
 import AppTitle from '@platform/ui/AppTitle';
 import EmptyListOrTable from '@platform/ui/EmptyListOrTable';
 import { AutoFitDataGrid } from '@platform/ui/AutoFitDataGrid';
-import { ExpenseCategoryName, ExpenseStatusBadge } from '@modules/expense/components/expenseBadges';
-import { ExpenseClaimForm } from '@modules/expense/components/ExpenseClaimForm';
+import { ExpenseStatusBadge } from '@modules/expense/components/expenseBadges';
+import { ExpenseClaimForm } from '../components/ExpenseClaimForm';
+import { ExpenseClaimDetailPopover } from '@modules/expense/components/ExpenseClaimDetailPopover';
 import { withAuditableColumns } from '@platform/ui/auditTableColumns';
 import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
 import { usePermissions } from '@platform/permissions/usePermissions';
 import { ApiError } from '@platform/api/apiClient';
 import {
   cancelExpenseClaim,
+  decideExpenseApproval,
   getMyExpenseClaims,
   submitExpenseClaim,
 } from '@modules/expense/services/expenseService';
@@ -27,10 +38,12 @@ import type { ExpenseClaim } from '@modules/expense/types/expense';
 import {
   EXPENSE_STATUS_FILTERS,
   expenseStatusLabel,
+  isApprovalStage,
   isCancellableExpenseClaim,
   isEditableExpenseClaim,
 } from '@modules/expense/types/expense';
 import { matchesSearchQuery } from '@platform/search/searchText';
+import DataReload from '../components/DataReload';
 
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -67,13 +80,19 @@ function filterClaims(claims: ExpenseClaim[], query: string): ExpenseClaim[] {
     claim.expenseDate,
     claim.amount,
     claim.currency,
+    claim.travelStartPoint,
+    claim.travelDestination,
+    ...(claim.travelWaypoints ?? []),
+    claim.receiptFileName,
   ]));
 }
 
 export default function ExpenseClaimsPage() {
   const searchQuery = usePageSearchQuery();
-  const { hasPermission } = usePermissions();
+  const { user, hasPermission, isAdmin, isHr, isManager } = usePermissions();
   const canWrite = hasPermission('expense.claims.write');
+  const canApproveExpense = isAdmin || isHr || isManager;
+  const currentUserId = user?.id;
   const currentYear = new Date().getFullYear();
 
   const [claims, setClaims] = useState<ExpenseClaim[]>([]);
@@ -85,6 +104,19 @@ export default function ExpenseClaimsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingClaim, setEditingClaim] = useState<ExpenseClaim | null>(null);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [pendingRejectClaimId, setPendingRejectClaimId] = useState<string | null>(null);
+  const [rejectNotes, setRejectNotes] = useState('');
+  const [rejectValidationError, setRejectValidationError] = useState<string | null>(null);
+  const [filterCurrentUserOnly, setFilterCurrentUserOnly] = useState(false);
+  const isElevatedViewer = isAdmin || isHr || isManager;
+  const isCurrentUserOnlyView = isElevatedViewer && filterCurrentUserOnly && Boolean(currentUserId);
+
+   const scopedClaims = useMemo(
+      () => (isCurrentUserOnlyView && currentUserId
+        ? claims.filter((claim) => claim.requesterUserId === currentUserId)
+        : claims),
+      [claims, currentUserId, isCurrentUserOnlyView],
+  );
 
   const loadClaims = useCallback(async () => {
     setIsLoading(true);
@@ -106,15 +138,72 @@ export default function ExpenseClaimsPage() {
   }, [loadClaims]);
 
   const filteredClaims = useMemo(
-    () => filterClaims(claims, searchQuery),
-    [claims, searchQuery],
+    () => filterClaims(scopedClaims, searchQuery),
+    [scopedClaims, searchQuery],
   );
+
+  const handleClaimAction = useCallback(async (claimId: string, action: 'submit' | 'cancel' | 'approve' | 'reject', notes?: string) => {
+    setActingId(claimId);
+    setActionError(null);
+
+    try {
+      if (action === 'submit') {
+        await submitExpenseClaim(claimId);
+      } else if (action === 'cancel') {
+        await cancelExpenseClaim(claimId);
+      } else {
+        await decideExpenseApproval(claimId, { approve: action === 'approve', notes: notes ?? null });
+      }
+
+      await loadClaims();
+    } catch (actionLoadError) {
+      if (action === 'submit') {
+        setActionError(actionLoadError instanceof ApiError ? actionLoadError.message : 'Failed to submit expense claim.');
+      } else if (action === 'cancel') {
+        setActionError(actionLoadError instanceof ApiError ? actionLoadError.message : 'Failed to cancel expense claim.');
+      } else if (action === 'approve') {
+        setActionError(actionLoadError instanceof ApiError ? actionLoadError.message : 'Failed to approve expense claim.');
+      } else {
+        setActionError(actionLoadError instanceof ApiError ? actionLoadError.message : 'Failed to reject expense claim.');
+      }
+    } finally {
+      setActingId(null);
+    }
+  }, [loadClaims]);
+
+  const handleOpenRejectDialog = useCallback((claimId: string) => {
+    setPendingRejectClaimId(claimId);
+    setRejectNotes('');
+    setRejectValidationError(null);
+  }, []);
+
+  const handleConfirmReject = useCallback(async () => {
+    if (!pendingRejectClaimId) {
+      return;
+    }
+
+    const trimmedNotes = rejectNotes.trim();
+    if (!trimmedNotes) {
+      setRejectValidationError('A reason is required to reject an expense claim.');
+      return;
+    }
+
+    setRejectValidationError(null);
+    await handleClaimAction(pendingRejectClaimId, 'reject', trimmedNotes);
+    setPendingRejectClaimId(null);
+    setRejectNotes('');
+  }, [handleClaimAction, pendingRejectClaimId, rejectNotes]);
 
   const columns = useMemo<TableColumnDefinition<ExpenseClaim>[]>(() => withAuditableColumns([
     createTableColumn<ExpenseClaim>({
       columnId: 'category',
       renderHeaderCell: () => 'Category',
-      renderCell: (item) => <ExpenseCategoryName name={item.categoryName} code={item.categoryCode} />,
+      renderCell: (item) => <ExpenseClaimDetailPopover item={item} />,
+    }),
+    createTableColumn<ExpenseClaim>({
+      columnId: 'requestor',
+      renderHeaderCell: () => 'Requestor',
+      renderCell: (item) => item.requesterDisplayName,
     }),
     createTableColumn<ExpenseClaim>({
       columnId: 'expenseDate',
@@ -125,6 +214,20 @@ export default function ExpenseClaimsPage() {
       columnId: 'description',
       renderHeaderCell: () => 'Description',
       renderCell: (item) => item.description,
+    }),
+    createTableColumn<ExpenseClaim>({
+      columnId: 'travel',
+      renderHeaderCell: () => 'Travel',
+      renderCell: (item) => (
+        item.requiresTravelDetails
+          ? `${item.travelStartPoint ?? '-'} -> ${item.travelDestination ?? '-'} (${item.kilometersTravelled ?? 0} km)`
+          : '—'
+      ),
+    }),
+    createTableColumn<ExpenseClaim>({
+      columnId: 'receipt',
+      renderHeaderCell: () => 'Receipt',
+      renderCell: (item) => (item.hasReceipt ? (item.receiptFileName ?? 'Attached') : 'Missing'),
     }),
     createTableColumn<ExpenseClaim>({
       columnId: 'amount',
@@ -140,9 +243,9 @@ export default function ExpenseClaimsPage() {
       columnId: 'actions',
       renderHeaderCell: () => 'Actions',
       renderCell: (item) => (
-        canWrite ? (
+        canWrite || canApproveExpense ? (
           <div className="flex flex-wrap gap-2">
-            {isEditableExpenseClaim(item.status) ? (
+            {item.requesterUserId === currentUserId && isEditableExpenseClaim(item.status) ? (
               <Button
                 appearance="secondary"
                 size="small"
@@ -154,53 +257,53 @@ export default function ExpenseClaimsPage() {
                 Edit
               </Button>
             ) : null}
-            {isEditableExpenseClaim(item.status) ? (
+            {item.requesterUserId === currentUserId && isEditableExpenseClaim(item.status) ? (
               <Button
                 appearance="primary"
                 size="small"
                 disabled={actingId === item.id}
-                onClick={async () => {
-                  setActingId(item.id);
-                  setActionError(null);
-                  try {
-                    await submitExpenseClaim(item.id);
-                    await loadClaims();
-                  } catch (actionLoadError) {
-                    setActionError(actionLoadError instanceof ApiError ? actionLoadError.message : 'Failed to submit expense claim.');
-                  } finally {
-                    setActingId(null);
-                  }
-                }}
+                onClick={() => void handleClaimAction(item.id, 'submit')}
               >
                 Submit
               </Button>
             ) : null}
-            {isCancellableExpenseClaim(item.status) ? (
+            {item.requesterUserId === currentUserId && isCancellableExpenseClaim(item.status) ? (
               <Button
                 appearance="secondary"
                 size="small"
                 disabled={actingId === item.id}
-                onClick={async () => {
-                  setActingId(item.id);
-                  setActionError(null);
-                  try {
-                    await cancelExpenseClaim(item.id);
-                    await loadClaims();
-                  } catch (actionLoadError) {
-                    setActionError(actionLoadError instanceof ApiError ? actionLoadError.message : 'Failed to cancel expense claim.');
-                  } finally {
-                    setActingId(null);
-                  }
-                }}
+                onClick={() => void handleClaimAction(item.id, 'cancel')}
               >
                 Cancel
               </Button>
             ) : null}
+            {canApproveExpense
+              && item.requesterUserId !== currentUserId
+              && isApprovalStage(item.status) ? (
+                <>
+                  <Button
+                    appearance="primary"
+                    size="small"
+                    disabled={actingId === item.id}
+                    onClick={() => void handleClaimAction(item.id, 'approve')}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    appearance="secondary"
+                    size="small"
+                    disabled={actingId === item.id}
+                    onClick={() => handleOpenRejectDialog(item.id)}
+                  >
+                    Reject
+                  </Button>
+                </>
+              ) : null}
           </div>
         ) : null
       ),
     }),
-  ]), [actingId, canWrite, loadClaims]);
+  ]), [actingId, canApproveExpense, canWrite, currentUserId, handleClaimAction, handleOpenRejectDialog]);
 
   return (
     <div className="flex flex-col gap-4 h-full min-h-0">
@@ -208,6 +311,20 @@ export default function ExpenseClaimsPage() {
         <AppTitle title="Expense claims" subtitle="Create drafts, submit for manager and finance approval, then track payment." />
         
          <div className="flex flex-wrap items-end gap-2 px-3">
+          <DataReload onReload={loadClaims} />
+          {isElevatedViewer ? (
+            <Tooltip
+              content={filterCurrentUserOnly ? 'Show team leave balances' : 'Show only your leave balances'}
+              relationship="label"
+            >
+              <ToggleButton
+                appearance="primary"
+                checked={filterCurrentUserOnly}
+                icon={filterCurrentUserOnly ? <PeopleRegular /> : <PersonRegular /> }
+                onClick={() => setFilterCurrentUserOnly((prev) => !prev)}
+              />
+            </Tooltip>
+          ) : null}
         <Field label="Status" orientation="vertical">
           <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
             {EXPENSE_STATUS_FILTERS.map((status) => (
@@ -281,7 +398,7 @@ export default function ExpenseClaimsPage() {
       <ExpenseClaimForm
         open={formOpen}
         claim={editingClaim}
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           setFormOpen(open);
           if (!open) {
             setEditingClaim(null);
@@ -289,6 +406,67 @@ export default function ExpenseClaimsPage() {
         }}
         onSubmitted={() => void loadClaims()}
       />
+
+      <Dialog
+        open={pendingRejectClaimId !== null}
+        onOpenChange={(_, data) => {
+          if (!data.open && !actingId) {
+            setPendingRejectClaimId(null);
+            setRejectNotes('');
+            setRejectValidationError(null);
+          }
+        }}
+      >
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle>Reject expense claim</DialogTitle>
+            <DialogContent className="flex flex-col gap-3">
+              <p>This will reject the selected expense claim. Please provide a reason.</p>
+              <Field
+                label="Rejection reason"
+                required
+                validationState={rejectValidationError ? 'error' : 'none'}
+                validationMessage={rejectValidationError ?? undefined}
+              >
+                <Textarea
+                  value={rejectNotes}
+                  rows={3}
+                  resize="vertical"
+                  disabled={Boolean(actingId)}
+                  placeholder="Enter the reason for rejecting this claim"
+                  onChange={(_, data) => {
+                    setRejectNotes(data.value);
+                    if (rejectValidationError) {
+                      setRejectValidationError(null);
+                    }
+                  }}
+                />
+              </Field>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                appearance="primary"
+                className="!bg-red-600 hover:!bg-red-700 !text-white !border-red-600"
+                disabled={Boolean(actingId)}
+                onClick={() => void handleConfirmReject()}
+              >
+                {actingId ? 'Working...' : 'Reject'}
+              </Button>
+              <Button
+                appearance="secondary"
+                disabled={Boolean(actingId)}
+                onClick={() => {
+                  setPendingRejectClaimId(null);
+                  setRejectNotes('');
+                  setRejectValidationError(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
     </div>
   );
 }

@@ -7,4 +7,8 @@ export interface CreateExpenseClaimRequest {
   categoryId?: string;
   expenseDate?: string;
   notes?: string | null;
+  kilometersTravelled?: number | null;
+  travelStartPoint?: string | null;
+  travelDestination?: string | null;
+  travelWaypoints?: string[] | null;
 }

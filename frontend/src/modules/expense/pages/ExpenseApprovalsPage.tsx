@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Button,
+  Dialog,
+  DialogActions,
+  DialogBody,
+  DialogContent,
+  DialogSurface,
+  DialogTitle,
+  Field,
   MessageBar,
   MessageBarBody,
   Select,
   Spinner,
   Tab,
   TabList,
+  Textarea,
   createTableColumn,
   type TableColumnDefinition,
 } from '@fluentui/react-components';
@@ -57,6 +65,9 @@ export default function ExpenseApprovalsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [pendingRejectClaimId, setPendingRejectClaimId] = useState<string | null>(null);
+  const [rejectNotes, setRejectNotes] = useState('');
+  const [rejectValidationError, setRejectValidationError] = useState<string | null>(null);
 
   const loadClaims = useCallback(async () => {
     setIsLoading(true);
@@ -95,6 +106,31 @@ export default function ExpenseApprovalsPage() {
     () => filterClaims(paymentClaims, searchQuery),
     [paymentClaims, searchQuery],
   );
+
+  const handleConfirmReject = useCallback(async () => {
+    if (!pendingRejectClaimId) {
+      return;
+    }
+
+    const trimmedNotes = rejectNotes.trim();
+    if (!trimmedNotes) {
+      setRejectValidationError('A reason is required to reject an expense claim.');
+      return;
+    }
+
+    setRejectValidationError(null);
+    setActingId(pendingRejectClaimId);
+    try {
+      await decideExpenseApproval(pendingRejectClaimId, { approve: false, notes: trimmedNotes });
+      await loadClaims();
+      setPendingRejectClaimId(null);
+      setRejectNotes('');
+    } catch (actionError) {
+      setError(actionError instanceof ApiError ? actionError.message : 'Failed to reject expense claim.');
+    } finally {
+      setActingId(null);
+    }
+  }, [loadClaims, pendingRejectClaimId, rejectNotes]);
 
   const approvalColumns = useMemo<TableColumnDefinition<ExpenseClaim>[]>(() => withAuditableColumns([
     createTableColumn<ExpenseClaim>({
@@ -154,16 +190,10 @@ export default function ExpenseApprovalsPage() {
             appearance="secondary"
             size="small"
             disabled={actingId === item.id}
-            onClick={async () => {
-              setActingId(item.id);
-              try {
-                await decideExpenseApproval(item.id, { approve: false });
-                await loadClaims();
-              } catch (actionError) {
-                setError(actionError instanceof ApiError ? actionError.message : 'Failed to reject expense claim.');
-              } finally {
-                setActingId(null);
-              }
+            onClick={() => {
+              setPendingRejectClaimId(item.id);
+              setRejectNotes('');
+              setRejectValidationError(null);
             }}
           >
             Reject
@@ -288,6 +318,67 @@ export default function ExpenseApprovalsPage() {
           />
         )}
       </div>
+
+      <Dialog
+        open={pendingRejectClaimId !== null}
+        onOpenChange={(_, data) => {
+          if (!data.open && !actingId) {
+            setPendingRejectClaimId(null);
+            setRejectNotes('');
+            setRejectValidationError(null);
+          }
+        }}
+      >
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle>Reject expense claim</DialogTitle>
+            <DialogContent className="flex flex-col gap-3">
+              <p>This will reject the selected expense claim. Please provide a reason.</p>
+              <Field
+                label="Rejection reason"
+                required
+                validationState={rejectValidationError ? 'error' : 'none'}
+                validationMessage={rejectValidationError ?? undefined}
+              >
+                <Textarea
+                  value={rejectNotes}
+                  rows={3}
+                  resize="vertical"
+                  disabled={Boolean(actingId)}
+                  placeholder="Enter the reason for rejecting this claim"
+                  onChange={(_, data) => {
+                    setRejectNotes(data.value);
+                    if (rejectValidationError) {
+                      setRejectValidationError(null);
+                    }
+                  }}
+                />
+              </Field>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                appearance="primary"
+                className="!bg-red-600 hover:!bg-red-700 !text-white !border-red-600"
+                disabled={Boolean(actingId)}
+                onClick={() => void handleConfirmReject()}
+              >
+                {actingId ? 'Working...' : 'Reject'}
+              </Button>
+              <Button
+                appearance="secondary"
+                disabled={Boolean(actingId)}
+                onClick={() => {
+                  setPendingRejectClaimId(null);
+                  setRejectNotes('');
+                  setRejectValidationError(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
     </div>
   );
 }

@@ -22,6 +22,24 @@ public class ExpenseClaim : IAuditable
 
     public decimal Amount { get; set; }
 
+    public decimal? KilometersTravelled { get; set; }
+
+    public string? TravelStartPoint { get; set; }
+
+    public string? TravelDestination { get; set; }
+
+    public string? TravelWaypointsJson { get; set; }
+
+    public decimal? MileageRatePerKilometer { get; set; }
+
+    public string? ReceiptStoredPath { get; set; }
+
+    public string? ReceiptFileName { get; set; }
+
+    public string? ReceiptContentType { get; set; }
+
+    public DateTimeOffset? ReceiptUploadedAt { get; set; }
+
     public string Currency { get; set; } = "ZAR";
 
     public string Status { get; set; } = ExpenseClaimStatuses.Draft;

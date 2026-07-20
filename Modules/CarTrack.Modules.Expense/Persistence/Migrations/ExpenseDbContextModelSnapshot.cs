@@ -52,6 +52,15 @@ namespace CarTrack.Modules.Expense.Persistence.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<bool>("PaysByKilometer")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RequiresReceipt")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RequiresTravelDetails")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
@@ -110,10 +119,18 @@ namespace CarTrack.Modules.Expense.Persistence.Migrations
                     b.Property<DateOnly>("ExpenseDate")
                         .HasColumnType("date");
 
+                    b.Property<decimal?>("KilometersTravelled")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<string>("ManagerUserId")
                         .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
+
+                    b.Property<decimal?>("MileageRatePerKilometer")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(1024)
@@ -125,6 +142,21 @@ namespace CarTrack.Modules.Expense.Persistence.Migrations
                     b.Property<string>("PaidByUserId")
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
+
+                    b.Property<string>("ReceiptContentType")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("ReceiptFileName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ReceiptStoredPath")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<DateTimeOffset?>("ReceiptUploadedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RequesterBranch")
                         .HasMaxLength(128)
@@ -142,6 +174,17 @@ namespace CarTrack.Modules.Expense.Persistence.Migrations
 
                     b.Property<DateTimeOffset?>("SubmittedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TravelDestination")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("TravelStartPoint")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("TravelWaypointsJson")
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -161,6 +204,23 @@ namespace CarTrack.Modules.Expense.Persistence.Migrations
                     b.HasIndex("RequesterUserId", "ExpenseDate");
 
                     b.ToTable("ExpenseClaims", (string)null);
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Expense.ExpenseSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("KilometerRate")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExpenseSettings", (string)null);
                 });
 
             modelBuilder.Entity("CarTrack.Modules.Expense.ExpenseClaim", b =>

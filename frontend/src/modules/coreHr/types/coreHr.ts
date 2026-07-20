@@ -1,17 +1,10 @@
 export interface AuditableEntity {
-
   createdAt?: string;
-
   createdByUserId?: string | null;
-
   createdByDisplayName?: string | null;
-
   updatedAt?: string | null;
-
   updatedByUserId?: string | null;
-
   updatedByDisplayName?: string | null;
-
 }
 
 

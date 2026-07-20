@@ -175,10 +175,21 @@ public class ExpenseReportService(
             entity.CategoryId,
             entity.Category.Name,
             entity.Category.Code,
+            entity.Category.RequiresReceipt,
+            entity.Category.RequiresTravelDetails,
+            entity.Category.PaysByKilometer,
             entity.ExpenseDate.ToString("yyyy-MM-dd"),
             entity.Description,
             entity.Notes,
             entity.Amount,
+            entity.KilometersTravelled,
+            entity.TravelStartPoint,
+            entity.TravelDestination,
+            ParseTravelWaypoints(entity.TravelWaypointsJson),
+            entity.MileageRatePerKilometer,
+            !string.IsNullOrWhiteSpace(entity.ReceiptStoredPath),
+            entity.ReceiptFileName,
+            AuditableMapping.FormatTimestamp(entity.ReceiptUploadedAt),
             entity.Currency,
             entity.Status,
             AuditableMapping.FormatTimestamp(entity.CreatedAt),
@@ -190,6 +201,23 @@ public class ExpenseReportService(
             AuditableMapping.FormatTimestamp(entity.SubmittedAt),
             AuditableMapping.FormatTimestamp(entity.DecidedAt),
             AuditableMapping.FormatTimestamp(entity.PaidAt));
+
+    private static string[]? ParseTravelWaypoints(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<string[]>(json);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     private static IReadOnlyList<ExpenseReportAmountDto> GroupByCategory(IReadOnlyList<ExpenseHistoryRowDto> claims) =>
         claims

@@ -83,10 +83,7 @@ public class CarTrackApiClient(
     {
         var credentials = await credentialProvider.GetAsync(cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(credentials.Username) || string.IsNullOrWhiteSpace(credentials.Password))
-        {
-            throw new InvalidOperationException("CarTrack API credentials are not configured.");
-        }
+        EnsureCredentialsConfigured(credentials);
 
         var baseUri = new Uri($"{credentials.BaseUrl.TrimEnd('/')}/");
         var requestUri = new Uri(baseUri, path);
@@ -140,14 +137,20 @@ public class CarTrackApiClient(
             .ToString();
     }
 
+    private static void EnsureCredentialsConfigured(CarTrackRuntimeCredentials credentials)
+    {
+        if (string.IsNullOrWhiteSpace(credentials.Username) || string.IsNullOrWhiteSpace(credentials.Password))
+        {
+            throw new InvalidOperationException(
+                "CarTrack API credentials are not configured (or the stored password could not be decrypted). " +
+                "Open Settings → Integrations → CarTrack API and save the password again.");
+        }
+    }
+
     private async Task<T> GetAsync<T>(string path, CancellationToken cancellationToken)
     {
         var credentials = await credentialProvider.GetAsync(cancellationToken);
-
-        if (string.IsNullOrWhiteSpace(credentials.Username) || string.IsNullOrWhiteSpace(credentials.Password))
-        {
-            throw new InvalidOperationException("CarTrack API credentials are not configured.");
-        }
+        EnsureCredentialsConfigured(credentials);
 
         var baseUri = new Uri($"{credentials.BaseUrl.TrimEnd('/')}/");
         var requestUri = new Uri(baseUri, path);

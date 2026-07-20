@@ -9,6 +9,8 @@ public sealed class SettingsDbContext(DbContextOptions<SettingsDbContext> option
 
     public DbSet<PlatformSettings> PlatformSettings => Set<PlatformSettings>();
 
+    public DbSet<ExternalAuthSettings> ExternalAuthSettings => Set<ExternalAuthSettings>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -32,6 +34,20 @@ public sealed class SettingsDbContext(DbContextOptions<SettingsDbContext> option
                 .HasColumnName("DefaultModuleSlug")
                 .HasMaxLength(64)
                 .IsRequired();
+            entity.Property(settings => settings.InstalledAppSlugs)
+                .HasMaxLength(512)
+                .IsRequired();
+        });
+
+        builder.Entity<ExternalAuthSettings>(entity =>
+        {
+            entity.ToTable("ExternalAuthSettings");
+            entity.HasKey(settings => settings.Provider);
+            entity.Property(settings => settings.Provider).HasMaxLength(32).IsRequired();
+            entity.Property(settings => settings.ClientId).HasMaxLength(256).IsRequired();
+            entity.Property(settings => settings.ProtectedClientSecret).HasMaxLength(4096);
+            entity.Property(settings => settings.TenantId).HasMaxLength(128);
         });
     }
 }
+

@@ -2,7 +2,9 @@ namespace CarTrack.Modules.Leave;
 
 public interface ILeaveConfigurationService
 {
-    Task<IReadOnlyList<LeaveTypeDto>> GetActiveTypesAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<LeaveTypeDto>> GetActiveTypesAsync(
+        string userId,
+        CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<LeaveTypeDto>> GetAdminTypesAsync(CancellationToken cancellationToken = default);
 

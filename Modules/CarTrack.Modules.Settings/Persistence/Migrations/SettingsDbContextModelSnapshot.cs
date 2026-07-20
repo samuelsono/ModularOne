@@ -49,6 +49,33 @@ namespace CarTrack.Modules.Settings.Persistence.Migrations
                     b.ToTable("CarTrackSettings", (string)null);
                 });
 
+            modelBuilder.Entity("CarTrack.Modules.Settings.ExternalAuthSettings", b =>
+                {
+                    b.Property<string>("Provider")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ProtectedClientSecret")
+                        .HasMaxLength(4096)
+                        .HasColumnType("character varying(4096)");
+
+                    b.Property<string>("TenantId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Provider");
+
+                    b.ToTable("ExternalAuthSettings", (string)null);
+                });
+
             modelBuilder.Entity("CarTrack.Modules.Settings.PlatformSettings", b =>
                 {
                     b.Property<int>("Id")
@@ -59,6 +86,11 @@ namespace CarTrack.Modules.Settings.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .HasColumnName("DefaultModuleSlug");
+
+                    b.Property<string>("InstalledAppSlugs")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");

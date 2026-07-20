@@ -18,6 +18,7 @@ const FEATURE_MODULES = [
   'notifications',
   'support',
   'help',
+  'tenders',
 ];
 
 function siblingModuleImportPatterns(ownModule) {

@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router-dom';
 import type { ModuleDefinition } from '@platform/module/types';
 import { registerModules } from '@platform/permissions/apps';
+import { withAnyPermission, withPermission } from '@platform/permissions/PermissionGate';
 import { registerSearchProviders } from '@platform/search/registry';
 import ModulePlaceholder from '@platform/shell/ModulePlaceholder';
 
@@ -15,6 +16,7 @@ import { settingsModule } from '@modules/settings';
 import { notificationsModule } from '@modules/notifications';
 import { supportModule } from '@modules/support';
 import { helpModule } from '@modules/help';
+import { tendersModule } from '@modules/tenders';
 import SettingsPage from './SettingsPage';
 import FleetHomePage from './FleetHomePage';
 
@@ -25,7 +27,9 @@ function applyCompositionOverrides(defs: ModuleDefinition[]): ModuleDefinition[]
       return {
         ...mod,
         routes: mod.routes.map((route) =>
-          route.index ? { ...route, element: <FleetHomePage /> } : route,
+          route.index
+            ? { ...route, element: withPermission('fleet.dashboard.read', <FleetHomePage />) }
+            : route,
         ),
       };
     }
@@ -54,6 +58,7 @@ export const modules: ModuleDefinition[] = applyCompositionOverrides([
   notificationsModule,
   supportModule,
   helpModule,
+  tendersModule,
 ]);
 
 registerModules(modules);
@@ -68,7 +73,13 @@ function mergeCoreEmployeesRoute(routes: RouteObject[]): RouteObject[] {
         ...route,
         children: [
           ...route.children,
-          { path: 'employees', element: <EmployeesListPage /> },
+          {
+            path: 'employees',
+            element: withAnyPermission(
+              ['core.employees.read', 'platform.settings.users.read'],
+              <EmployeesListPage />,
+            ),
+          },
         ],
       };
     }

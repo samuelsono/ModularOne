@@ -48,6 +48,7 @@ public record LeaveTypeDto(
     decimal? AnnualEntitlement,
     int? MaxConsecutiveDays,
     int MinNoticeDays,
+    string EligibleGender,
     bool IsActive,
     int SortOrder,
     string CreatedAt,
@@ -69,6 +70,7 @@ public record SaveLeaveTypeRequest(
     decimal? AnnualEntitlement,
     int? MaxConsecutiveDays,
     int MinNoticeDays,
+    string EligibleGender,
     bool IsActive,
     int SortOrder);
 

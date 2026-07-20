@@ -1400,6 +1400,22 @@
           }
         }
       },
+      "System.ServiceModel.Syndication/10.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/System.ServiceModel.Syndication.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/System.ServiceModel.Syndication.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
       "System.Threading.RateLimiting/8.0.0": {
         "type": "package",
         "compile": {
@@ -1748,6 +1764,26 @@
         },
         "runtime": {
           "bin/placeholder/CarTrack.Modules.Support.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
+      "CarTrack.Modules.Tenders/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "CarTrack.Api": "1.0.0",
+          "CarTrack.Core": "1.0.0",
+          "CarTrack.Identity": "1.0.0",
+          "CarTrack.Infrastructure": "1.0.0",
+          "System.ServiceModel.Syndication": "10.0.0"
+        },
+        "compile": {
+          "bin/placeholder/CarTrack.Modules.Tenders.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/CarTrack.Modules.Tenders.dll": {}
         },
         "frameworkReferences": [
           "Microsoft.AspNetCore.App"
@@ -3635,6 +3671,35 @@
         "system.identitymodel.tokens.jwt.nuspec"
       ]
     },
+    "System.ServiceModel.Syndication/10.0.0": {
+      "sha512": "HBrGaOQoEaDlMOykS/LfQr9BZ0pEF4SOcscH5oMpBF46+lqMMfgfat3Jm5SpW8IaDzzn/IakYjpWk3bEGSh1vA==",
+      "type": "package",
+      "path": "system.servicemodel.syndication/10.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.ServiceModel.Syndication.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.ServiceModel.Syndication.targets",
+        "lib/net10.0/System.ServiceModel.Syndication.dll",
+        "lib/net10.0/System.ServiceModel.Syndication.xml",
+        "lib/net462/System.ServiceModel.Syndication.dll",
+        "lib/net462/System.ServiceModel.Syndication.xml",
+        "lib/net8.0/System.ServiceModel.Syndication.dll",
+        "lib/net8.0/System.ServiceModel.Syndication.xml",
+        "lib/net9.0/System.ServiceModel.Syndication.dll",
+        "lib/net9.0/System.ServiceModel.Syndication.xml",
+        "lib/netstandard2.0/System.ServiceModel.Syndication.dll",
+        "lib/netstandard2.0/System.ServiceModel.Syndication.xml",
+        "system.servicemodel.syndication.10.0.0.nupkg.sha512",
+        "system.servicemodel.syndication.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
     "System.Threading.RateLimiting/8.0.0": {
       "sha512": "7mu9v0QDv66ar3DpGSZHg9NuNcxDaaAcnMULuZlaTpP9+hwXhrxNGsF5GmLkSHxFdb5bBc1TzeujsRgTrPWi+Q==",
       "type": "package",
@@ -3873,6 +3938,11 @@
       "path": "../../Modules/CarTrack.Modules.Support/CarTrack.Modules.Support.csproj",
       "msbuildProject": "../../Modules/CarTrack.Modules.Support/CarTrack.Modules.Support.csproj"
     },
+    "CarTrack.Modules.Tenders/1.0.0": {
+      "type": "project",
+      "path": "../../Modules/CarTrack.Modules.Tenders/CarTrack.Modules.Tenders.csproj",
+      "msbuildProject": "../../Modules/CarTrack.Modules.Tenders/CarTrack.Modules.Tenders.csproj"
+    },
     "CarTrack.Modules.Users/1.0.0": {
       "type": "project",
       "path": "../../Modules/CarTrack.Modules.Users/CarTrack.Modules.Users.csproj",
@@ -3894,6 +3964,7 @@
       "CarTrack.Modules.Reporting >= 1.0.0",
       "CarTrack.Modules.Settings >= 1.0.0",
       "CarTrack.Modules.Support >= 1.0.0",
+      "CarTrack.Modules.Tenders >= 1.0.0",
       "CarTrack.Modules.Users >= 1.0.0",
       "Microsoft.NET.Test.Sdk >= 17.12.0",
       "xunit >= 2.9.2",
@@ -3901,7 +3972,7 @@
     ]
   },
   "packageFolders": {
-    "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/204cde90c1b331f55060d3d2e209b129/nuget": {}
+    "/Users/datsu/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
@@ -3909,7 +3980,7 @@
       "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Tests/CarTrack.ArchitectureTests/CarTrack.ArchitectureTests.csproj",
       "projectName": "CarTrack.ArchitectureTests",
       "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Tests/CarTrack.ArchitectureTests/CarTrack.ArchitectureTests.csproj",
-      "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/204cde90c1b331f55060d3d2e209b129/nuget",
+      "packagesPath": "/Users/datsu/.nuget/packages/",
       "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Tests/CarTrack.ArchitectureTests/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
@@ -3953,6 +4024,9 @@
             },
             "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Support/CarTrack.Modules.Support.csproj": {
               "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Support/CarTrack.Modules.Support.csproj"
+            },
+            "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Tenders/CarTrack.Modules.Tenders.csproj": {
+              "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Tenders/CarTrack.Modules.Tenders.csproj"
             },
             "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Users/CarTrack.Modules.Users.csproj": {
               "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Users/CarTrack.Modules.Users.csproj"

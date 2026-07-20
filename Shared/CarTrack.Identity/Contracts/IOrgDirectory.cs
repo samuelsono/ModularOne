@@ -35,10 +35,10 @@ public interface IOrgDirectory
 }
 
 /// <summary>Opaque staff org attributes used for RLS / reports without StaffProfile EF types.</summary>
-public sealed record StaffOrgInfo(string UserId, string? Department, string? Branch);
+public sealed record StaffOrgInfo(string UserId, string? Department, string? Branch, string Gender);
 
 /// <summary>Minimal active-staff projection for leave accrual.</summary>
-public sealed record StaffAccrualInfo(string UserId, DateOnly? WorkStartDate);
+public sealed record StaffAccrualInfo(string UserId, DateOnly? WorkStartDate, string Gender);
 
 /// <summary>Login linked to a fleet driver without exposing ApplicationUser/Driver EF types.</summary>
 public sealed record DriverLinkedUserInfo(

@@ -29,6 +29,10 @@ public sealed class LeaveDbContext(DbContextOptions<LeaveDbContext> options) : M
             entity.Property(type => type.Code).HasMaxLength(32).IsRequired();
             entity.Property(type => type.Color).HasMaxLength(16).IsRequired();
             entity.Property(type => type.AccrualMethod).HasMaxLength(16).IsRequired();
+            entity.Property(type => type.EligibleGender)
+                .HasMaxLength(16)
+                .HasDefaultValue(LeaveTypeGenderEligibility.Any)
+                .IsRequired();
             entity.Property(type => type.AnnualEntitlement).HasPrecision(6, 2);
             // CreatedByUserId / UpdatedByUserId are opaque user ids; no cross-module FK.
             ConfigureAuditable(entity);

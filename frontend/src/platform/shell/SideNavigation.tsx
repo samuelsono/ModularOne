@@ -83,7 +83,7 @@ const SideNavigation = () => {
           <NavLink
             key={entry.path}
             to={entry.path}
-            end={entry.path === '/' || entry.path === '/leave' || entry.path === '/expense'}
+            end={entry.path === '/' || entry.path === '/leave' || entry.path === '/expense' || entry.path === '/expense/reports'}
             title={entry.label}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center w-14 h-14 hover:bg-gray-200 ${

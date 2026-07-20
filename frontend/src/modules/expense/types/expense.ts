@@ -16,6 +16,9 @@ export interface ExpenseCategory {
   description: string | null;
   isActive: boolean;
   sortOrder: number;
+  requiresReceipt: boolean;
+  requiresTravelDetails: boolean;
+  paysByKilometer: boolean;
   createdAt: string;
   createdByUserId?: string | null;
   createdByDisplayName?: string | null;
@@ -30,6 +33,9 @@ export interface SaveExpenseCategoryRequest {
   description?: string | null;
   isActive: boolean;
   sortOrder: number;
+  requiresReceipt: boolean;
+  requiresTravelDetails: boolean;
+  paysByKilometer: boolean;
 }
 
 export interface ExpenseClaim {
@@ -41,10 +47,21 @@ export interface ExpenseClaim {
   categoryId: string;
   categoryName: string;
   categoryCode: string;
+  requiresReceipt: boolean;
+  requiresTravelDetails: boolean;
+  paysByKilometer: boolean;
   expenseDate: string;
   description: string;
   notes: string | null;
   amount: number;
+  kilometersTravelled?: number | null;
+  travelStartPoint?: string | null;
+  travelDestination?: string | null;
+  travelWaypoints?: string[] | null;
+  mileageRatePerKilometer?: number | null;
+  hasReceipt: boolean;
+  receiptFileName?: string | null;
+  receiptUploadedAt?: string | null;
   currency: string;
   status: ExpenseClaimStatus | string;
   createdAt: string;
@@ -65,9 +82,22 @@ export interface CreateExpenseClaimRequest {
   notes?: string | null;
   amount: number;
   currency?: string | null;
+  kilometersTravelled?: number | null;
+  travelStartPoint?: string | null;
+  travelDestination?: string | null;
+  travelWaypoints?: string[] | null;
 }
 
 export interface UpdateExpenseClaimRequest extends CreateExpenseClaimRequest {}
+
+export interface ExpenseSettings {
+  kilometerRate: number;
+  updatedAt: string | null;
+}
+
+export interface UpdateExpenseSettingsRequest {
+  kilometerRate: number;
+}
 
 export interface ApprovalDecisionRequest {
   approve: boolean;

@@ -1,4 +1,5 @@
 using CarTrack.Api;
+using CarTrack.Infrastructure.Auth;
 using CarTrack.Infrastructure.Persistence;
 using CarTrack.Server.CarTrack;
 
@@ -16,8 +17,11 @@ public sealed class SettingsModule : IModule
         builder.AddModuleNpgsqlDbContext<SettingsDbContext>("cartrack", MigrationsHistoryTable);
 
         builder.Services.Configure<CarTrackOptions>(builder.Configuration.GetSection(CarTrackOptions.SectionName));
-        builder.Services.AddDataProtection();
-        builder.Services.AddScoped<ICarTrackCredentialProvider, CarTrackCredentialProvider>();
+        // DataProtection is configured once in Host Program.cs (stable app name + persisted keys).
+        builder.Services.AddScoped<CarTrackCredentialProvider>();
+        builder.Services.AddScoped<ICarTrackCredentialProvider>(sp => sp.GetRequiredService<CarTrackCredentialProvider>());
+        builder.Services.AddScoped<IExternalAuthCredentialProvider, ExternalAuthCredentialProvider>();
+        builder.Services.AddScoped<IExternalAuthSettingsService, ExternalAuthSettingsService>();
         builder.Services.AddScoped<ICarTrackSettingsService, CarTrackSettingsService>();
         builder.Services.AddScoped<IPlatformSettingsService, PlatformSettingsService>();
         builder.Services.AddHttpClient(nameof(CarTrackSettingsService));

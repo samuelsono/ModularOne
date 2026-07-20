@@ -74,6 +74,7 @@
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/System.Composition.TypedParts.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/System.IdentityModel.Tokens.Jwt.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/System.IO.Hashing.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/System.ServiceModel.Syndication.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/cs/Microsoft.CodeAnalysis.resources.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/de/Microsoft.CodeAnalysis.resources.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/es/Microsoft.CodeAnalysis.resources.dll
@@ -152,6 +153,7 @@
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Reporting.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Settings.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Support.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Tenders.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Users.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Api.pdb
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Core.pdb
@@ -166,6 +168,7 @@
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Reporting.pdb
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Settings.pdb
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Support.pdb
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Tenders.pdb
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/CarTrack.Modules.Users.pdb
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/obj/Debug/net10.0/CarTrack.Host.csproj.AssemblyReference.cache
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/obj/Debug/net10.0/rpswa.dswa.cache.json
@@ -191,3 +194,23 @@
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/obj/Debug/net10.0/CarTrack.Host.pdb
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/obj/Debug/net10.0/CarTrack.Host.genruntimeconfig.cache
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/obj/Debug/net10.0/ref/CarTrack.Host.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.Development.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.deps.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.runtimeconfig.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.staticwebassets.endpoints.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.Development.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.deps.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.runtimeconfig.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.staticwebassets.endpoints.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.Development.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.deps.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.runtimeconfig.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.staticwebassets.endpoints.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.Development.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/appsettings.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.deps.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.runtimeconfig.json
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/CarTrack.Host/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/bin/Debug/net10.0/CarTrack.Host.staticwebassets.endpoints.json

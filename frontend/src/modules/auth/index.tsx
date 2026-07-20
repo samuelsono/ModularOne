@@ -3,6 +3,7 @@ import AuthLayout from './pages/AuthLayout';
 import LoginPage from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPasswordPage, { SetupAccountPage } from './pages/ResetPassword';
+import OAuthCallbackPage from './pages/OAuthCallback';
 
 export const authModule: ModuleDefinition = {
   id: 'auth',
@@ -13,6 +14,7 @@ export const authModule: ModuleDefinition = {
       children: [
         { index: true, element: <LoginPage /> },
         { path: 'login', element: <LoginPage /> },
+        { path: 'oauth-callback', element: <OAuthCallbackPage /> },
         { path: 'forgot-password', element: <ForgotPassword /> },
         { path: 'reset-password', element: <ResetPasswordPage /> },
         { path: 'setup-account', element: <SetupAccountPage /> },

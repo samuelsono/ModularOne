@@ -83,6 +83,18 @@ export function isLeaveCurrentlyRunning(
   return today >= startDate && today <= endDate;
 }
 
+/** Approved leave whose end date is already in the past. */
+export function isLeaveCompleted(
+  status: string,
+  endDate: string,
+): boolean {
+  if (status !== 'Approved') {
+    return false;
+  }
+
+  return getLocalDateKey() > endDate;
+}
+
 export function sortLeaveHistoryItems<
   T extends { status: string; startDate: string; endDate: string },
 >(items: T[]): T[] {
@@ -132,8 +144,21 @@ export function LeaveRequestStatusCell({
 }) {
   if (isLeaveCurrentlyRunning(status, startDate, endDate)) {
     return (
-      <span className="items-center gap-1">
-        <Badge appearance="filled" color="success">On leave</Badge>
+      <span className="inline-flex flex-wrap items-center gap-1">
+        <Badge appearance="filled" color="success">
+          On leave
+        </Badge>
+        <LeaveStatusBadge status={status} />
+      </span>
+    );
+  }
+
+  if (isLeaveCompleted(status, endDate)) {
+    return (
+      <span className="inline-flex flex-wrap items-center gap-1">
+        <Badge appearance="filled" color="informative">
+          Completed
+        </Badge>
         <LeaveStatusBadge status={status} />
       </span>
     );
@@ -176,6 +201,11 @@ export const leaveRequestColumns: TableColumnDefinition<LeaveRequest>[] = withAu
         </span>
       </LeaveTableText>
     ),
+  }),
+  createTableColumn<LeaveRequest>({
+    columnId: 'employee',
+    renderHeaderCell: () => 'Employee',
+    renderCell: (item) => <LeaveTableText nowrap>{item.requesterDisplayName}</LeaveTableText>,
   }),
   createTableColumn<LeaveRequest>({
     columnId: 'dates',

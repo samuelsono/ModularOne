@@ -13,6 +13,7 @@ export interface LeaveType {
   annualEntitlement: number | null;
   maxConsecutiveDays: number | null;
   minNoticeDays: number;
+  eligibleGender: 'Any' | 'Male' | 'Female';
   isActive: boolean;
   sortOrder: number;
   createdAt?: string;
@@ -35,6 +36,7 @@ export interface SaveLeaveTypeRequest {
   annualEntitlement?: number | null;
   maxConsecutiveDays?: number | null;
   minNoticeDays: number;
+  eligibleGender: 'Any' | 'Male' | 'Female';
   isActive: boolean;
   sortOrder: number;
 }

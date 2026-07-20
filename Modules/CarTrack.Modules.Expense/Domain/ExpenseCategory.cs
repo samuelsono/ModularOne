@@ -16,6 +16,12 @@ public class ExpenseCategory : IAuditable
 
     public int SortOrder { get; set; }
 
+    public bool RequiresReceipt { get; set; }
+
+    public bool RequiresTravelDetails { get; set; }
+
+    public bool PaysByKilometer { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public string? CreatedByUserId { get; set; }

@@ -29,10 +29,13 @@ export function usePermissions() {
     visibleFleetNavItems: filterFleetNavItems(user) as ModuleNavItem[],
     visibleModuleNavItems: (moduleSlug: string) =>
       filterModuleNavItems(user, moduleSlug) as ModuleNavItem[],
-    canManageUsers: hasPermission(user, 'platform.settings.users.read')
-      || hasPermission(user, 'core.employees.read'),
-    canEditUsers: hasPermission(user, 'platform.settings.users.write')
-      || hasPermission(user, 'core.employees.write'),
+    canManageUsers: hasPermission(user, 'platform.settings.users.read'),
+    canEditUsers: hasPermission(user, 'platform.settings.users.write'),
+    isAdmin: Boolean(
+      user?.roles.some((role) => role === 'Admin' || role === 'SystemAdmin'),
+    ),
+    isHr: Boolean(user?.roles.some((role) => role === 'HR')),
+    isManager: Boolean(user?.roles.some((role) => role === 'Manager')),
     isDriverRestricted: Boolean(
       user?.roles.some((role) => role === 'Driver')
       && !user?.roles.some((role) =>

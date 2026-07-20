@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using CarTrack.Server.Users;
 using Microsoft.AspNetCore.Authorization;
 
 namespace CarTrack.Server.Users.Authorization;
@@ -28,7 +30,8 @@ public class AnyPermissionAuthorizationHandler : AuthorizationHandler<AnyPermiss
         AuthorizationHandlerContext context,
         AnyPermissionRequirement requirement)
     {
-        if (requirement.Permissions.Any(permission => AuthorizationPermissionHelper.HasPermission(context.User, permission)))
+        if (requirement.Permissions.Any(permission =>
+                AuthorizationPermissionHelper.HasPermission(context.User, permission)))
         {
             context.Succeed(requirement);
         }
@@ -39,17 +42,24 @@ public class AnyPermissionAuthorizationHandler : AuthorizationHandler<AnyPermiss
 
 internal static class AuthorizationPermissionHelper
 {
-    internal static bool HasPermission(System.Security.Claims.ClaimsPrincipal user, string permission)
+    private static readonly HashSet<string> CoreStructurePermissionKeys = new(StringComparer.OrdinalIgnoreCase)
     {
-        if (!user.Identity?.IsAuthenticated ?? true)
+        "core.companies.read",
+        "core.companies.write",
+        "core.departments.read",
+        "core.departments.write",
+        "core.positions.read",
+        "core.positions.write",
+    };
+
+    internal static bool HasPermission(ClaimsPrincipal user, string permission)
+    {
+        if (user.Identity?.IsAuthenticated != true)
         {
             return false;
         }
 
-        var roles = user
-            .FindAll(System.Security.Claims.ClaimTypes.Role)
-            .Select(claim => claim.Value)
-            .ToList();
+        var roles = GetRoles(user);
 
         if (roles.Any(role =>
                 role.Equals(AppRoles.SystemAdmin, StringComparison.OrdinalIgnoreCase)
@@ -58,9 +68,63 @@ internal static class AuthorizationPermissionHelper
             return true;
         }
 
-        return user
+        // Known app roles always authorize from the in-code catalog — never from stale JWT
+        // permission claims (e.g. after Manager lost Company/Department access).
+        var knownRoles = roles
+            .Where(role => PermissionCatalog.RolePermissionKeys.ContainsKey(role))
+            .ToList();
+
+        if (knownRoles.Count > 0)
+        {
+            return BuildCatalogPermissions(knownRoles).Contains(permission);
+        }
+
+        // Fallback for unexpected custom roles not present in the catalog.
+        var fromClaims = user
             .FindAll(AuthClaimTypes.Permission)
-            .Any(claim => claim.Value.Equals(permission, StringComparison.OrdinalIgnoreCase));
+            .Select(claim => claim.Value)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase)))
+        {
+            fromClaims.ExceptWith(CoreStructurePermissionKeys);
+        }
+
+        return fromClaims.Contains(permission);
+    }
+
+    internal static IReadOnlyList<string> GetRoles(ClaimsPrincipal user) =>
+        user
+            .FindAll(ClaimTypes.Role)
+            .Concat(user.FindAll("role"))
+            .Select(claim => claim.Value)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+    private static HashSet<string> BuildCatalogPermissions(IReadOnlyList<string> roles)
+    {
+        var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var role in roles)
+        {
+            if (!PermissionCatalog.RolePermissionKeys.TryGetValue(role, out var keys))
+            {
+                continue;
+            }
+
+            foreach (var key in keys)
+            {
+                allowed.Add(key);
+            }
+        }
+
+        var isHr = roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase));
+        if (!isHr)
+        {
+            allowed.ExceptWith(CoreStructurePermissionKeys);
+        }
+
+        return allowed;
     }
 }
 

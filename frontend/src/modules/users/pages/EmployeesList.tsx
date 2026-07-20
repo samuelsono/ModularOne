@@ -21,6 +21,8 @@ import { ApiError } from '@platform/api/apiClient';
 import { getUsers, sendUserInvite, setUserActive } from '@modules/users/services/userService';
 import type { UserListItem } from '@modules/users/types/user';
 import { filterEmployees } from '@modules/users/search/filters';
+import { AdjustUserLeaveBalancesDialog } from '@modules/leave/components/AdjustUserLeaveBalancesDialog';
+import { useActiveApp } from '@platform/shell/ActiveAppContext';
 
 const filters = [
   { name: 'status', label: 'Status', value: 'active', icon: PersonAccountsRegular },
@@ -31,7 +33,7 @@ const filters = [
 
 const EmployeesList = () => {
   const searchQuery = usePageSearchQuery();
-  const { canManageUsers, canEditUsers } = usePermissions();
+  const { canManageUsers, canEditUsers, isAdmin, isHr } = usePermissions();
   const [employees, setEmployees] = useState<UserListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +45,7 @@ const EmployeesList = () => {
   const [isBulkWorking, setIsBulkWorking] = useState(false);
   const [deactivateConfirmOpen, setDeactivateConfirmOpen] = useState(false);
   const [pendingDeactivateIds, setPendingDeactivateIds] = useState<string[]>([]);
+  const [leaveAdjustmentUser, setLeaveAdjustmentUser] = useState<UserListItem | null>(null);
 
   const loadEmployees = useCallback(async () => {
     setIsLoading(true);
@@ -147,9 +150,9 @@ const EmployeesList = () => {
     : `This will deactivate ${pendingDeactivateIds.length} employees`;
 
   return (
-    <div className="flex flex-col w-full h-full px-3 pt-3 overflow-y-hidden">
-      <div className="flex justify-between mb-0 ">
-        <Subtitle2 className="mx-3">Employee management</Subtitle2>
+    <div className="flex flex-col w-full h-full pt-3 overflow-y-hidden">
+      <div className="flex justify-between mb-0 px-3">
+        <Subtitle2 className="">Employee management</Subtitle2>
         <div className="flex justify-between mb-3 gap-2">
           <AppFilters filters={filters} onFilterChange={() => {}} />
           <CreateEmployee onCreated={handleUpdated} />
@@ -233,6 +236,7 @@ const EmployeesList = () => {
           onActivate={(employee) => void runBulkAction([employee.id], (id) => setUserActive(id, { isActive: true }), 'Failed to activate employee.')}
           onDeactivate={(employee) => requestDeactivate([employee.id])}
           onSendInvite={(employee) => void runBulkAction([employee.id], (id) => sendUserInvite(id), 'Failed to send invite.')}
+          onStartLeaveAdjustment={(employee) => setLeaveAdjustmentUser(employee)}
         />
       </div>
 
@@ -245,6 +249,12 @@ const EmployeesList = () => {
           setEditEmployee(employee);
         }}
       />
+
+      <AdjustUserLeaveBalancesDialog
+            open={leaveAdjustmentUser !== null}
+            user={leaveAdjustmentUser}
+            onClose={() => setLeaveAdjustmentUser(null)}
+          />
 
       <EmployeeFormDialog
         employee={editEmployee}

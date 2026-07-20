@@ -185,3 +185,6 @@
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Tests/CarTrack.ArchitectureTests/bin/Debug/net10.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Tests/CarTrack.ArchitectureTests/bin/Debug/net10.0/Microsoft.IdentityModel.Tokens.dll
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Tests/CarTrack.ArchitectureTests/bin/Debug/net10.0/System.IdentityModel.Tokens.Jwt.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Tests/CarTrack.ArchitectureTests/bin/Debug/net10.0/CarTrack.Modules.Tenders.dll
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Tests/CarTrack.ArchitectureTests/bin/Debug/net10.0/CarTrack.Modules.Tenders.pdb
+/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Tests/CarTrack.ArchitectureTests/bin/Debug/net10.0/System.ServiceModel.Syndication.dll

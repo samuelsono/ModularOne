@@ -16,7 +16,8 @@ public class UserService(
     ITokenService tokenService,
     IOrgDirectory orgDirectory,
     IOrgStructureLookup orgStructure,
-    IDriverDirectory driverDirectory) : IUserService
+    IDriverDirectory driverDirectory,
+    ICurrentUserScope currentUserScope) : IUserService
 {
     private static readonly HashSet<string> ManagerEligibleRoles = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -30,8 +31,24 @@ public class UserService(
 
     public async Task<UserListResponse> GetUsersAsync(CancellationToken cancellationToken = default)
     {
-        var users = await userManager.Users
-            .AsNoTracking()
+        var scope = await currentUserScope.GetAsync(cancellationToken);
+        var usersQuery = userManager.Users.AsNoTracking().AsQueryable();
+
+        // Managers see themselves and people in their reporting tree.
+        // Admin/HR (and other roles with full users access) see everyone.
+        if (!scope.BypassRowLevelSecurity
+            && !scope.Roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase)))
+        {
+            var visibleUserIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { scope.UserId };
+            foreach (var reportUserId in scope.ReportUserIds)
+            {
+                visibleUserIds.Add(reportUserId);
+            }
+
+            usersQuery = usersQuery.Where(user => visibleUserIds.Contains(user.Id));
+        }
+
+        var users = await usersQuery
             .OrderBy(user => user.DisplayName ?? user.UserName)
             .ToListAsync(cancellationToken);
 
@@ -109,6 +126,11 @@ public class UserService(
 
     public async Task<UserDetailDto?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
+        if (!await CanViewUserAsync(id, cancellationToken))
+        {
+            return null;
+        }
+
         var user = await userManager.Users
             .AsNoTracking()
             .SingleOrDefaultAsync(entity => entity.Id == id, cancellationToken);
@@ -119,6 +141,23 @@ public class UserService(
         }
 
         return await MapDetailAsync(user, cancellationToken);
+    }
+
+    private async Task<bool> CanViewUserAsync(string targetUserId, CancellationToken cancellationToken)
+    {
+        var scope = await currentUserScope.GetAsync(cancellationToken);
+        if (scope.BypassRowLevelSecurity
+            || scope.Roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        if (string.Equals(scope.UserId, targetUserId, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return scope.ReportUserIds.Contains(targetUserId);
     }
 
     public async Task<UserDetailDto> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
@@ -629,6 +668,10 @@ public class UserService(
 
         profile.EmployeeNumber = request.EmployeeNumber?.Trim();
         profile.Branch = request.Branch?.Trim();
+        if (request.Gender is not null)
+        {
+            profile.Gender = NormalizeGender(request.Gender);
+        }
         profile.ManagerUserId = string.IsNullOrWhiteSpace(request.ManagerUserId)
             ? null
             : request.ManagerUserId.Trim();
@@ -715,6 +758,7 @@ public class UserService(
             names?.PositionName ?? staffProfile.JobTitle,
             names?.DepartmentName ?? staffProfile.Department,
             staffProfile.Branch,
+            staffProfile.Gender,
             staffProfile.EmploymentStatus,
             staffProfile.WorkStartDate,
             staffProfile.ManagerUserId,
@@ -726,6 +770,14 @@ public class UserService(
             staffProfile.PositionId,
             names?.PositionName ?? staffProfile.JobTitle);
     }
+
+    private static string NormalizeGender(string? gender) =>
+        gender?.Trim().ToLowerInvariant() switch
+        {
+            "male" => "Male",
+            "female" => "Female",
+            _ => "Unspecified",
+        };
 
     private async Task<Dictionary<string, OrgDisplayNames>> ResolveOrgNamesAsync(
         IEnumerable<StaffProfile> profiles,

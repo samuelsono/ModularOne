@@ -1,16 +1,24 @@
 using CarTrack.Server.Data;
+using CarTrack.Identity.Contracts;
 
 namespace CarTrack.Modules.Leave;
 
 public class LeaveConfigurationService(
     LeaveDbContext dbContext,
-    IPublicHolidaySyncService publicHolidaySyncService) : ILeaveConfigurationService
+    IPublicHolidaySyncService publicHolidaySyncService,
+    IOrgDirectory orgDirectory) : ILeaveConfigurationService
 {
-    public async Task<IReadOnlyList<LeaveTypeDto>> GetActiveTypesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<LeaveTypeDto>> GetActiveTypesAsync(
+        string userId,
+        CancellationToken cancellationToken = default)
     {
+        var staffInfo = await orgDirectory.GetStaffOrgInfoAsync(userId, cancellationToken);
+        var gender = staffInfo?.Gender;
         var types = await dbContext.LeaveTypes
             .AsNoTracking()
-            .Where(type => type.IsActive)
+            .Where(type => type.IsActive
+                && (type.EligibleGender == LeaveTypeGenderEligibility.Any
+                    || type.EligibleGender == gender))
             .OrderBy(type => type.SortOrder)
             .ThenBy(type => type.Name)
             .ToListAsync(cancellationToken);
@@ -55,6 +63,7 @@ public class LeaveConfigurationService(
             AnnualEntitlement = request.AnnualEntitlement,
             MaxConsecutiveDays = request.MaxConsecutiveDays,
             MinNoticeDays = request.MinNoticeDays,
+            EligibleGender = LeaveTypeGenderEligibility.Normalize(request.EligibleGender),
             IsActive = request.IsActive,
             SortOrder = request.SortOrder,
         };
@@ -99,6 +108,7 @@ public class LeaveConfigurationService(
         entity.AnnualEntitlement = request.AnnualEntitlement;
         entity.MaxConsecutiveDays = request.MaxConsecutiveDays;
         entity.MinNoticeDays = request.MinNoticeDays;
+        entity.EligibleGender = LeaveTypeGenderEligibility.Normalize(request.EligibleGender);
         entity.IsActive = request.IsActive;
         entity.SortOrder = request.SortOrder;
 
@@ -286,6 +296,7 @@ public class LeaveConfigurationService(
             entity.AnnualEntitlement,
             entity.MaxConsecutiveDays,
             entity.MinNoticeDays,
+            entity.EligibleGender,
             entity.IsActive,
             entity.SortOrder,
             AuditableMapping.FormatTimestamp(entity.CreatedAt),
@@ -329,6 +340,8 @@ public class LeaveConfigurationService(
         {
             throw new InvalidOperationException("Accrual method must be Upfront or Monthly.");
         }
+
+        _ = LeaveTypeGenderEligibility.Normalize(request.EligibleGender);
 
         if (request.AnnualEntitlement is < 0)
         {

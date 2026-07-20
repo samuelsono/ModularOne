@@ -120,7 +120,7 @@ public class LeaveReportService(
         var names = await ResolveDisplayNamesAsync(userIds, cancellationToken);
 
         return balances
-            .Where(balance => LeaveVisibility.CanViewUser(
+            .Where(balance => LeaveVisibility.CanViewUserInReports(
                 scope,
                 viewerUserId,
                 viewerProfile,
@@ -167,7 +167,7 @@ public class LeaveReportService(
             cancellationToken);
 
         return requests
-            .Where(request => LeaveVisibility.CanViewRequest(
+            .Where(request => LeaveVisibility.CanViewRequestInReports(
                 scope,
                 viewerUserId,
                 viewerProfile,
@@ -226,7 +226,7 @@ public class LeaveReportService(
             cancellationToken);
 
         return requests
-            .Where(request => LeaveVisibility.CanViewRequest(
+            .Where(request => LeaveVisibility.CanViewRequestInReports(
                 scope,
                 viewerUserId,
                 viewerProfile,

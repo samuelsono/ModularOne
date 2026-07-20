@@ -61,7 +61,7 @@ export function AutoFitDataGrid<TItem>({
           ? {
             resizableColumns: true,
             columnSizingOptions: resolvedColumnSizing,
-            resizableColumnsOptions: { autoFitColumns: true },
+            resizableColumnsOptions: { autoFitColumns: false },
           }
           : {})}
         style={{ width: '100%' }}

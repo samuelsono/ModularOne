@@ -9,9 +9,11 @@ import {
   Spinner,
   Subtitle2,
   Text,
+  ToggleButton,
+  Tooltip,
   type TableColumnSizingOptions,
 } from '@fluentui/react-components';
-import { AddRegular, CalendarRegular } from '@fluentui/react-icons';
+import { AddRegular, CalendarRegular, PeopleRegular, PersonRegular } from '@fluentui/react-icons';
 import { LeaveActionConfirmDialog } from '@modules/leave/components/LeaveActionConfirmDialog';
 import { LeaveBulkActionBar } from '@modules/leave/components/LeaveBulkActionBar';
 import { LeaveRequestForm } from '@modules/leave/components/LeaveRequestForm';
@@ -43,7 +45,11 @@ const leaveTableColumnSizing: TableColumnSizingOptions = {
 
 export default function LeaveRequestsPage() {
   const searchQuery = usePageSearchQuery();
-  const { user, hasPermission } = usePermissions();
+  const { user, hasPermission, isAdmin, isHr, isManager } = usePermissions();
+  const isElevatedViewer = isAdmin || isHr || isManager;
+  const [filterCurrentUserOnly, setFilterCurrentUserOnly] = useState(false);
+  const currentUserId = user?.id;
+  const isCurrentUserOnlyView = isElevatedViewer && filterCurrentUserOnly && Boolean(currentUserId);
   const leavePermissions = useMemo(() => ({
     canWriteRequests: hasPermission('leave.requests.write'),
     canWriteApprovals: hasPermission('leave.approvals.write'),
@@ -91,15 +97,26 @@ export default function LeaveRequestsPage() {
     void loadRequests();
   }, [loadRequests]);
 
+  const scopedRequests = useMemo(
+    () => (isCurrentUserOnlyView && currentUserId
+      ? requests.filter((item) => item.requesterUserId === currentUserId)
+      : requests),
+    [currentUserId, isCurrentUserOnlyView, requests],
+  );
+
   const selectedItems = useMemo(
-    () => requests.filter((item) => selectedIds.includes(item.id)),
-    [requests, selectedIds],
+    () => scopedRequests.filter((item) => selectedIds.includes(item.id)),
+    [scopedRequests, selectedIds],
   );
 
   const filteredRequests = useMemo(
-    () => filterLeaveRequests(requests, searchQuery),
-    [requests, searchQuery],
+    () => filterLeaveRequests(scopedRequests, searchQuery),
+    [scopedRequests, searchQuery],
   );
+
+  useEffect(() => {
+    setSelectedIds((current) => current.filter((id) => scopedRequests.some((item) => item.id === id)));
+  }, [scopedRequests]);
 
   const showLeaveActions = leavePermissions.canWriteRequests || leavePermissions.canWriteApprovals;
 
@@ -126,8 +143,22 @@ export default function LeaveRequestsPage() {
       <div className="flex items-center justify-between gap-4 px-3">
         <Subtitle2>My requests</Subtitle2>
 
-        <div className="flex items-start gap-2">
-          <Field label={"Filter"} orientation={"horizontal"} className='flex justify-end'>
+        <div className="flex items-end gap-2">
+          {isElevatedViewer ? (
+            <Tooltip
+              content={filterCurrentUserOnly ? 'Show team requests' : 'Show only your requests'}
+              relationship="label"
+            >
+              <ToggleButton
+                appearance="primary"
+                checked={filterCurrentUserOnly}
+                icon={filterCurrentUserOnly ? <PeopleRegular  /> : <PersonRegular />}
+                onClick={() => setFilterCurrentUserOnly((prev) => !prev)}
+              />
+            </Tooltip>
+          ) : null}
+
+          <Field label={"Filter"} className='flex justify-end'>
             <Dropdown
               value={statusFilter}
               selectedOptions={[statusFilter]}

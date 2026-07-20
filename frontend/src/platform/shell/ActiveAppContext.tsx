@@ -2,10 +2,14 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@platform/auth/AuthContext';
 import {
+  CORE_HOST_MODULE_SLUGS,
   DEFAULT_MODULE_SLUG,
   buildModuleSidebarNavItems,
   filterAppModules,
+  filterAppModulesByInstalled,
   getAppModule,
+  isCoreRoute,
+  resolveCoreHostModuleSlug,
   resolveModuleFromPath,
   type AppModuleDefinition,
   type SidebarNavEntry,
@@ -27,6 +31,19 @@ function resolveCurrentModuleSlug(
 
   if (pathModule && visibleSlugs.includes(pathModule)) {
     return pathModule;
+  }
+
+  // Bare `/` is Fleet home — only treat it as fleet when that app is visible.
+  if (pathname === '/' && visibleSlugs.includes('fleet')) {
+    return 'fleet';
+  }
+
+  // /core/* does not map to its own launcher app — keep Leave/Expense host on refresh.
+  if (isCoreRoute(pathname)) {
+    const coreHost = resolveCoreHostModuleSlug(storedSlug, visibleSlugs);
+    if (coreHost) {
+      return coreHost;
+    }
   }
 
   if (storedSlug && visibleSlugs.includes(storedSlug)) {
@@ -60,14 +77,25 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const hasInitializedRef = React.useRef(false);
   const pendingLauncherSlugRef = React.useRef<string | null>(null);
+  const userIdRef = React.useRef<string | null>(null);
 
   const [isLoading, setIsLoading] = React.useState(true);
   const [defaultModuleSlug, setDefaultModuleSlug] = React.useState(DEFAULT_MODULE_SLUG);
-  const [currentModuleSlug, setCurrentModuleSlug] = React.useState<string | null>(DEFAULT_MODULE_SLUG);
+  const [installedAppSlugs, setInstalledAppSlugs] = React.useState<string[]>([]);
+  // null until bootstrap — avoids persisting DEFAULT_MODULE_SLUG (fleet) on first paint
+  // and wiping the real active module before /core/* refresh resolution runs.
+  const [currentModuleSlug, setCurrentModuleSlug] = React.useState<string | null>(null);
 
   const visibleModules = React.useMemo(
-    () => filterAppModules(user),
-    [user],
+    () => {
+      const permissionFiltered = filterAppModules(user);
+      // If installed apps are set, filter by them; otherwise show all permission-accessible apps
+      if (installedAppSlugs.length > 0) {
+        return filterAppModulesByInstalled(permissionFiltered, installedAppSlugs);
+      }
+      return permissionFiltered;
+    },
+    [user, installedAppSlugs],
   );
 
   const visibleSlugs = React.useMemo(
@@ -79,18 +107,25 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
     try {
       const overview = await getSettingsOverview();
       const slug = overview.platform?.defaultModuleSlug ?? DEFAULT_MODULE_SLUG;
+      const installed = overview.platform?.installedAppSlugs ?? [];
       setDefaultModuleSlug(slug);
+      setInstalledAppSlugs(installed);
     } catch {
       setDefaultModuleSlug(DEFAULT_MODULE_SLUG);
     }
   }, []);
 
+  // Bootstrap once per authenticated user. Do not re-resolve the active module when
+  // installed-app filters change — that race was undoing Fleet launcher selections.
   React.useEffect(() => {
     let cancelled = false;
+    const userId = user?.id ?? null;
 
     async function bootstrap() {
-      if (!user) {
+      if (!user || !userId) {
         hasInitializedRef.current = false;
+        userIdRef.current = null;
+        pendingLauncherSlugRef.current = null;
         if (!cancelled) {
           setIsLoading(false);
           setCurrentModuleSlug(DEFAULT_MODULE_SLUG);
@@ -98,8 +133,10 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const isFirstLoad = !hasInitializedRef.current;
-      if (isFirstLoad) {
+      const userChanged = userIdRef.current !== userId;
+      userIdRef.current = userId;
+
+      if (userChanged || !hasInitializedRef.current) {
         setIsLoading(true);
       }
 
@@ -109,17 +146,32 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
       }
 
       const adminDefault = overview?.platform?.defaultModuleSlug ?? DEFAULT_MODULE_SLUG;
+      const installed = overview?.platform?.installedAppSlugs ?? [];
       const useDefaultOnLogin = consumeUseDefaultModuleOnLogin();
 
-      const storedCurrent = readStoredCurrentModule(user.id);
-      const resolvedCurrent = useDefaultOnLogin
-        ? (visibleSlugs.includes(adminDefault) ? adminDefault : visibleSlugs[0] ?? null)
-        : resolveCurrentModuleSlug(location.pathname, storedCurrent, adminDefault, visibleSlugs);
-
+      setInstalledAppSlugs(installed);
       setDefaultModuleSlug(adminDefault);
-      setCurrentModuleSlug(resolvedCurrent);
-      setIsLoading(false);
-      hasInitializedRef.current = true;
+
+      // Only pick the active module on first load / user change — never while switching apps.
+      if (userChanged || !hasInitializedRef.current) {
+        const permissionSlugs = filterAppModules(user).map((module) => module.slug);
+        const installedSet = new Set(installed.map((slug) => slug.toLowerCase()));
+        const slugsForResolve = installed.length > 0
+          ? permissionSlugs.filter((slug) => installedSet.has(slug.toLowerCase()))
+          : permissionSlugs;
+
+        const storedCurrent = readStoredCurrentModule(user.id);
+        const resolvedCurrent = useDefaultOnLogin
+          ? (slugsForResolve.includes(adminDefault) ? adminDefault : slugsForResolve[0] ?? null)
+          : resolveCurrentModuleSlug(location.pathname, storedCurrent, adminDefault, slugsForResolve);
+
+        setCurrentModuleSlug(resolvedCurrent);
+        hasInitializedRef.current = true;
+      }
+
+      if (!cancelled) {
+        setIsLoading(false);
+      }
     }
 
     void bootstrap();
@@ -127,10 +179,12 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [user, visibleSlugs]);
+    // Intentionally only re-bootstrap when the user identity changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- location used only on first resolve
+  }, [user?.id]);
 
   React.useEffect(() => {
-    if (!user || !currentModuleSlug) {
+    if (!user || !currentModuleSlug || !hasInitializedRef.current) {
       return;
     }
 
@@ -142,8 +196,7 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const pathModule = resolveModuleFromPath(location.pathname);
-
+    // While a launcher navigation is in flight, do not let the URL rewrite the active app.
     if (pendingLauncherSlugRef.current) {
       const pendingModule = getAppModule(pendingLauncherSlugRef.current);
       const reachedHome = pendingModule
@@ -157,13 +210,45 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    const pathModule = resolveModuleFromPath(location.pathname);
+
     if (pathModule && pathModule !== currentModuleSlug && visibleSlugs.includes(pathModule)) {
       setCurrentModuleSlug(pathModule);
+      return;
+    }
+
+    // Bare `/` means Fleet home when fleet is available.
+    if (
+      location.pathname === '/'
+      && currentModuleSlug !== 'fleet'
+      && visibleSlugs.includes('fleet')
+    ) {
+      setCurrentModuleSlug('fleet');
+      return;
+    }
+
+    // Refresh / deep-link on /core/*: restore Leave/Expense host shell.
+    const isCoreHost =
+      !!currentModuleSlug
+      && (CORE_HOST_MODULE_SLUGS as readonly string[]).includes(currentModuleSlug);
+    if (isCoreRoute(location.pathname) && !isCoreHost) {
+      const coreHost = resolveCoreHostModuleSlug(
+        currentModuleSlug ?? readStoredCurrentModule(user.id),
+        visibleSlugs,
+      );
+      if (coreHost && coreHost !== currentModuleSlug) {
+        setCurrentModuleSlug(coreHost);
+      }
     }
   }, [location.pathname, user, isLoading, currentModuleSlug, visibleSlugs]);
 
   React.useEffect(() => {
     if (!user || isLoading || !currentModuleSlug) {
+      return;
+    }
+
+    // Do not bounce away from `/` while a launcher switch (especially to Fleet) is pending.
+    if (pendingLauncherSlugRef.current) {
       return;
     }
 

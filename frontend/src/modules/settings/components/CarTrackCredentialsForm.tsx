@@ -136,7 +136,7 @@ export function CarTrackCredentialsForm({ onSaved }: CarTrackCredentialsFormProp
 
   return (
     <form className="flex flex-col gap-4 max-w-xl" onSubmit={(event) => void handleSave(event)}>
-      <div>
+      <div className='flex flex-col mt-5'>
         <Subtitle1>CarTrack Fleet API</Subtitle1>
         <Text className="text-sm text-neutral-foreground-3 mt-1 block">
           Connect TalisTrack to your CarTrack fleet account. Credentials are stored securely on the server
@@ -179,10 +179,19 @@ export function CarTrackCredentialsForm({ onSaved }: CarTrackCredentialsFormProp
         />
       </Field>
 
+      {!hasStoredPassword && username && (
+        <MessageBar intent="warning">
+          <MessageBarBody>
+            Username is saved, but the password must be entered again. Encryption keys changed after the
+            host rename, so the previous saved password cannot be used until you re-enter it here and save.
+          </MessageBarBody>
+        </MessageBar>
+      )}
+
       <Field
         label="Password"
         required={!hasStoredPassword}
-        hint={hasStoredPassword ? 'Leave blank to keep the current password.' : undefined}
+        hint={hasStoredPassword ? 'Leave blank to keep the current password.' : 'Required — enter the CarTrack API password and save.'}
       >
         <Input
           type="password"

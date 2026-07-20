@@ -37,7 +37,9 @@ public class CurrentUserScope(
 
         var roles = principal
             .FindAll(ClaimTypes.Role)
+            .Concat(principal.FindAll("role"))
             .Select(claim => claim.Value)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 

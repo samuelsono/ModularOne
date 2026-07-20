@@ -1,3 +1,5 @@
+using CarTrack.Identity.Contracts;
+using CarTrack.Server.Users;
 
 namespace CarTrack.Modules.Expense;
 
@@ -10,6 +12,12 @@ internal static class ExpenseVisibility
         string? managerUserId)
     {
         if (scope.BypassRowLevelSecurity)
+        {
+            return true;
+        }
+
+        // HR sees organisation-wide claim history on the expense home dashboard.
+        if (scope.Roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase)))
         {
             return true;
         }

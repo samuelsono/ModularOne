@@ -3,6 +3,7 @@ export interface StaffProfile {
   jobTitle: string | null;
   department: string | null;
   branch: string | null;
+  gender: 'Male' | 'Female' | 'Unspecified';
   employmentStatus: string;
   workStartDate: string | null;
   managerUserId: string | null;
@@ -88,6 +89,7 @@ export interface StaffProfileRequest {
   jobTitle?: string | null;
   department?: string | null;
   branch?: string | null;
+  gender?: 'Male' | 'Female' | 'Unspecified';
   managerUserId?: string | null;
   companyId?: string | null;
   departmentId?: string | null;

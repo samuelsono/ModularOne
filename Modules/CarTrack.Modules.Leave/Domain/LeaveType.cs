@@ -28,6 +28,8 @@ public class LeaveType : IAuditable
 
     public int MinNoticeDays { get; set; }
 
+    public string EligibleGender { get; set; } = "Any";
+
     public bool IsActive { get; set; } = true;
 
     public int SortOrder { get; set; }

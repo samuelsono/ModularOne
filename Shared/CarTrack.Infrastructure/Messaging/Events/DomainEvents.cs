@@ -51,3 +51,11 @@ public sealed record DriverUpdatedEvent(string DriverName, string DriverId, Date
 public sealed record DriverAssignedEvent(string DriverName, string Registration, DateTimeOffset OccurredAt) : IIntegrationEvent;
 
 public sealed record DriverUnassignedEvent(string DriverName, string Registration, DateTimeOffset OccurredAt) : IIntegrationEvent;
+
+public sealed record TenderMatchFoundEvent(
+    Guid MatchId,
+    string Title,
+    string SourceName,
+    string CanonicalUrl,
+    string TargetUserId,
+    DateTimeOffset OccurredAt) : IIntegrationEvent;

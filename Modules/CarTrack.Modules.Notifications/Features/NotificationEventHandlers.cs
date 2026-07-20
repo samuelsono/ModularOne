@@ -32,6 +32,8 @@ public sealed class NotificationEventHandlers(
         eventBus.Subscribe<DriverAssignedEvent>(OnDriverAssignedAsync);
         eventBus.Subscribe<DriverUnassignedEvent>(OnDriverUnassignedAsync);
 
+        eventBus.Subscribe<TenderMatchFoundEvent>(OnTenderMatchFoundAsync);
+
         return Task.CompletedTask;
     }
 
@@ -145,6 +147,15 @@ public sealed class NotificationEventHandlers(
             $"{e.DriverName} was unassigned from vehicle {e.Registration}.",
             e.Registration,
             targetUserId: null,
+            ct);
+
+    private Task OnTenderMatchFoundAsync(TenderMatchFoundEvent e, CancellationToken ct) =>
+        CreateAsync(
+            NotificationActionType.TenderMatchFound,
+            "New tender match",
+            $"“{e.Title}” matched from {e.SourceName}.",
+            e.MatchId.ToString(),
+            e.TargetUserId,
             ct);
 
     private async Task CreateAsync(

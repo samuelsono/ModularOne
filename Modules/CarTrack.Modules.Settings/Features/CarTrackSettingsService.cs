@@ -8,6 +8,7 @@ public class CarTrackSettingsService(
     SettingsDbContext dbContext,
     IDataProtectionProvider dataProtectionProvider,
     ICarTrackCredentialProvider credentialProvider,
+    CarTrackCredentialProvider settingsCredentialProvider,
     IHttpClientFactory httpClientFactory,
     ILogger<CarTrackSettingsService> logger) : ICarTrackSettingsService
 {
@@ -37,13 +38,16 @@ public class CarTrackSettingsService(
         settings.BaseUrl = CarTrackCredentialProvider.NormalizeBaseUrl(request.BaseUrl);
         settings.Username = request.Username.Trim();
 
+        var canUseExistingPassword = settingsCredentialProvider.CanDecryptStoredPassword(settings.ProtectedPassword);
+
         if (!string.IsNullOrWhiteSpace(request.Password))
         {
             settings.ProtectedPassword = CarTrackCredentialProvider.ProtectPassword(_protector, request.Password);
         }
-        else if (string.IsNullOrWhiteSpace(settings.ProtectedPassword))
+        else if (!canUseExistingPassword)
         {
-            throw new InvalidOperationException("Password is required when saving CarTrack credentials for the first time.");
+            throw new InvalidOperationException(
+                "Password is required. The saved password can no longer be decrypted (encryption keys changed). Enter the CarTrack API password and save again.");
         }
 
         settings.UpdatedAt = DateTimeOffset.UtcNow;
@@ -58,7 +62,9 @@ public class CarTrackSettingsService(
 
         if (string.IsNullOrWhiteSpace(credentials.Username) || string.IsNullOrWhiteSpace(credentials.Password))
         {
-            return new TestCarTrackConnectionResponse(false, "CarTrack username and password are not configured.");
+            return new TestCarTrackConnectionResponse(
+                false,
+                "CarTrack username and password are not available. Enter the API password under Settings → Integrations and save again.");
         }
 
         try
@@ -117,9 +123,14 @@ public class CarTrackSettingsService(
         return settings;
     }
 
-    private static CarTrackSettingsDto ToDto(CarTrackSettings settings) => new(
-        settings.BaseUrl,
-        settings.Username,
-        !string.IsNullOrWhiteSpace(settings.ProtectedPassword),
-        settings.UpdatedAt == default ? null : settings.UpdatedAt.ToString("O"));
+    private CarTrackSettingsDto ToDto(CarTrackSettings settings)
+    {
+        // Only report hasPassword when the blob is actually usable.
+        var hasUsablePassword = settingsCredentialProvider.CanDecryptStoredPassword(settings.ProtectedPassword);
+        return new(
+            settings.BaseUrl,
+            settings.Username,
+            hasUsablePassword,
+            settings.UpdatedAt == default ? null : settings.UpdatedAt.ToString("O"));
+    }
 }

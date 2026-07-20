@@ -32,7 +32,7 @@ interface LeaveRequestDetailPopoverProps {
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
-      <Text className="text-neutral-foreground-3">{label}</Text>
+      <Text className="text-neutral-foreground-3 font-bold!">{label}</Text>
       <Text className=''>{value}</Text>
     </div>
   );
@@ -65,19 +65,22 @@ export function LeaveRequestDetailPopover({
         </div>
       </TeachingPopoverTrigger>
 
-      <TeachingPopoverSurface>
+      <TeachingPopoverSurface className='ml-5!'>
         <TeachingPopoverHeader>{item.leaveType}</TeachingPopoverHeader>
-        <TeachingPopoverBody>
+        <TeachingPopoverBody >
           <div className="flex flex-col gap-2 min-w-[340px] py-3">
             <DetailRow label="Dates" value={formatLeaveDateRange(item)} />
             <DetailRow label="Working days" value={item.workingDays.toFixed(1)} />
             <div className="grid grid-cols-[120px_1fr] gap-2 text-sm items-center">
-              <Text className="text-neutral-foreground-3">Status</Text>
-              <LeaveRequestStatusCell
+              <Text className="text-neutral-foreground-3 font-bold!">Status</Text>
+              <span>
+                <LeaveRequestStatusCell
                 status={item.status}
                 startDate={item.startDate}
                 endDate={item.endDate}
               />
+              </span>
+              
             </div>
             <DetailRow label="Submitted" value={formatLeaveDateTime(item.createdAt)} />
             {item.decidedAt ? (
@@ -85,7 +88,7 @@ export function LeaveRequestDetailPopover({
             ) : null}
             <DetailRow label="Notes" value={item.notes ?? '—'} />
             <div className="grid grid-cols-[120px_1fr] gap-2 text-sm items-center">
-              <Text className="text-neutral-foreground-3">Document</Text>
+              <Text className="text-neutral-foreground-3 font-bold!">Document</Text>
               <LeaveDocumentLink item={item} />
             </div>
           </div>
@@ -97,7 +100,7 @@ export function LeaveRequestDetailPopover({
               className: 'bg-red-700! hover:bg-red-600!',
               onClick: () => onAction?.(cancelAction, item.id),
             }}
-            secondary={"Got it"}
+            secondary={"OK"}
           />
         ) : null}
       </TeachingPopoverSurface>

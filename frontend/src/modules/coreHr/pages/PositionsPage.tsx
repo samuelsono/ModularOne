@@ -92,7 +92,13 @@ export default function PositionsPage() {
       {error ? <MessageBar intent="error" className="mx-3"><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
       <div className="flex-1 min-h-0 overflow-auto">
         {isLoading ? <Spinner label="Loading positions..." /> : (
-          <AutoFitDataGrid items={filteredItems} columns={columns} getRowId={(item) => item.id} size="small" />
+          <AutoFitDataGrid
+            enableColumnSizing 
+            selectionMode='multiselect'
+            items={filteredItems} 
+            columns={columns} 
+            getRowId={(item) => item.id} 
+            size="small" />
         )}
       </div>
       <PositionFormDialog open={dialogOpen} initial={editing} onClose={() => setDialogOpen(false)} onSaved={() => void loadItems()} />

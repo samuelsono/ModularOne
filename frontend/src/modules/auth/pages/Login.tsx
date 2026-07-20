@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Button,
   Checkbox,
@@ -13,7 +13,9 @@ import {
   type ButtonProps,
 } from '@fluentui/react-components';
 import { EyeOffRegular, EyeRegular } from '@fluentui/react-icons';
+import { apiFetch } from '@platform/api/apiClient';
 import { getAuthErrorMessage, useAuth } from '@platform/auth/AuthContext';
+import type { ExternalAuthProviderStatus } from '@modules/settings/types/settings';
 
 const MicButton: React.FC<ButtonProps> = (props) => (
   <Button {...props} appearance="transparent" size="small" />
@@ -22,6 +24,7 @@ const MicButton: React.FC<ButtonProps> = (props) => (
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { login, completeMfaLogin } = useAuth();
 
   const [username, setUsername] = useState('');
@@ -32,8 +35,50 @@ function LoginPage() {
   const [mfaCode, setMfaCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [googleActive, setGoogleActive] = useState(false);
+  const [microsoftActive, setMicrosoftActive] = useState(false);
 
-  const redirectTo = (location.state as { from?: string } | null)?.from ?? '/';
+  const redirectTo = (location.state as { from?: string } | null)?.from
+    ?? searchParams.get('returnUrl')
+    ?? '/';
+
+  useEffect(() => {
+    const queryError = searchParams.get('error');
+    if (queryError) {
+      setError(queryError);
+    }
+
+    const queryMfa = searchParams.get('mfaToken');
+    if (queryMfa) {
+      setMfaToken(queryMfa);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProviders() {
+      try {
+        const providers = await apiFetch<ExternalAuthProviderStatus[]>('/api/auth/external-providers');
+        if (cancelled) {
+          return;
+        }
+
+        setGoogleActive(providers.some((p) => p.provider === 'Google' && p.isActivated));
+        setMicrosoftActive(providers.some((p) => p.provider === 'Microsoft' && p.isActivated));
+      } catch {
+        if (!cancelled) {
+          setGoogleActive(false);
+          setMicrosoftActive(false);
+        }
+      }
+    }
+
+    void loadProviders();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,6 +104,11 @@ function LoginPage() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function startExternalLogin(provider: 'Google' | 'Microsoft') {
+    const returnUrl = encodeURIComponent(redirectTo.startsWith('/') ? redirectTo : '/');
+    window.location.href = `/api/auth/external/${provider}?returnUrl=${returnUrl}`;
   }
 
   return (
@@ -156,13 +206,41 @@ function LoginPage() {
         </Button>
       )}
 
-      <Divider className="my-3">Or Login With</Divider>
-      <div className="flex justify-between gap-2">
-        <Button className="w-full" disabled>Google</Button>
-        <Button className="w-full" disabled>Microsoft</Button>
-      </div>
+      {!mfaToken && (
+        <>
+          <Divider className="my-3">Or Login With</Divider>
+          <div className="flex justify-between gap-2">
+            <Button
+              className="w-full"
+              type="button"
+              disabled={!googleActive || isSubmitting}
+              onClick={() => startExternalLogin('Google')}
+            >
+              Google
+            </Button>
+            <Button
+              className="w-full"
+              type="button"
+              disabled={!microsoftActive || isSubmitting}
+              onClick={() => startExternalLogin('Microsoft')}
+            >
+              Microsoft
+            </Button>
+          </div>
+          {!googleActive && !microsoftActive && (
+            <TextHint>
+              Google and Microsoft sign-in activate after an admin saves Client ID and secret under
+              Settings → Integrations.
+            </TextHint>
+          )}
+        </>
+      )}
     </form>
   );
+}
+
+function TextHint({ children }: { children: React.ReactNode }) {
+  return <p className="text-xs text-neutral-foreground-3 text-left">{children}</p>;
 }
 
 export default LoginPage;

@@ -21,6 +21,7 @@
           "CarTrack.Modules.Reporting": "1.0.0",
           "CarTrack.Modules.Settings": "1.0.0",
           "CarTrack.Modules.Support": "1.0.0",
+          "CarTrack.Modules.Tenders": "1.0.0",
           "CarTrack.Modules.Users": "1.0.0",
           "Microsoft.NET.Test.Sdk": "17.12.0",
           "xunit": "2.9.2"
@@ -1007,6 +1008,14 @@
           }
         }
       },
+      "System.ServiceModel.Syndication/10.0.0": {
+        "runtime": {
+          "lib/net10.0/System.ServiceModel.Syndication.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52411"
+          }
+        }
+      },
       "xunit/2.9.2": {
         "dependencies": {
           "xunit.assert": "2.9.2",
@@ -1231,6 +1240,21 @@
         },
         "runtime": {
           "CarTrack.Modules.Support.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "CarTrack.Modules.Tenders/1.0.0": {
+        "dependencies": {
+          "CarTrack.Api": "1.0.0",
+          "CarTrack.Core": "1.0.0",
+          "CarTrack.Identity": "1.0.0",
+          "CarTrack.Infrastructure": "1.0.0",
+          "System.ServiceModel.Syndication": "10.0.0"
+        },
+        "runtime": {
+          "CarTrack.Modules.Tenders.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -1714,6 +1738,13 @@
       "path": "system.identitymodel.tokens.jwt/8.0.1",
       "hashPath": "system.identitymodel.tokens.jwt.8.0.1.nupkg.sha512"
     },
+    "System.ServiceModel.Syndication/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HBrGaOQoEaDlMOykS/LfQr9BZ0pEF4SOcscH5oMpBF46+lqMMfgfat3Jm5SpW8IaDzzn/IakYjpWk3bEGSh1vA==",
+      "path": "system.servicemodel.syndication/10.0.0",
+      "hashPath": "system.servicemodel.syndication.10.0.0.nupkg.sha512"
+    },
     "xunit/2.9.2": {
       "type": "package",
       "serviceable": true,
@@ -1817,6 +1848,11 @@
       "sha512": ""
     },
     "CarTrack.Modules.Support/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "CarTrack.Modules.Tenders/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

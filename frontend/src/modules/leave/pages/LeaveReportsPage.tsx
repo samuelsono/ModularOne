@@ -14,14 +14,19 @@ import {
   Subtitle2,
   Text,
   Title3,
+  ToggleButton,
+  Tooltip,
+  colorAreaClassNames,
   createTableColumn,
 } from '@fluentui/react-components';
-import { ArrowDownloadRegular, CalendarRegular, ChevronDoubleLeftRegular, ChevronDoubleRightRegular, ChevronLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
+import { ArrowDownloadRegular, CalendarRegular, ChevronDoubleLeftRegular, ChevronDoubleRightRegular, ChevronLeftRegular, ChevronRightRegular, PeopleRegular, PersonRegular } from '@fluentui/react-icons';
 import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
 import { LeaveActionConfirmDialog } from '@modules/leave/components/LeaveActionConfirmDialog';
 import { LeaveBulkActionBar } from '@modules/leave/components/LeaveBulkActionBar';
 import { LeaveRowActions } from '@modules/leave/components/LeaveRowActions';
 import { LeaveSelectableDataGrid } from '@modules/leave/components/LeaveSelectableDataGrid';
+import { tokens } from '@fluentui/react-components';
+
 import {
   createLeaveActionsColumn,
   isLeaveCurrentlyRunning,
@@ -44,6 +49,7 @@ import {
 import type {
   LeaveHistoryRow,
   LeaveLiabilityRow,
+  LeaveReportCount,
   LeaveReportSummary,
   LeaveRequest,
 } from '@modules/leave/types/leave';
@@ -52,9 +58,70 @@ import FieldLabelInfo from '@platform/ui/FieldLabelInfo';
 import { InfoDrawer } from '@platform/ui/InfoDrawer';
 import { filterLeaveHistoryRows, filterLeaveLiabilityRows, filterLeaveRequests } from '@modules/leave/search/filters';
 import SummaryCard from '@platform/ui/SummaryCard';
+import { DonutChart, type ChartProps } from '@fluentui/react-charts';
+import { REPORT_CHART_COLORS } from '@modules/reporting/utils/chartColors';
 
 function getLiabilityRowId(item: LeaveLiabilityRow): string {
   return `${item.userId}-${item.leaveTypeName}`;
+}
+
+function countByLabel<T>(items: T[], getLabel: (item: T) => string): LeaveReportCount[] {
+  const counts = new Map<string, number>();
+
+  for (const item of items) {
+    const label = getLabel(item);
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .sort(([leftLabel], [rightLabel]) => leftLabel.localeCompare(rightLabel))
+    .map(([label, count]) => ({ label, count }));
+}
+
+function getRemainingBucket(label: string): 'annual' | 'sick' | 'other' {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes('annual') || normalized.includes('vacation')) {
+    return 'annual';
+  }
+
+  if (normalized.includes('sick')) {
+    return 'sick';
+  }
+
+  return 'other';
+}
+
+function buildLeaveReportSummary(
+  history: LeaveHistoryRow[],
+  pending: LeaveRequest[],
+  liability: LeaveLiabilityRow[],
+): LeaveReportSummary {
+  const annualRemaining = liability
+    .filter((item) => getRemainingBucket(item.leaveTypeName) === 'annual')
+    .reduce((total, item) => total + item.remaining, 0);
+  const sickRemaining = liability
+    .filter((item) => getRemainingBucket(item.leaveTypeName) === 'sick')
+    .reduce((total, item) => total + item.remaining, 0);
+  const otherRemaining = liability
+    .filter((item) => getRemainingBucket(item.leaveTypeName) === 'other')
+    .reduce((total, item) => total + item.remaining, 0);
+
+  return {
+    pendingCount: pending.length,
+    onLeaveTodayCount: history.filter((row) => isLeaveCurrentlyRunning(
+      row.status,
+      row.startDate,
+      row.endDate,
+    )).length,
+    totalRemainingDays: liability.reduce((total, item) => total + item.remaining, 0),
+    remainingAnnualDays: annualRemaining,
+    remainingSickDays: sickRemaining,
+    remainingOtherDays: otherRemaining,
+    byType: countByLabel(history, (row) => row.leaveType),
+    byStatus: countByLabel(history, (row) => row.status),
+    byDepartment: countByLabel(history, (row) => row.department ?? 'Unassigned'),
+  };
 }
 
 const LIABILITY_PAGE_SIZES = [5, 10, 50] as const;
@@ -62,7 +129,11 @@ type LiabilityPageSize = (typeof LIABILITY_PAGE_SIZES)[number];
 
 export default function LeaveReportsPage() {
   const searchQuery = usePageSearchQuery();
-  const { user, hasPermission } = usePermissions();
+  const { user, hasPermission, isAdmin, isHr, isManager } = usePermissions();
+  const isElevatedViewer = isAdmin || isHr || isManager;
+  const [filterCurrentUserOnly, setFilterCurrentUserOnly] = useState(false);
+  const currentUserId = user?.id;
+  const isCurrentUserOnlyView = isElevatedViewer && filterCurrentUserOnly && Boolean(currentUserId);
   const leavePermissions = useMemo(() => ({
     canWriteRequests: hasPermission('leave.requests.write'),
     canWriteApprovals: hasPermission('leave.approvals.write'),
@@ -168,9 +239,37 @@ export default function LeaveReportsPage() {
     [pending, selectedPendingIds],
   );
 
+  const scopedHistory = useMemo(
+    () => (isCurrentUserOnlyView && currentUserId
+      ? history.filter((row) => row.requesterUserId === currentUserId)
+      : history),
+    [currentUserId, history, isCurrentUserOnlyView],
+  );
+
+  const scopedPending = useMemo(
+    () => (isCurrentUserOnlyView && currentUserId
+      ? pending.filter((row) => row.requesterUserId === currentUserId)
+      : pending),
+    [currentUserId, isCurrentUserOnlyView, pending],
+  );
+
+  const scopedLiability = useMemo(
+    () => (isCurrentUserOnlyView && currentUserId
+      ? liability.filter((row) => row.userId === currentUserId)
+      : liability),
+    [currentUserId, isCurrentUserOnlyView, liability],
+  );
+
+  const scopedSummary = useMemo(
+    () => (isCurrentUserOnlyView
+      ? buildLeaveReportSummary(scopedHistory, scopedPending, scopedLiability)
+      : summary),
+    [isCurrentUserOnlyView, scopedHistory, scopedLiability, scopedPending, summary],
+  );
+
   const filteredHistory = useMemo(
-    () => sortLeaveHistoryItems(filterLeaveHistoryRows(history, searchQuery)),
-    [history, searchQuery],
+    () => sortLeaveHistoryItems(filterLeaveHistoryRows(scopedHistory, searchQuery)),
+    [scopedHistory, searchQuery],
   );
 
   const runningHistory = useMemo(
@@ -183,8 +282,8 @@ export default function LeaveReportsPage() {
   );
 
   const filteredPending = useMemo(
-    () => filterLeaveRequests(pending, searchQuery),
-    [pending, searchQuery],
+    () => filterLeaveRequests(scopedPending, searchQuery),
+    [scopedPending, searchQuery],
   );
 
   const showLeaveActions = leavePermissions.canWriteRequests || leavePermissions.canWriteApprovals;
@@ -270,19 +369,19 @@ export default function LeaveReportsPage() {
   );
 
   const liabilityTypeOptions = useMemo(
-    () => [...new Set(liability.map((row) => row.leaveTypeName))].sort((a, b) => a.localeCompare(b)),
-    [liability],
+    () => [...new Set(scopedLiability.map((row) => row.leaveTypeName))].sort((a, b) => a.localeCompare(b)),
+    [scopedLiability],
   );
 
   const filteredLiability = useMemo(
-    () => filterLeaveLiabilityRows(liability, searchQuery).filter((row) => {
+    () => filterLeaveLiabilityRows(scopedLiability, searchQuery).filter((row) => {
       if (liabilityTypeFilter && row.leaveTypeName !== liabilityTypeFilter) {
         return false;
       }
 
       return true;
     }),
-    [liability, liabilityTypeFilter, searchQuery],
+    [liabilityTypeFilter, scopedLiability, searchQuery],
   );
 
   const liabilityTotalPages = Math.max(1, Math.ceil(filteredLiability.length / liabilityPageSize));
@@ -296,6 +395,8 @@ export default function LeaveReportsPage() {
     ? 0
     : (liabilityPage - 1) * liabilityPageSize + 1;
   const liabilityRangeEnd = Math.min(liabilityPage * liabilityPageSize, filteredLiability.length);
+
+  const canViewOthersData = isElevatedViewer;
 
   useEffect(() => {
     setLiabilityPage(1);
@@ -327,15 +428,52 @@ export default function LeaveReportsPage() {
   const getLeaveItemColor = useCallback((item: { label: string, leaveType: string, requesterUserId: string } | null | undefined | any) => {
     if (!item) return 'default';
 
-     let foundItem = liability.find((row) => row.leaveTypeName === item.label);
-     return foundItem ? foundItem.leaveTypeColor : 'default';
+      let foundItem = scopedLiability.find((row) => row.leaveTypeName === item.label);
+     return foundItem ? foundItem.leaveTypeColor : null;
 
-  }, [liability])
+    }, [scopedLiability])
+
+  const getChartData = useCallback((items: LeaveReportCount[] | null | undefined) => {
+    if (!items || items.length === 0) {
+      return [];
+    }
+
+   const height = 100;
+
+
+    return {
+        chartTitle: "",
+        height: height,
+        innerRadius: height / 2 - 15,
+        hideLegend: true,
+        legendsOverflowText: `+${items.length - 3}more`,
+        valueInsideDonut: `${items.reduce((sum, item) => sum + item.count, 0)}`,
+        data: {
+          chartData: items.map((item, index) => ({
+            legend: item.label,
+            data: item.count,
+            color: getLeaveItemColor(item) ?? REPORT_CHART_COLORS[index % REPORT_CHART_COLORS.length],
+          }))
+        }
+   }
+  }, [getLeaveItemColor]);
+
+  const toggleVisibilityFilter = useCallback(() => {
+    setFilterCurrentUserOnly((prev) => !prev);
+  }, []);
+
 
   return (
     <div className="flex flex-col gap-6 h-full overflow-auto px-0 pb-20 overflow-x-hidden">
       <div className="flex flex-wrap items-end justify-between gap-4 w-full mx-auto px-6">
-        <AppTitle title="Leave dashboard" subtitle="Operational summary, team leave history, balance liability, and pending approvals." />
+        <AppTitle
+          title="Leave dashboard"
+          subtitle={
+            isElevatedViewer
+              ? 'Operational summary, team leave history, balance liability, and pending approvals.'
+              : 'Your leave summary, history, and remaining balances.'
+          }
+        />
         <div className='lg:hidden'>
           <FieldLabelInfo text="Leave dashboard" info="The butto shows the upcoming holidays for the next 5 years.">
               <InfoDrawer trigger={<Button icon={<CalendarRegular fontSize={28} />} appearance="subtle" />}>
@@ -345,6 +483,15 @@ export default function LeaveReportsPage() {
         </div>
 
         <div className="flex justify-end items-end flex-wrap gap-2">
+         { isElevatedViewer && <Tooltip content={filterCurrentUserOnly ? "Show team leave" : "Show only your leave"} relationship="label">
+              <ToggleButton
+                appearance={"primary"}
+                checked={filterCurrentUserOnly}
+                icon={filterCurrentUserOnly ? <PeopleRegular /> : <PersonRegular /> }
+                onClick={() => toggleVisibilityFilter()}
+              />
+            </Tooltip> }
+
           <Field label="Year">
             <SpinButton
               className="w-[120px]"
@@ -374,20 +521,22 @@ export default function LeaveReportsPage() {
             </Dropdown>
           </Field>
 
-          <Field label="Department">
-            <Dropdown
-              value={departmentFilter || 'All departments'}
-              className="w-[180px]"
-              style={{ minWidth: 180 }}
-              selectedOptions={[departmentFilter || '']}
-              onOptionSelect={(_, data) => setDepartmentFilter(data.optionValue ?? '')}
-            >
-              <Option value="">All departments</Option>
-              {departmentOptions.map((department) => (
-                <Option key={department} value={department} text={String(department)}>{department}</Option>
-              ))}
-            </Dropdown>
-          </Field>
+          {isElevatedViewer ? (
+            <Field label="Department">
+              <Dropdown
+                value={departmentFilter || 'All departments'}
+                className="w-[180px]"
+                style={{ minWidth: 180 }}
+                selectedOptions={[departmentFilter || '']}
+                onOptionSelect={(_, data) => setDepartmentFilter(data.optionValue ?? '')}
+              >
+                <Option value="">All departments</Option>
+                {departmentOptions.map((department) => (
+                  <Option key={department} value={department} text={String(department)}>{department}</Option>
+                ))}
+              </Dropdown>
+            </Field>
+          ) : null}
 
           <Button
             appearance="primary"
@@ -401,42 +550,51 @@ export default function LeaveReportsPage() {
       </div>
 
       {error ? (
-        <MessageBar intent="error">
+        <MessageBar intent="error" className='mx-6'>
           <MessageBarBody>{error}</MessageBarBody>
         </MessageBar>
       ) : null}
 
       {actionError ? (
-        <MessageBar intent="error">
+        <MessageBar intent="error" className='mx-6'>
           <MessageBarBody>{actionError}</MessageBarBody>
         </MessageBar>
       ) : null}
 
 
       {isLoading ? (
-        <Spinner label="Loading reports..." />
+        <Spinner label="Loading reports..." className='mx-6' />
       ) : (
         <div className='flex flex-col max-h-[80vh] overflow-y-scroll pb-32 overflow-x-hidden'>
          <div className='flex flex-col gap-4 px-4'>
 
-          {summary ? (
+          {scopedSummary ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full max-w-6xl mx-auto mt-10">
-              <SummaryCard label="Pending approvals" value={summary.pendingCount} />
-              <SummaryCard label="On leave today" value={summary.onLeaveTodayCount} />
-              <SummaryCard label="Annual leave remaining" value={summary.remainingAnnualDays.toFixed(1)}  />
-              <SummaryCard label="Sick leave remaining" value={summary.remainingSickDays.toFixed(1)} other={{ label: "Other Leave", value: summary.remainingOtherDays.toFixed(1) }} />
+              <SummaryCard label="Pending approvals" value={scopedSummary.pendingCount} />
+              <SummaryCard
+                label="On leave today"
+                value={
+                  isElevatedViewer
+                    ? scopedSummary.onLeaveTodayCount
+                    : (scopedSummary.onLeaveTodayCount > 0 ? 'Yes' : 'No')
+                }
+              />
+              <SummaryCard label="Annual leave remaining" value={scopedSummary.remainingAnnualDays.toFixed(1)}  />
+              <SummaryCard label="Sick leave remaining" value={scopedSummary.remainingSickDays.toFixed(1)} other={{ label: "Other Leave", value: scopedSummary.remainingOtherDays.toFixed(1) }} />
             </div>
           ) : null}
 
          
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-6xl mx-auto mb-10">
-            {summary ? (
+            {scopedSummary ? (
               <>
-                <Card className="p-4">
+                <div className="p-4 shadow-md rounded">
+                  <div className="flex justify-between gap-6">
+                  <div className="flex flex-col gap-2 w-full">
                   <Subtitle2 className="mb-3">By leave type</Subtitle2>
-                  <div className="flex flex-col gap-2">
-                    {summary.byType.map((item) => (
+
+                    {scopedSummary.byType.map((item) => (
                       <div key={item.label} className="flex justify-between text-sm">
                         <span>
                           
@@ -449,38 +607,76 @@ export default function LeaveReportsPage() {
                         <span>{item.count}</span>
                       </div>
                     ))}
-                    {summary.byType.length === 0 ? (
+                    {scopedSummary.byType.length === 0 ? (
                       <Text className="text-sm text-neutral-foreground-3">No leave type data</Text>
                     ) : null}
                   </div>
-                </Card>
-                <Card className="p-4">
-                  <Subtitle2 className="mb-3">By status</Subtitle2>
-                  <div className="flex flex-col gap-2">
-                    {summary.byStatus.map((item) => (
+                  <div className="flex  w-[120px] rounded-full items-center justify-center">
+
+                  { scopedSummary.byType.length > 0 && <DonutChart
+                              culture={
+                                  typeof window !== "undefined" ? window.navigator.language : "en-us"
+                                }
+                                {...getChartData(scopedSummary.byType)} /> 
+                  }
+                  </div>
+                  </div>
+
+
+                </div>
+                <div className="p-4 shadow-md rounded">
+                  <div className="flex justify-between gap-6">
+
+                  <div className="flex flex-col gap-2 w-full">
+                     <Subtitle2 className="mb-3">By status</Subtitle2>
+
+                    {scopedSummary.byStatus.map((item) => (
                       <div key={item.label} className="flex justify-between text-sm">
                         <span>{item.label}</span>
                         <span>{item.count}</span>
                       </div>
                     ))}
-                    {summary.byStatus.length === 0 ? (
+                    {scopedSummary.byStatus.length === 0 ? (
                       <Text className="text-sm text-neutral-foreground-3">No status data</Text>
                     ) : null}
                   </div>
-                </Card>
-                <Card className="p-4">
+                  <div className="flex  w-[120px] rounded-full items-center justify-center">
+
+                  { scopedSummary.byStatus.length > 0 && <DonutChart
+                              culture={
+                                  typeof window !== "undefined" ? window.navigator.language : "en-us"
+                                }
+                                {...getChartData(scopedSummary.byStatus)} /> 
+                  }
+                  </div>
+                  </div>
+
+                </div>
+                <div className="p-4 shadow-md rounded">
+                  <div className="flex justify-between gap-6">
+
+                  <div className="flex flex-col gap-2 w-full">
                   <Subtitle2 className="mb-3">By department</Subtitle2>
-                  <div className="flex flex-col gap-2">
-                    {summary.byDepartment.length === 0 ? (
+                    {scopedSummary.byDepartment.length === 0 ? (
                       <Text className="text-sm text-neutral-foreground-3">No department data</Text>
-                    ) : summary.byDepartment.map((item) => (
+                    ) : scopedSummary.byDepartment.map((item) => (
                       <div key={item.label} className="flex justify-between text-sm">
                         <span>{item.label}</span>
                         <span>{item.count}</span>
                       </div>
                     ))}
                   </div>
-                </Card>
+                  <div className="flex  w-[120px] rounded-full items-center justify-center">
+
+                  { scopedSummary.byDepartment.length > 0 && <DonutChart
+                              culture={
+                                  typeof window !== "undefined" ? window.navigator.language : "en-us"
+                                }
+                                {...getChartData(scopedSummary.byDepartment)} /> 
+                  }
+                  </div>
+                  </div>
+                </div>
               </>
             ) : null}
           </div>
@@ -493,13 +689,17 @@ export default function LeaveReportsPage() {
           <div className='flex flex-col w-full max-w-8xl mx-auto gap-5'>
 
           <div className="flex flex-col gap-3 max-w-8xl mx-auto w-full mb-3">
-            <Subtitle2 className='px-6'>Leave history</Subtitle2>
+            <Subtitle2 className='px-6'>
+              {isElevatedViewer ? 'Leave history' : 'My leave history'}
+            </Subtitle2>
             {runningHistory.length > 0 ? (
               <MessageBar intent="success" className="mx-6">
                 <MessageBarBody>
-                  {runningHistory.length === 1
-                    ? `${runningHistory[0].requesterDisplayName} is currently on leave (${runningHistory[0].leaveType}).`
-                    : `${runningHistory.length} employees are currently on approved leave.`}
+                  {isElevatedViewer
+                    ? (runningHistory.length === 1
+                      ? `${runningHistory[0].requesterDisplayName} is currently on leave (${runningHistory[0].leaveType}).`
+                      : `${runningHistory.length} employees are currently on approved leave.`)
+                    : `You are currently on leave (${runningHistory[0].leaveType}).`}
                 </MessageBarBody>
               </MessageBar>
             ) : null}

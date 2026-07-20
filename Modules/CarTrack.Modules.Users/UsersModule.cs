@@ -34,6 +34,7 @@ public sealed class UsersModule : IModule
         builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 
         builder.Services.AddScoped<ITokenService, TokenService>();
+        builder.Services.AddScoped<IExternalAuthLoginService, ExternalAuthLoginService>();
         builder.Services.AddScoped<IOrgDirectory, OrgDirectory>();
         builder.Services.AddScoped<ICurrentUserScope, CurrentUserScope>();
         builder.Services.AddScoped<IPermissionService, PermissionService>();
@@ -42,6 +43,7 @@ public sealed class UsersModule : IModule
         builder.Services.AddScoped<IAccountEmailService, AccountEmailService>();
         builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
         builder.Services.AddSingleton<IAuthorizationHandler, AnyPermissionAuthorizationHandler>();
+        builder.Services.AddHttpClient(nameof(ExternalAuthLoginService));
 
         var emailOptions = builder.Configuration.GetSection(EmailOptions.SectionName).Get<EmailOptions>() ?? new EmailOptions();
         if (emailOptions.Enabled && !string.IsNullOrWhiteSpace(emailOptions.SmtpHost))

@@ -23,6 +23,9 @@ const EMPTY_FORM: SaveExpenseCategoryRequest = {
   description: null,
   isActive: true,
   sortOrder: 0,
+  requiresReceipt: false,
+  requiresTravelDetails: false,
+  paysByKilometer: false,
 };
 
 function parseSortOrder(value: string): number {
@@ -62,6 +65,9 @@ export function ExpenseCategoryFormDialog({
       description: form.description?.trim() || null,
       isActive: form.isActive,
       sortOrder: form.sortOrder,
+      requiresReceipt: form.requiresReceipt,
+      requiresTravelDetails: form.requiresTravelDetails,
+      paysByKilometer: form.paysByKilometer,
     };
 
     try {
@@ -141,6 +147,33 @@ export function ExpenseCategoryFormDialog({
                 onChange={(_, data) => setForm((current) => ({
                   ...current,
                   isActive: Boolean(data.checked),
+                }))}
+              />
+
+              <Checkbox
+                label="Requires receipt"
+                checked={form.requiresReceipt}
+                onChange={(_, data) => setForm((current) => ({
+                  ...current,
+                  requiresReceipt: Boolean(data.checked),
+                }))}
+              />
+
+              <Checkbox
+                label="Requires travel details"
+                checked={form.requiresTravelDetails}
+                onChange={(_, data) => setForm((current) => ({
+                  ...current,
+                  requiresTravelDetails: Boolean(data.checked),
+                }))}
+              />
+
+              <Checkbox
+                label="Pay by kilometer rate"
+                checked={form.paysByKilometer}
+                onChange={(_, data) => setForm((current) => ({
+                  ...current,
+                  paysByKilometer: Boolean(data.checked),
                 }))}
               />
             </DialogContent>

@@ -3,7 +3,9 @@ using System.Text.Encodings.Web;
 using CarTrack.Server.Data;
 using CarTrack.Server.Users;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CarTrack.Modules.Users;
 
@@ -52,7 +54,89 @@ public static class AuthEndpoints
         group.MapPost("/mfa/disable", DisableMfaAsync)
             .RequireAuthorization();
 
+        group.MapGet("/external-providers", GetExternalProvidersAsync)
+            .AllowAnonymous();
+
+        group.MapGet("/external/{provider}", StartExternalLoginAsync)
+            .AllowAnonymous();
+
+        group.MapGet("/external/{provider}/callback", ExternalLoginCallbackAsync)
+            .AllowAnonymous();
+
         return group;
+    }
+
+    private static async Task<IResult> GetExternalProvidersAsync(IExternalAuthLoginService externalAuthLoginService)
+    {
+        var providers = await externalAuthLoginService.GetProviderStatusesAsync();
+        return Results.Ok(providers);
+    }
+
+    private static async Task<IResult> StartExternalLoginAsync(
+        string provider,
+        HttpRequest httpRequest,
+        IExternalAuthLoginService externalAuthLoginService,
+        string? returnUrl = null)
+    {
+        var redirectUri = BuildExternalCallbackUri(httpRequest, provider);
+        var authorizeUrl = await externalAuthLoginService.BuildAuthorizationUrlAsync(
+            provider,
+            returnUrl ?? "/",
+            redirectUri);
+
+        if (authorizeUrl is null)
+        {
+            return Results.Problem(
+                title: "Provider not configured",
+                detail: $"{provider} sign-in is not activated. Add Client ID and secret under Settings → Integrations.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        return Results.Redirect(authorizeUrl);
+    }
+
+    private static async Task<IResult> ExternalLoginCallbackAsync(
+        string provider,
+        HttpRequest httpRequest,
+        IExternalAuthLoginService externalAuthLoginService,
+        IOptions<AppUrlOptions> appUrlOptions,
+        string? code = null,
+        string? state = null,
+        string? error = null,
+        string? error_description = null)
+    {
+        if (!string.IsNullOrWhiteSpace(error))
+        {
+            return Results.Redirect(GetFrontendLoginErrorUrl(appUrlOptions.Value, error_description ?? error));
+        }
+
+        if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(state))
+        {
+            return Results.Redirect(GetFrontendLoginErrorUrl(appUrlOptions.Value, "Missing OAuth authorization code."));
+        }
+
+        try
+        {
+            var redirectUri = BuildExternalCallbackUri(httpRequest, provider);
+            var completion = await externalAuthLoginService.CompleteAsync(provider, code, state, redirectUri);
+            return Results.Redirect(externalAuthLoginService.BuildFrontendRedirect(completion));
+        }
+        catch (Exception ex)
+        {
+            return Results.Redirect(GetFrontendLoginErrorUrl(appUrlOptions.Value, ex.Message));
+        }
+    }
+
+    private static string BuildExternalCallbackUri(HttpRequest request, string provider)
+    {
+        var path = $"/api/auth/external/{Uri.EscapeDataString(provider)}/callback";
+        return $"{request.Scheme}://{request.Host}{path}";
+    }
+
+    private static string GetFrontendLoginErrorUrl(AppUrlOptions appUrl, string detail)
+    {
+        var message = detail.Length > 180 ? detail[..180] : detail;
+        return QueryHelpers.AddQueryString($"{appUrl.FrontendBaseUrl.TrimEnd('/')}/auth/login", "error", message);
     }
 
     private static async Task<IResult> LoginAsync(

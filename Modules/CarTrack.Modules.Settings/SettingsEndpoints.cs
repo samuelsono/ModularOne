@@ -18,13 +18,25 @@ public static class SettingsEndpoints
             .RequirePermission(PlatformWritePermission);
 
         group.MapGet("/cartrack", GetCarTrackSettingsAsync)
-            .RequireAuthorization();
+            .RequirePermission(PlatformWritePermission);
 
         group.MapPut("/cartrack", UpdateCarTrackSettingsAsync)
-            .RequireAuthorization();
+            .RequirePermission(PlatformWritePermission);
 
         group.MapPost("/cartrack/test", TestCarTrackConnectionAsync)
-            .RequireAuthorization();
+            .RequirePermission(PlatformWritePermission);
+
+        group.MapGet("/auth/google", GetGoogleAuthSettingsAsync)
+            .RequirePermission(PlatformWritePermission);
+
+        group.MapPut("/auth/google", UpdateGoogleAuthSettingsAsync)
+            .RequirePermission(PlatformWritePermission);
+
+        group.MapGet("/auth/microsoft", GetMicrosoftAuthSettingsAsync)
+            .RequirePermission(PlatformWritePermission);
+
+        group.MapPut("/auth/microsoft", UpdateMicrosoftAuthSettingsAsync)
+            .RequirePermission(PlatformWritePermission);
 
         return group;
     }
@@ -101,5 +113,67 @@ public static class SettingsEndpoints
     {
         var result = await settingsService.TestConnectionAsync();
         return Results.Ok(result);
+    }
+
+    private static async Task<IResult> GetGoogleAuthSettingsAsync(IExternalAuthSettingsService settingsService)
+    {
+        var settings = await settingsService.GetGoogleAsync();
+        return Results.Ok(settings);
+    }
+
+    private static async Task<IResult> UpdateGoogleAuthSettingsAsync(
+        UpdateExternalAuthSettingsRequest request,
+        IExternalAuthSettingsService settingsService)
+    {
+        try
+        {
+            var settings = await settingsService.UpdateGoogleAsync(request);
+            return Results.Ok(settings);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["clientId"] = [ex.Message],
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Problem(
+                title: "Google auth credentials incomplete",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<IResult> GetMicrosoftAuthSettingsAsync(IExternalAuthSettingsService settingsService)
+    {
+        var settings = await settingsService.GetMicrosoftAsync();
+        return Results.Ok(settings);
+    }
+
+    private static async Task<IResult> UpdateMicrosoftAuthSettingsAsync(
+        UpdateExternalAuthSettingsRequest request,
+        IExternalAuthSettingsService settingsService)
+    {
+        try
+        {
+            var settings = await settingsService.UpdateMicrosoftAsync(request);
+            return Results.Ok(settings);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["clientId"] = [ex.Message],
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Problem(
+                title: "Microsoft auth credentials incomplete",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest);
+        }
     }
 }

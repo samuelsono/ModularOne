@@ -41,7 +41,7 @@ public static class LeaveEndpoints
         group.MapGet("/admin/holidays", GetAdminHolidaysAsync)
             .RequirePermission("leave.policies.read");
         group.MapGet("/holidays/upcoming", GetUpcomingHolidaysAsync)
-            .RequirePermission("leave.reports.read");
+            .RequireAuthorization();
         group.MapPost("/admin/holidays", CreateHolidayAsync)
             .RequirePermission("leave.policies.write");
         group.MapPut("/admin/holidays/{id:guid}", UpdateHolidayAsync)
@@ -57,7 +57,11 @@ public static class LeaveEndpoints
         group.MapGet("/balances/{userId}", GetUserBalancesAsync)
             .RequirePermission("leave.balances.read");
         group.MapPost("/admin/balances/adjust", AdjustBalanceAsync)
-            .RequirePermission("leave.balances.write");
+            .RequirePermission("leave.balances.write")
+            .RequireAuthorization(policy => policy.RequireRole(
+                AppRoles.Admin,
+                AppRoles.SystemAdmin,
+                AppRoles.Hr));
         group.MapPost("/admin/accrual/run", RunAccrualAsync)
             .RequirePermission("leave.policies.write");
         group.MapGet("/calendar", GetCalendarAsync)
@@ -68,9 +72,16 @@ public static class LeaveEndpoints
 
     private static async Task<IResult> GetActiveTypesAsync(
         ILeaveConfigurationService leaveConfigurationService,
+        ClaimsPrincipal principal,
         CancellationToken cancellationToken)
     {
-        var items = await leaveConfigurationService.GetActiveTypesAsync(cancellationToken);
+        var userId = GetUserId(principal);
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var items = await leaveConfigurationService.GetActiveTypesAsync(userId, cancellationToken);
         return Results.Ok(items);
     }
 
@@ -614,7 +625,7 @@ public static class LeaveEndpoints
             return Results.Unauthorized();
         }
         var isSelf = string.Equals(currentUserId, userId, StringComparison.Ordinal);
-        var canViewOthers = principal.HasClaim(AuthClaimTypes.Permission, "leave.balances.write");
+        var canViewOthers = IsLeaveBalanceAdministrator(principal);
         if (!isSelf && !canViewOthers)
         {
             return Results.Problem(
@@ -630,8 +641,17 @@ public static class LeaveEndpoints
         AdjustLeaveBalanceRequest request,
         ILeaveBalanceService leaveBalanceService,
         ISecurityAuditService auditService,
+        ClaimsPrincipal principal,
         CancellationToken cancellationToken)
     {
+        if (!IsLeaveBalanceAdministrator(principal))
+        {
+            return Results.Problem(
+                title: "Forbidden",
+                detail: "Only administrators and HR can adjust leave balances.",
+                statusCode: StatusCodes.Status403Forbidden);
+        }
+
         try
         {
             var updated = await leaveBalanceService.AdjustBalanceAsync(request, cancellationToken);
@@ -642,6 +662,13 @@ public static class LeaveEndpoints
                 cancellationToken: cancellationToken);
             return Results.Ok(updated);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Results.Problem(
+                title: "Forbidden",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status403Forbidden);
+        }
         catch (InvalidOperationException ex)
         {
             return Results.Problem(
@@ -650,6 +677,19 @@ public static class LeaveEndpoints
                 statusCode: StatusCodes.Status400BadRequest);
         }
     }
+
+    private static bool IsLeaveBalanceAdministrator(ClaimsPrincipal principal) =>
+        principal.IsInRole(AppRoles.Admin)
+        || principal.IsInRole(AppRoles.SystemAdmin)
+        || principal.IsInRole(AppRoles.Hr)
+        || principal.FindAll(ClaimTypes.Role).Any(claim =>
+            claim.Value.Equals(AppRoles.Admin, StringComparison.OrdinalIgnoreCase)
+            || claim.Value.Equals(AppRoles.SystemAdmin, StringComparison.OrdinalIgnoreCase)
+            || claim.Value.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase))
+        || principal.FindAll("role").Any(claim =>
+            claim.Value.Equals(AppRoles.Admin, StringComparison.OrdinalIgnoreCase)
+            || claim.Value.Equals(AppRoles.SystemAdmin, StringComparison.OrdinalIgnoreCase)
+            || claim.Value.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase));
 
     private static async Task<IResult> RunAccrualAsync(
         ILeaveAccrualService leaveAccrualService,

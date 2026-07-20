@@ -100,6 +100,7 @@ export function registerModules(modules: ModuleDefinition[]): void {
     'payroll',
     'performance',
     'recruitment',
+    'tenders',
     'fleet',
   ];
   APP_MODULES = order
@@ -117,6 +118,14 @@ export function getAppModule(slug: string): AppModuleDefinition | undefined {
 
 export function filterAppModules(user: AuthUser | null | undefined): AppModuleDefinition[] {
   return APP_MODULES.filter((module) => hasModuleAccess(user, module.slug));
+}
+
+export function filterAppModulesByInstalled(
+  modules: AppModuleDefinition[],
+  installedSlugs: string[],
+): AppModuleDefinition[] {
+  const installedSet = new Set(installedSlugs.map((s) => s.toLowerCase()));
+  return modules.filter((module) => installedSet.has(module.slug.toLowerCase()));
 }
 
 export type SidebarNavEntry =
@@ -172,8 +181,14 @@ const FLEET_ROUTE_PREFIXES = [
   '/drivers',
   '/reports',
   '/employees',
-  '/employees',
 ];
+
+/** Apps that host Core HR (`/core/*`) in their sidebar. */
+export const CORE_HOST_MODULE_SLUGS = ['leave', 'expense'] as const;
+
+export function isCoreRoute(pathname: string): boolean {
+  return pathname === '/core' || pathname.startsWith('/core/');
+}
 
 export function resolveModuleFromPath(pathname: string): string | null {
   if (pathname.startsWith('/settings') || pathname.startsWith('/auth')) {
@@ -192,7 +207,8 @@ export function resolveModuleFromPath(pathname: string): string | null {
     return 'expense';
   }
 
-  if (pathname.startsWith('/core')) {
+  // Core HR is shared under Leave/Expense shells — resolved with stored host context.
+  if (isCoreRoute(pathname)) {
     return null;
   }
 
@@ -213,6 +229,31 @@ export function resolveModuleFromPath(pathname: string): string | null {
     || FLEET_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
   ) {
     return 'fleet';
+  }
+
+  return null;
+}
+
+/**
+ * Prefer a Leave/Expense host when the URL is `/core/*` (those modules own Core HR nav).
+ * Falls back to the first visible Core host so refresh never jumps to Fleet.
+ */
+export function resolveCoreHostModuleSlug(
+  storedSlug: string | null,
+  visibleSlugs: string[],
+): string | null {
+  if (
+    storedSlug
+    && (CORE_HOST_MODULE_SLUGS as readonly string[]).includes(storedSlug)
+    && visibleSlugs.includes(storedSlug)
+  ) {
+    return storedSlug;
+  }
+
+  for (const slug of CORE_HOST_MODULE_SLUGS) {
+    if (visibleSlugs.includes(slug)) {
+      return slug;
+    }
   }
 
   return null;

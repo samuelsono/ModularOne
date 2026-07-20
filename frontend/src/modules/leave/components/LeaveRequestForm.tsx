@@ -7,6 +7,7 @@ import {
   Dropdown,
   Field,
   InfoLabel,
+  Input,
   MessageBar,
   MessageBarBody,
   Option,
@@ -15,7 +16,7 @@ import {
   Text,
   Textarea,
 } from '@fluentui/react-components';
-import { Dismiss24Regular } from '@fluentui/react-icons';
+import { ArrowUploadRegular, AttachRegular, Dismiss24Regular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
 import {
   createLeaveRequest,
@@ -233,6 +234,14 @@ export function LeaveRequestForm({ open, onClose, onSubmitted }: LeaveRequestFor
               </MessageBar>
             ) : null}
 
+            {selectedType?.minNoticeDays === 0 ? (
+              <MessageBar intent="info">
+                <MessageBarBody>
+                  This leave type allows past dates, so it can be submitted after the leave was taken.
+                </MessageBarBody>
+              </MessageBar>
+            ) : null}
+
             <Field label="Start date" required>
                 <DatePicker
                   placeholder='When Leave starts'
@@ -324,12 +333,13 @@ export function LeaveRequestForm({ open, onClose, onSubmitted }: LeaveRequestFor
                 required
                 hint="PDF, JPG, PNG, HEIC, DOC, or DOCX up to 5 MB"
               >
-                <input
+                <Input
                   ref={fileInputRef}
-                  type="file"
+                  type={"file" as "text"}
                   accept=".pdf,.jpg,.jpeg,.png,.heic,.doc,.docx"
-                  className="block w-full text-sm"
+                  className="block w-full text-sm cursor-pointer! file:mr-4 pt-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-neutral-fill-stealth-2 file:text-neutral-foreground-1 hover:file:bg-neutral-fill-stealth-3"
                   onChange={(event) => setDocumentFile(event.target.files?.[0] ?? null)}
+                  contentBefore={<AttachRegular className='mb-1' />}
                 />
                 {documentFile ? (
                   <Text className="text-sm text-neutral-foreground-3 mt-1">

@@ -28,7 +28,8 @@ public class LeaveAccrualService(
 
         foreach (var profile in staffProfiles)
         {
-            foreach (var leaveType in accrualTypes)
+            foreach (var leaveType in accrualTypes.Where(
+                type => LeaveTypeGenderEligibility.IsEligible(type.EligibleGender, profile.Gender)))
             {
                 var entitlement = LeaveEntitlementHelper.ResolveAnnualEntitlement(leaveType);
                 if (entitlement <= 0m)

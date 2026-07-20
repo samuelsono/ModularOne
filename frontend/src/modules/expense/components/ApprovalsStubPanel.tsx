@@ -116,7 +116,19 @@ export function ApprovalsStubPanel() {
                 </div>
                 {canApproveExpense && (
                   <div className="flex gap-2">
-                    <Button size="small" onClick={() => void decideExpenseApproval(item.id, { approve: false }).then(loadQueues)}>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        const notes = window.prompt('Provide a reason for rejecting this expense claim:') ?? '';
+                        const trimmedNotes = notes.trim();
+                        if (!trimmedNotes) {
+                          setError('A reason is required to reject an expense claim.');
+                          return;
+                        }
+
+                        void decideExpenseApproval(item.id, { approve: false, notes: trimmedNotes }).then(loadQueues);
+                      }}
+                    >
                       Reject
                     </Button>
                     <Button size="small" appearance="primary" onClick={() => void decideExpenseApproval(item.id, { approve: true }).then(loadQueues)}>

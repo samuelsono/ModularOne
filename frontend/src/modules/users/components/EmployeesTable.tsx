@@ -24,6 +24,7 @@ import {
 } from '@fluentui/react-components';
 import type { JSXElement, TableColumnDefinition, TableRowId } from '@fluentui/react-components';
 import {
+  CalendarCheckmarkRegular,
   EditRegular,
   EyeRegular,
   MailRegular,
@@ -36,6 +37,7 @@ import type { UserListItem } from '@modules/users/types/user';
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
 import { usePermissions } from '@platform/permissions/usePermissions';
 import { withAuditableColumns } from '@platform/ui/auditTableColumns';
+import { useActiveApp } from '@platform/shell/ActiveAppContext';
 
 interface EmployeesTableProps {
   items: UserListItem[];
@@ -48,6 +50,7 @@ interface EmployeesTableProps {
   onActivate?: (employee: UserListItem) => void;
   onDeactivate?: (employee: UserListItem) => void;
   onSendInvite?: (employee: UserListItem) => void;
+  onStartLeaveAdjustment?: (employee: UserListItem) => void;
 }
 
 const clickableName: React.CSSProperties = {
@@ -78,19 +81,23 @@ function formatDateTime(value: string | null): string {
 const EmployeeActions = ({
   item,
   canEdit,
+  canAdjustLeaveBalances,
   onViewDetails,
   onEdit,
   onActivate,
   onDeactivate,
   onSendInvite,
+  onStartLeaveAdjustment,
 }: {
   item: UserListItem;
   canEdit: boolean;
+  canAdjustLeaveBalances?: boolean;
   onViewDetails?: (employee: UserListItem) => void;
   onEdit?: (employee: UserListItem) => void;
   onActivate?: (employee: UserListItem) => void;
   onDeactivate?: (employee: UserListItem) => void;
   onSendInvite?: (employee: UserListItem) => void;
+  onStartLeaveAdjustment?: (employee: UserListItem) => void;
 }) => (
   <div
     className="flex items-center gap-0.5"
@@ -140,9 +147,16 @@ const EmployeeActions = ({
               </MenuItem>
             </>
           )}
+          {canAdjustLeaveBalances && (
+            <MenuItem icon={<CalendarCheckmarkRegular />} onClick={() => onStartLeaveAdjustment?.(item)}>
+              Adjust leave balances
+            </MenuItem>
+          )}
         </MenuList>
       </MenuPopover>
     </Menu>
+          
+    
   </div>
 );
 
@@ -157,8 +171,12 @@ export function EmployeesTable({
   onActivate,
   onDeactivate,
   onSendInvite,
+  onStartLeaveAdjustment,
 }: EmployeesTableProps): JSXElement {
-  const { canEditUsers } = usePermissions();
+  const { canEditUsers, isAdmin, isHr } = usePermissions();
+  const { visibleModules } = useActiveApp();
+    const canAdjustLeave = (isAdmin || isHr)
+        && visibleModules.some((module) => module.slug === 'leave');
 
   const columns = React.useMemo<TableColumnDefinition<UserListItem>[]>(() => withAuditableColumns([
     createTableColumn<UserListItem>({
@@ -253,6 +271,8 @@ export function EmployeesTable({
           onActivate={onActivate}
           onDeactivate={onDeactivate}
           onSendInvite={onSendInvite}
+          onStartLeaveAdjustment={onStartLeaveAdjustment}
+          canAdjustLeaveBalances={canAdjustLeave}
         />
       ),
     }),
@@ -299,8 +319,11 @@ export function EmployeesTable({
         }}
         focusMode="composite"
         size="medium"
-        style={{ minWidth: '900px' }}
+        // style={{ minWidth: '900px' }}
         resizableColumns
+        resizableColumnsOptions={
+          {autoFitColumns: false}
+        }
       >
         <DataGridHeader>
           <DataGridRow

@@ -6,15 +6,16 @@ namespace CarTrack.Modules.Users;
 public static class UserEndpoints
 {
     private const string ReadPermission = "platform.settings.users.read";
+    private const string EmployeesReadPermission = "core.employees.read";
     private const string WritePermission = "platform.settings.users.write";
 
     public static RouteGroupBuilder MapUserEndpoints(this RouteGroupBuilder group)
     {
         group.MapGet("/", GetUsersAsync)
-            .RequirePermission(ReadPermission);
+            .RequireAnyPermission(ReadPermission, EmployeesReadPermission);
 
         group.MapGet("/managers", GetManagersAsync)
-            .RequirePermission(ReadPermission);
+            .RequireAnyPermission(ReadPermission, EmployeesReadPermission);
 
         group.MapGet("/audit-log", GetAuditLogAsync)
             .RequirePermission(ReadPermission);
@@ -23,13 +24,13 @@ public static class UserEndpoints
             .RequirePermission(WritePermission);
 
         group.MapGet("/{id}/reports", GetDirectReportsAsync)
-            .RequirePermission(ReadPermission);
+            .RequireAnyPermission(ReadPermission, EmployeesReadPermission);
 
         group.MapGet("/{id}/org", GetUserOrgAsync)
-            .RequirePermission(ReadPermission);
+            .RequireAnyPermission(ReadPermission, EmployeesReadPermission);
 
         group.MapGet("/{id}", GetUserByIdAsync)
-            .RequirePermission(ReadPermission);
+            .RequireAnyPermission(ReadPermission, EmployeesReadPermission);
 
         group.MapPost("/", CreateUserAsync)
             .RequirePermission(WritePermission);

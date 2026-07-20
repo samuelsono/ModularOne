@@ -30,12 +30,14 @@ import { HelpCenterDrawer } from '@modules/help/components/HelpCenterDrawer';
 import { SupportDialog } from '@modules/support/components/SupportDialog';
 import { useHelpDrawer } from '@modules/help/context/HelpDrawerContext';
 import type { TicketType } from '@modules/support/types/support';
+import { useActiveApp } from '@platform/shell/ActiveAppContext';
 
 /** App-shell composition: may import feature modules; platform shell must not. */
 const Navigation = () => {
   const styles = useStyles();
   const navigate = useNavigate();
   const { query, setQuery, placeholder, enabled } = usePageSearch();
+  const appname = useActiveApp();
 
   return (
     <nav
@@ -46,7 +48,7 @@ const Navigation = () => {
         <AppLauncher>
           <div />
         </AppLauncher>
-        <Subtitle2>Chronos</Subtitle2>
+        <Subtitle2>Chronos {appname.currentModule?.name ? ` - ${appname.currentModule?.name}` : ''}</Subtitle2>
       </div>
 
       <div className={styles.navGroup}>

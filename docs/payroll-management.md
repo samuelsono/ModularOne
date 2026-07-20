@@ -1,6 +1,11 @@
 # Payroll Management System
 ## Enterprise Implementation Plan
 
+> **Note (2026-07-15):** For Chronos / CarTrack delivery, use the scoped plan  
+> [`payroll-module-implementation-plan.md`](./payroll-module-implementation-plan.md)  
+> (see also [`hcm-modules-overview.md`](./hcm-modules-overview.md)).  
+> This document remains the **long-term enterprise backlog / inspiration**.
+
 **Document Version:** 1.0  
 **Purpose:** Technical Implementation Guide for Developers  
 **Architecture:** Multi-Tenant Enterprise Payroll Platform  

@@ -27,6 +27,8 @@ public sealed class ExpenseModule : IModule
         builder.Services.AddScoped<IExpenseApprovalService, ExpenseApprovalService>();
         builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
         builder.Services.AddScoped<IExpenseReportService, ExpenseReportService>();
+        builder.Services.AddScoped<IExpenseSettingsService, ExpenseSettingsService>();
+        builder.Services.AddScoped<IExpenseDocumentStorage, ExpenseDocumentStorage>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) =>

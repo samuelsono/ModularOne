@@ -11,6 +11,12 @@ public static class ExpenseEndpoints
         group.MapGet("/categories", GetCategoriesAsync)
             .RequirePermission("expense.claims.read");
 
+        group.MapGet("/settings", GetSettingsAsync)
+            .RequirePermission("expense.settings.read");
+
+        group.MapPut("/settings", UpdateSettingsAsync)
+            .RequirePermission("expense.settings.write");
+
         group.MapGet("/admin/categories", GetAdminCategoriesAsync)
             .RequirePermission("expense.categories.read");
 
@@ -22,6 +28,12 @@ public static class ExpenseEndpoints
 
         group.MapPut("/claims/{id:guid}", UpdateClaimAsync)
             .RequirePermission("expense.claims.write");
+
+        group.MapPost("/claims/{id:guid}/receipt", UploadReceiptAsync)
+            .RequirePermission("expense.claims.write");
+
+        group.MapGet("/claims/{id:guid}/receipt", DownloadReceiptAsync)
+            .RequirePermission("expense.claims.read");
 
         group.MapPost("/claims/{id:guid}/submit", SubmitClaimAsync)
             .RequirePermission("expense.claims.write");
@@ -51,13 +63,13 @@ public static class ExpenseEndpoints
             .RequirePermission("expense.approvals.write");
 
         group.MapGet("/reports/summary", GetReportSummaryAsync)
-            .RequirePermission("expense.reports.read");
+            .RequireAnyPermission("expense.reports.read", "expense.claims.read");
 
         group.MapGet("/reports/balances", GetMyBalancesAsync)
             .RequirePermission("expense.claims.read");
 
         group.MapGet("/reports/history", GetMyHistoryAsync)
-            .RequirePermission("expense.reports.read");
+            .RequireAnyPermission("expense.reports.read", "expense.claims.read");
 
         return group;
     }
@@ -68,6 +80,33 @@ public static class ExpenseEndpoints
     {
         var items = await categoryService.GetActiveCategoriesAsync(cancellationToken);
         return Results.Ok(items);
+    }
+
+    private static async Task<IResult> GetSettingsAsync(
+        IExpenseSettingsService settingsService,
+        CancellationToken cancellationToken)
+    {
+        var settings = await settingsService.GetAsync(cancellationToken);
+        return Results.Ok(settings);
+    }
+
+    private static async Task<IResult> UpdateSettingsAsync(
+        UpdateExpenseSettingsRequest request,
+        IExpenseSettingsService settingsService,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var settings = await settingsService.UpdateAsync(request, cancellationToken);
+            return Results.Ok(settings);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["kilometerRate"] = [ex.Message],
+            });
+        }
     }
 
     private static async Task<IResult> GetAdminCategoriesAsync(
@@ -142,6 +181,49 @@ public static class ExpenseEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status400BadRequest);
         }
+    }
+
+    private static async Task<IResult> UploadReceiptAsync(
+        Guid id,
+        IFormFile receipt,
+        ClaimsPrincipal principal,
+        IExpenseApprovalService expenseApprovalService,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(principal);
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var updated = await expenseApprovalService.UploadReceiptAsync(id, userId, receipt, cancellationToken);
+            return updated is null ? Results.NotFound() : Results.Ok(updated);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Problem(
+                title: "Unable to upload receipt",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<IResult> DownloadReceiptAsync(
+        Guid id,
+        ClaimsPrincipal principal,
+        IExpenseApprovalService expenseApprovalService,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(principal);
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var receipt = await expenseApprovalService.GetReceiptAsync(id, userId, cancellationToken);
+        return receipt is null ? Results.NotFound() : Results.File(receipt.Value.Stream, receipt.Value.ContentType, receipt.Value.FileName);
     }
 
     private static async Task<IResult> SubmitClaimAsync(

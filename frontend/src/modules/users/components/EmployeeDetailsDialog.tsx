@@ -203,6 +203,7 @@ export function EmployeeDetailsDialog({
               <DetailRow icon={<BuildingRegular fontSize={16} />} label="Job title" value={profile?.jobTitle ?? '—'} />
               <DetailRow icon={<BuildingRegular fontSize={16} />} label="Department" value={profile?.department ?? '—'} />
               <DetailRow icon={<BuildingRegular fontSize={16} />} label="Branch" value={profile?.branch ?? '—'} />
+              <DetailRow icon={<PersonRegular fontSize={16} />} label="Gender" value={profile?.gender ?? 'Unspecified'} />
               <DetailRow icon={<PersonRegular fontSize={16} />} label="Manager" value={profile?.managerDisplayName ?? '—'} />
               <DetailRow icon={<CalendarRegular fontSize={16} />} label="Work start date" value={formatDate(profile?.workStartDate)} />
               <DetailRow icon={<BuildingRegular fontSize={16} />} label="Employment status" value={profile?.employmentStatus ?? '—'} />

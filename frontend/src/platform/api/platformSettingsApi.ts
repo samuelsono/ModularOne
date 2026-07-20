@@ -4,6 +4,7 @@ import { authorizedFetch } from '@platform/api/authService';
 
 export interface PlatformSettingsSlice {
   defaultModuleSlug: string;
+  installedAppSlugs?: string[];
   updatedAt: string | null;
 }
 

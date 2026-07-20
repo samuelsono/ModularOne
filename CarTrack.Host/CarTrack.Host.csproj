@@ -32,6 +32,7 @@
     <ProjectReference Include="..\Modules\CarTrack.Modules.Reporting\CarTrack.Modules.Reporting.csproj" />
     <ProjectReference Include="..\Modules\CarTrack.Modules.Settings\CarTrack.Modules.Settings.csproj" />
     <ProjectReference Include="..\Modules\CarTrack.Modules.Support\CarTrack.Modules.Support.csproj" />
+    <ProjectReference Include="..\Modules\CarTrack.Modules.Tenders\CarTrack.Modules.Tenders.csproj" />
     <ProjectReference Include="..\Modules\CarTrack.Modules.Users\CarTrack.Modules.Users.csproj" />
   </ItemGroup>
 </Project>

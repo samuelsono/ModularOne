@@ -35,6 +35,12 @@ import {
 
   Option,
 
+  tokens,
+
+  ToggleButton,
+
+  Tooltip,
+
   Spinner,
 
   Subtitle2,
@@ -44,6 +50,8 @@ import {
   Title3,
 
 } from '@fluentui/react-components';
+
+import { PeopleRegular, PersonRegular } from '@fluentui/react-icons';
 
 import { ApiError } from '@platform/api/apiClient';
 
@@ -65,6 +73,7 @@ import { AutoFitDataGrid } from '@platform/ui/AutoFitDataGrid';
 import { LeaveActionConfirmDialog } from '@modules/leave/components/LeaveActionConfirmDialog';
 
 import { LeaveRowActions } from '@modules/leave/components/LeaveRowActions';
+
 
 import {
 
@@ -396,7 +405,7 @@ function LeaveRequestSection({
 
       {items.length === 0 ? (
 
-        <Text className="text-sm text-neutral-foreground-3">{emptyMessage}</Text>
+        <Text className="text-sm p-3 rounded" style={{ color: tokens.colorBrandBackground, backgroundColor: tokens.colorNeutralBackground2 }}>{emptyMessage}</Text>
 
       ) : (
       <ScrollableDiv>
@@ -474,13 +483,19 @@ function requestMatchesYear(request: LeaveRequest, year: number): boolean {
 export default function LeaveBalancesPage() {
 
   const searchQuery = usePageSearchQuery();
-  const { user, hasPermission } = usePermissions();
+  const { user, hasPermission, isAdmin, isHr, isManager } = usePermissions();
+  const isElevatedViewer = isAdmin || isHr || isManager;
+  const [filterCurrentUserOnly, setFilterCurrentUserOnly] = useState(false);
+  const currentUserId = user?.id;
+  const isCurrentUserOnlyView = isElevatedViewer && filterCurrentUserOnly && Boolean(currentUserId);
   const leavePermissions = useMemo(() => ({
     canWriteRequests: hasPermission('leave.requests.write'),
     canWriteApprovals: hasPermission('leave.approvals.write'),
   }), [hasPermission]);
 
-  const canAdjust = hasPermission('leave.balances.write');
+  // Leave balance mutation is intentionally role-restricted, even if a stale
+  // session still contains leave.balances.write.
+  const canAdjust = isAdmin || isHr;
   const showLeaveActions = leavePermissions.canWriteRequests || leavePermissions.canWriteApprovals;
   const currentYear = new Date().getFullYear();
 
@@ -527,9 +542,23 @@ export default function LeaveBalancesPage() {
     void loadPageData();
   }, [loadPageData]);
 
+  const scopedBalances = useMemo(
+    () => (isCurrentUserOnlyView && currentUserId
+      ? balances.filter((balance) => balance.userId === currentUserId)
+      : balances),
+    [balances, currentUserId, isCurrentUserOnlyView],
+  );
+
+  const scopedRequests = useMemo(
+    () => (isCurrentUserOnlyView && currentUserId
+      ? requests.filter((request) => request.requesterUserId === currentUserId)
+      : requests),
+    [currentUserId, isCurrentUserOnlyView, requests],
+  );
+
   const balanceFilteredBalances = useMemo(
-    () => balances.filter((balance) => matchesBalanceFilter(balance, balanceFilter)),
-    [balanceFilter, balances],
+    () => scopedBalances.filter((balance) => matchesBalanceFilter(balance, balanceFilter)),
+    [balanceFilter, scopedBalances],
   );
 
   useEffect(() => {
@@ -552,8 +581,8 @@ export default function LeaveBalancesPage() {
 
 
   const yearFilteredRequests = useMemo(
-    () => requests.filter((request) => requestMatchesYear(request, year)),
-    [requests, year],
+    () => scopedRequests.filter((request) => requestMatchesYear(request, year)),
+    [scopedRequests, year],
   );
 
   const filteredRequests = useMemo(
@@ -639,13 +668,27 @@ export default function LeaveBalancesPage() {
   return (
 
     <div className="flex flex-col gap-6 h-full overflow-auto pb-6 px-6 overflow-x-hidden">
-      <div className="flex items-start justify-between gap-4 px-2s">
+      <div className="flex items-start justify-between gap-4 px-2">
         <AppTitle
           title="Leave Balances"
           subtitle={`Your balances, pending requests, leave history, and eligibility for ${year}.`}
         />
 
         <div className='flex items-end gap-2 flex-wrap'>
+          {isElevatedViewer ? (
+            <Tooltip
+              content={filterCurrentUserOnly ? 'Show team leave balances' : 'Show only your leave balances'}
+              relationship="label"
+            >
+              <ToggleButton
+                appearance="primary"
+                checked={filterCurrentUserOnly}
+                icon={filterCurrentUserOnly ? <PeopleRegular /> : <PersonRegular /> }
+                onClick={() => setFilterCurrentUserOnly((prev) => !prev)}
+              />
+            </Tooltip>
+          ) : null}
+
           <Field label="Year">
             <Dropdown
               style={{ width: 120, minWidth: 120 }}
@@ -753,7 +796,7 @@ export default function LeaveBalancesPage() {
 
         <>
 
-          {balances.length === 0 ? (
+          {scopedBalances.length === 0 ? (
             <Text className="text-sm text-neutral-foreground-3">
               No balance records for {year} yet. Balances are created when you apply for leave or when HR allocates entitlement.
             </Text>

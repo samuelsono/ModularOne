@@ -5,6 +5,7 @@ public record StaffProfileDto(
     string? JobTitle,
     string? Department,
     string? Branch,
+    string Gender,
     string EmploymentStatus,
     DateOnly? WorkStartDate,
     string? ManagerUserId,
@@ -74,7 +75,8 @@ public record StaffProfileRequest(
     string? ManagerUserId,
     Guid? CompanyId = null,
     Guid? DepartmentId = null,
-    Guid? PositionId = null);
+    Guid? PositionId = null,
+    string? Gender = null);
 
 public record CreateUserRequest(
     string Username,

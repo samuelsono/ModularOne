@@ -1,4 +1,5 @@
 using CarTrack.Server.Data;
+using CarTrack.Server.Users;
 using Microsoft.AspNetCore.Identity;
 
 namespace CarTrack.Modules.Leave;
@@ -145,10 +146,23 @@ public class LeaveApprovalService(
         string? status,
         CancellationToken cancellationToken = default)
     {
+        var scope = await currentUserScope.GetAsync(cancellationToken);
         var query = dbContext.LeaveRequests
             .AsNoTracking()
             .Include(item => item.LeaveType)
-            .Where(item => item.RequesterUserId == requesterUserId);
+            .AsQueryable();
+
+        if (!scope.BypassRowLevelSecurity
+            && !scope.Roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase)))
+        {
+            var visibleUserIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { requesterUserId };
+            foreach (var reportUserId in scope.ReportUserIds)
+            {
+                visibleUserIds.Add(reportUserId);
+            }
+
+            query = query.Where(item => visibleUserIds.Contains(item.RequesterUserId));
+        }
 
         if (!string.IsNullOrWhiteSpace(status))
         {
@@ -421,12 +435,24 @@ public class LeaveApprovalService(
         decimal workingDays,
         CancellationToken cancellationToken)
     {
-        var today = DateOnly.FromDateTime(DateTime.Now);
-        var earliestAllowed = today.AddDays(leaveType.MinNoticeDays);
-        if (startDate < earliestAllowed)
+        var staffInfo = await orgDirectory.GetStaffOrgInfoAsync(requesterUserId, cancellationToken);
+        if (!LeaveTypeGenderEligibility.IsEligible(leaveType.EligibleGender, staffInfo?.Gender))
         {
-            throw new InvalidOperationException(
-                $"This leave type requires at least {leaveType.MinNoticeDays} day(s) notice.");
+            throw new InvalidOperationException("You are not eligible for the selected leave type.");
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        // Zero notice means the policy permits retrospective capture. This is
+        // required for leave such as sick leave that is commonly submitted
+        // after the employee returns. Positive values remain future notice.
+        if (leaveType.MinNoticeDays > 0)
+        {
+            var earliestAllowed = today.AddDays(leaveType.MinNoticeDays);
+            if (startDate < earliestAllowed)
+            {
+                throw new InvalidOperationException(
+                    $"This leave type requires at least {leaveType.MinNoticeDays} day(s) notice.");
+            }
         }
 
         if (leaveType.MaxConsecutiveDays is not null && workingDays > leaveType.MaxConsecutiveDays)

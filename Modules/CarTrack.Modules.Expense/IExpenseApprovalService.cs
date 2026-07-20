@@ -15,6 +15,17 @@ public interface IExpenseApprovalService
         UpdateExpenseClaimRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<ExpenseClaimDto?> UploadReceiptAsync(
+        Guid claimId,
+        string requesterUserId,
+        IFormFile file,
+        CancellationToken cancellationToken = default);
+
+    Task<(Stream Stream, string ContentType, string FileName)?> GetReceiptAsync(
+        Guid claimId,
+        string viewerUserId,
+        CancellationToken cancellationToken = default);
+
     Task<ExpenseClaimDto?> SubmitClaimAsync(
         Guid claimId,
         string requesterUserId,

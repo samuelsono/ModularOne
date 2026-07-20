@@ -84,6 +84,7 @@ const EMPTY_FORM: SaveLeaveTypeRequest = {
   annualEntitlement: null,
   maxConsecutiveDays: null,
   minNoticeDays: 0,
+  eligibleGender: 'Any',
   isActive: true,
   sortOrder: 0,
 };
@@ -184,10 +185,14 @@ function LeaveTypeFormDialog({
               </Field>
               </div>
 
-<div className='grid grid-cols-2 gap-3'>
+<div className='grid grid-cols-2 gap-3 items-start'>
 
-              <Field label="Minimum notice (days)">
+              <Field
+                label="Minimum notice (days)"
+                hint="Set to 0 to allow this leave type to be submitted for past dates."
+              >
                 <SpinButton
+                  min={0}
                   value={form.minNoticeDays}
                   onChange={(_, data) => setForm((current) => ({
                     ...current,
@@ -197,18 +202,35 @@ function LeaveTypeFormDialog({
               </Field>
 
               <Field label="Max consecutive days">
-                <Input
+                <SpinButton
                   type="number"
-                  min={1}
-                  value={form.maxConsecutiveDays != null ? String(form.maxConsecutiveDays) : ''}
+                  value={form.maxConsecutiveDays ?? undefined}
                   placeholder="No limit"
                   onChange={(_, data) => setForm((current) => ({
                     ...current,
-                    maxConsecutiveDays: data.value === '' ? null : parseOptionalInt(data.value),
+                    maxConsecutiveDays: data.value ?? null,
                   }))}
                 />
               </Field>
 </div>
+
+              <Field
+                label="Gender eligibility"
+                hint="Restricted leave types are hidden from ineligible employees and cannot be requested."
+              >
+                <Combobox
+                  value={form.eligibleGender}
+                  selectedOptions={[form.eligibleGender]}
+                  onOptionSelect={(_, data) => setForm((current) => ({
+                    ...current,
+                    eligibleGender: (data.optionValue ?? 'Any') as SaveLeaveTypeRequest['eligibleGender'],
+                  }))}
+                >
+                  <Option value="Any">Any gender</Option>
+                  <Option value="Male">Male only</Option>
+                  <Option value="Female">Female only</Option>
+                </Combobox>
+              </Field>
 
 
               <div className='grid grid-cols-2 gap-x-3'>
@@ -321,6 +343,17 @@ export function LeaveTypesManager({ canWrite }: LeaveTypesManagerProps) {
   const [isRunningAccrual, setIsRunningAccrual] = useState(false);
   const [accrualNotice, setAccrualNotice] = useState<string | null>(null);
 
+
+  const columnSizingOptions = useMemo(() => ({
+    name: { minWidth: 150, maxWidth: 300 },
+    accrual: { minWidth: 150, maxWidth: 250 },
+    code: { minWidth: 100, maxWidth: 150 },
+    flags: { minWidth: 100, maxWidth: 500, idealWidth: 200 },
+    sortOrder: { minWidth: 50, maxWidth: 100 },
+    isActive: { minWidth: 50, maxWidth: 100 },
+    actions: { minWidth: 100, maxWidth: 150 },
+  }), []);
+
   const loadTypes = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -382,9 +415,16 @@ export function LeaveTypesManager({ canWrite }: LeaveTypesManagerProps) {
             {item.isPaid ? <Badge appearance="filled" size="small">Paid</Badge> : null}
             {item.deductsBalance ? <Badge color='important' appearance="filled" size="small">Will Deduct</Badge> : null}
             {item.requiresDocument ? <Badge color='important' appearance="filled" size="small">Document</Badge> : null}
+            {item.eligibleGender !== 'Any' ? (
+              <Badge color="warning" appearance="filled" size="small">
+                {item.eligibleGender} only
+              </Badge>
+            ) : null}
             {item.minNoticeDays > 0 ? (
               <Badge color='danger' appearance="filled" size="small">{item.minNoticeDays}d notice</Badge>
-            ) : null}
+            ) : (
+              <Badge color="informative" appearance="filled" size="small">Past dates allowed</Badge>
+            )}
           </div>
         ),
       }),
@@ -422,6 +462,7 @@ export function LeaveTypesManager({ canWrite }: LeaveTypesManagerProps) {
                         annualEntitlement: item.annualEntitlement,
                         maxConsecutiveDays: item.maxConsecutiveDays,
                         minNoticeDays: item.minNoticeDays,
+                        eligibleGender: item.eligibleGender,
                         isActive: item.isActive,
                         sortOrder: item.sortOrder,
                       });
@@ -514,7 +555,7 @@ export function LeaveTypesManager({ canWrite }: LeaveTypesManagerProps) {
           No leave types match your search.
         </Text>
       ) : (
-        <DataGrid items={filteredTypes} columns={columns} getRowId={(item) => item.id}>
+        <DataGrid items={filteredTypes} columnSizingOptions={columnSizingOptions} resizableColumns columns={columns} getRowId={(item) => item.id}>
           <DataGridHeader>
             <DataGridRow>
               {({ renderHeaderCell }) => (

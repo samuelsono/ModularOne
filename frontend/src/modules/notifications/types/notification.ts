@@ -10,6 +10,11 @@ export type NotificationActionType =
   | 'DriverDeleted'
   | 'DriverAssigned'
   | 'DriverUnassigned'
+  | 'LeaveSubmitted'
+  | 'LeaveApproved'
+  | 'LeaveRejected'
+  | 'LeaveCancelled'
+  | 'TenderMatchFound'
   | 'Custom';
 
 export interface NotificationRecipientDto {

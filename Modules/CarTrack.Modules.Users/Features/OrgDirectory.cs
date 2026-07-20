@@ -39,7 +39,7 @@ public sealed class OrgDirectory(
         var profile = await dbContext.StaffProfiles
             .AsNoTracking()
             .Where(item => item.UserId == userId)
-            .Select(item => new StaffOrgInfo(item.UserId, item.Department, item.Branch))
+            .Select(item => new StaffOrgInfo(item.UserId, item.Department, item.Branch, item.Gender))
             .FirstOrDefaultAsync(cancellationToken);
 
         return profile;
@@ -58,7 +58,7 @@ public sealed class OrgDirectory(
         var rows = await dbContext.StaffProfiles
             .AsNoTracking()
             .Where(item => ids.Contains(item.UserId))
-            .Select(item => new StaffOrgInfo(item.UserId, item.Department, item.Branch))
+            .Select(item => new StaffOrgInfo(item.UserId, item.Department, item.Branch, item.Gender))
             .ToListAsync(cancellationToken);
 
         return rows.ToDictionary(item => item.UserId);
@@ -70,7 +70,7 @@ public sealed class OrgDirectory(
         return await dbContext.StaffProfiles
             .AsNoTracking()
             .Where(profile => profile.EmploymentStatus == "Active")
-            .Select(profile => new StaffAccrualInfo(profile.UserId, profile.WorkStartDate))
+            .Select(profile => new StaffAccrualInfo(profile.UserId, profile.WorkStartDate, profile.Gender))
             .ToListAsync(cancellationToken);
     }
 

@@ -59,12 +59,14 @@ public static class PermissionSeeder
         var roleLookup = roles.ToDictionary(role => role.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
         var existingMappings = await dbContext.RolePermissions
-            .Select(mapping => new { mapping.RoleId, mapping.PermissionId })
+            .Select(mapping => new { mapping.Id, mapping.RoleId, mapping.PermissionId })
             .ToListAsync(cancellationToken);
 
         var existingMappingSet = existingMappings
             .Select(mapping => $"{mapping.RoleId}:{mapping.PermissionId}")
             .ToHashSet(StringComparer.Ordinal);
+
+        var desiredMappingKeys = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var (roleName, permissionKeys) in PermissionCatalog.RolePermissionKeys)
         {
@@ -81,6 +83,7 @@ public static class PermissionSeeder
                 }
 
                 var mappingKey = $"{role.Id}:{permission.Id}";
+                desiredMappingKeys.Add(mappingKey);
                 if (existingMappingSet.Contains(mappingKey))
                 {
                     continue;
@@ -92,6 +95,52 @@ public static class PermissionSeeder
                     RoleId = role.Id,
                     PermissionId = permission.Id,
                 });
+            }
+        }
+
+        // Revoke stale role→permission rows so catalog removals take effect on existing DBs.
+        var stale = existingMappings
+            .Where(mapping => !desiredMappingKeys.Contains($"{mapping.RoleId}:{mapping.PermissionId}"))
+            .Select(mapping => mapping.Id)
+            .ToList();
+
+        if (stale.Count > 0)
+        {
+            await dbContext.RolePermissions
+                .Where(mapping => stale.Contains(mapping.Id))
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+
+        // Explicitly strip Company/Department/Position grants from non-HR roles (defense in depth).
+        var structurePermissionIds = await dbContext.Permissions
+            .AsNoTracking()
+            .Where(permission =>
+                permission.Key == "core.companies.read"
+                || permission.Key == "core.companies.write"
+                || permission.Key == "core.departments.read"
+                || permission.Key == "core.departments.write"
+                || permission.Key == "core.positions.read"
+                || permission.Key == "core.positions.write")
+            .Select(permission => permission.Id)
+            .ToListAsync(cancellationToken);
+
+        if (structurePermissionIds.Count > 0)
+        {
+            var nonHrRoleIds = roles
+                .Where(role =>
+                    !string.Equals(role.Name, AppRoles.Hr, StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(role.Name, AppRoles.Admin, StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(role.Name, AppRoles.SystemAdmin, StringComparison.OrdinalIgnoreCase))
+                .Select(role => role.Id)
+                .ToList();
+
+            if (nonHrRoleIds.Count > 0)
+            {
+                await dbContext.RolePermissions
+                    .Where(mapping =>
+                        nonHrRoleIds.Contains(mapping.RoleId)
+                        && structurePermissionIds.Contains(mapping.PermissionId))
+                    .ExecuteDeleteAsync(cancellationToken);
             }
         }
 

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -12,11 +13,13 @@ using CarTrack.Modules.Notifications;
 using CarTrack.Modules.Reporting;
 using CarTrack.Modules.Settings;
 using CarTrack.Modules.Support;
+using CarTrack.Modules.Tenders;
 using CarTrack.Modules.Users;
 using CarTrack.Server.Auth;
 using CarTrack.Server.Configuration;
 using CarTrack.Server.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -29,6 +32,16 @@ builder.AddServiceDefaults();
 builder.AddRedisClientBuilder("cache")
     .WithOutputCache();
 builder.AddNpgsqlDbContext<ApplicationDbContext>("cartrack");
+
+// Persist DataProtection keys with a stable app name. Default discriminator follows
+// ContentRoot, so renaming CarTrack.Server → CarTrack.Host orphaned encrypted
+// CarTrackSettings passwords and made Fleet API calls report "not configured".
+var dataProtectionKeysPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "DataProtection-Keys");
+Directory.CreateDirectory(dataProtectionKeysPath);
+ImportLegacyDataProtectionKeys(dataProtectionKeysPath);
+builder.Services.AddDataProtection()
+    .SetApplicationName("CarTrack")
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
@@ -49,6 +62,7 @@ var modules = new ModuleRegistry()
     .Add(new UsersModule())
     .Add(new SettingsModule())
     .Add(new ReportingModule())
+    .Add(new TendersModule())
     .Add(new HostModule());
 
 modules.AddModules(builder);
@@ -98,7 +112,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
             ClockSkew = TimeSpan.FromMinutes(1),
             NameClaimType = JwtRegisteredClaimNames.Sub,
+            // Tokens emit ClaimTypes.Role which JwtSecurityTokenHandler may shorten to "role".
+            RoleClaimType = ClaimTypes.Role,
         };
+
+        // Keep claim types as written so ClaimTypes.Role / "role" lookups stay reliable.
+        options.MapInboundClaims = false;
 
         options.Events = new JwtBearerEvents
         {
@@ -141,3 +160,26 @@ await modules.MigrateAllAsync(app.Services);
 await modules.SeedAllAsync(app.Services);
 
 app.Run();
+
+static void ImportLegacyDataProtectionKeys(string destinationPath)
+{
+    var legacyPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+        ".aspnet",
+        "DataProtection-Keys");
+
+    if (!Directory.Exists(legacyPath))
+    {
+        return;
+    }
+
+    foreach (var sourceFile in Directory.EnumerateFiles(legacyPath, "key-*.xml"))
+    {
+        var destinationFile = Path.Combine(destinationPath, Path.GetFileName(sourceFile));
+        if (!File.Exists(destinationFile))
+        {
+            File.Copy(sourceFile, destinationFile);
+        }
+    }
+}
+

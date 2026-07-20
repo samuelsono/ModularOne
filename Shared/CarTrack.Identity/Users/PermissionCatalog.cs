@@ -82,6 +82,7 @@ public static class PermissionCatalog
             ("approvals", "Expense approvals"),
             ("categories", "Expense categories"),
             ("reports", "Expense reports"),
+            ("settings", "Expense settings"),
         ]));
         permissions.AddRange(Module("payroll", [
             ("runs", "Payroll runs"),
@@ -100,6 +101,12 @@ public static class PermissionCatalog
             ("applications", "Applications"),
             ("interviews", "Interviews"),
             ("offers", "Offers"),
+        ]));
+        permissions.AddRange(Module("tenders", [
+            ("sources", "Tender sources"),
+            ("queries", "Tender keyword queries"),
+            ("results", "Tender results"),
+            ("runs", "Tender scrape runs"),
         ]));
         return permissions;
     }
@@ -130,29 +137,42 @@ public static class PermissionCatalog
     {
         var allKeys = All.Select(permission => permission.Key).ToList();
         var fleetKeys = KeysForModule("fleet");
-        var platformReadKeys = KeysForModule("platform", "read");
-        var platformSettings = KeysMatching("platform.settings");
-        var leaveStaff = KeysMatching("leave.requests", "leave.calendar", "leave.balances");
+        // Platform reads for day-to-day roles — exclude Users & Access (Admin/HR only).
+        var platformReadKeys = KeysForModule("platform", "read")
+            .Where(key => !key.StartsWith("platform.settings.users.", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        var platformSettingsCore = KeysMatching("platform.settings.read", "platform.settings.write");
+        // Staff/Driver get dashboard (reports.read) for self-only home pages; managers also get approvals.
+        var leaveStaff = KeysMatching("leave.requests", "leave.calendar", "leave.balances.read")
+            .Concat(KeysMatching("leave.reports.read"))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
         var leaveManager = leaveStaff
             .Concat(KeysMatching("leave.approvals", "leave.reports"))
             .Distinct()
             .ToList();
-        var expenseStaff = KeysMatching("expense.claims");
+        var expenseStaff = KeysMatching("expense.claims")
+            .Concat(KeysMatching("expense.reports.read", "expense.settings.read"))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        // Managers approve expenses and view employees that report to them — not Company/Dept/Positions.
         var expenseManager = expenseStaff
             .Concat(KeysMatching("expense.approvals"))
-            .Concat(KeysMatching("core.companies", "core.departments", "core.positions", "core.employees"))
-            .Distinct()
+            .Concat(["core.employees.read"])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
         var financeKeys = KeysForModule("accounting")
             .Concat(KeysForModule("payroll"))
-            .Concat(KeysMatching("expense.approvals"))
+            .Concat(KeysMatching("expense.approvals", "expense.reports.read", "expense.claims.read", "expense.settings.read", "expense.settings.write"))
             .Distinct()
             .ToList();
         var hrKeys = KeysForModule("leave")
             .Concat(KeysForModule("core"))
+            .Concat(KeysForModule("expense"))
             .Concat(KeysForModule("recruitment"))
             .Concat(KeysForModule("performance"))
-            .Concat(KeysMatching("platform.settings.users.read"))
+            .Concat(KeysForModule("tenders"))
+            .Concat(KeysMatching("platform.settings.users.read", "platform.settings.users.write"))
             .Distinct()
             .ToList();
         var driverKeys = KeysMatching(
@@ -160,16 +180,23 @@ public static class PermissionCatalog
                 "fleet.dashboard.read",
                 "leave.requests.read",
                 "leave.requests.write",
+                "leave.reports.read",
+                "leave.calendar.read",
+                "leave.balances.read",
                 "expense.claims.read",
                 "expense.claims.write",
+                "expense.reports.read",
                 "payroll.payslips.read")
             .ToList();
+
+            expenseManager = expenseManager.Concat(KeysMatching("expense.settings.read")).Distinct().ToList();
+            hrKeys = hrKeys.Concat(KeysMatching("expense.settings.read", "expense.settings.write")).Distinct().ToList();
 
         return new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
         {
             [AppRoles.SystemAdmin] = allKeys,
             [AppRoles.Admin] = allKeys,
-            [AppRoles.FleetAdmin] = fleetKeys.Concat(platformSettings).Distinct().ToList(),
+            [AppRoles.FleetAdmin] = fleetKeys.Concat(platformSettingsCore).Distinct().ToList(),
             [AppRoles.FleetOperator] = fleetKeys,
             [AppRoles.Driver] = driverKeys,
             [AppRoles.Staff] = platformReadKeys

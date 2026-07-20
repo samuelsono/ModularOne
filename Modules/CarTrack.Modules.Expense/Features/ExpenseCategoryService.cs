@@ -49,6 +49,9 @@ public class ExpenseCategoryService(ExpenseDbContext dbContext) : IExpenseCatego
             Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
             IsActive = request.IsActive,
             SortOrder = request.SortOrder,
+            RequiresReceipt = request.RequiresReceipt,
+            RequiresTravelDetails = request.RequiresTravelDetails,
+            PaysByKilometer = request.PaysByKilometer,
         };
 
         dbContext.ExpenseCategories.Add(entity);
@@ -85,6 +88,9 @@ public class ExpenseCategoryService(ExpenseDbContext dbContext) : IExpenseCatego
         entity.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
         entity.IsActive = request.IsActive;
         entity.SortOrder = request.SortOrder;
+        entity.RequiresReceipt = request.RequiresReceipt;
+        entity.RequiresTravelDetails = request.RequiresTravelDetails;
+        entity.PaysByKilometer = request.PaysByKilometer;
 
         await dbContext.SaveChangesAsync(cancellationToken);
         return MapCategory(entity);
@@ -111,6 +117,9 @@ public class ExpenseCategoryService(ExpenseDbContext dbContext) : IExpenseCatego
             category.Description,
             category.IsActive,
             category.SortOrder,
+            category.RequiresReceipt,
+            category.RequiresTravelDetails,
+            category.PaysByKilometer,
             AuditableMapping.FormatTimestamp(category.CreatedAt),
             category.CreatedByUserId,
             null,
