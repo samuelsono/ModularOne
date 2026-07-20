@@ -5,6 +5,7 @@ import SideNavigation from '@platform/shell/SideNavigation';
 import { GuestRoute, ProtectedRoute } from '@platform/auth/ProtectedRoute';
 import { PageSearchProvider } from '@platform/shell/PageSearchContext';
 import { ActiveAppProvider } from '@platform/shell/ActiveAppContext';
+import { AppThemeProvider } from '@platform/shell/AppThemeProvider';
 import { useStyles } from '../main';
 import { assembleAuthRoutes, assembleProtectedChildRoutes } from './modules';
 
@@ -12,17 +13,19 @@ function Layout() {
   const styles = useStyles();
   return (
     <ActiveAppProvider>
-      <PageSearchProvider>
-        <div className="flex flex-col pt-[52px] h-[100vh] overflow-y-hidden">
-          <Navigation />
-          <div className="flex flex-row max-w-[100vw] h-full overflow-hidden">
-            <SideNavigation />
-            <div className={`${styles.content} h-full w-full min-w-0 overflow-hidden`}>
-              <Outlet />
+      <AppThemeProvider>
+        <PageSearchProvider>
+          <div className="flex flex-col pt-[52px] h-[100vh] overflow-y-hidden">
+            <Navigation />
+            <div className="flex flex-row max-w-[100vw] h-full overflow-hidden">
+              <SideNavigation />
+              <div className={`${styles.content} h-full w-full min-w-0 overflow-hidden`}>
+                <Outlet />
+              </div>
             </div>
           </div>
-        </div>
-      </PageSearchProvider>
+        </PageSearchProvider>
+      </AppThemeProvider>
     </ActiveAppProvider>
   );
 }

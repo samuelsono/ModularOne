@@ -8,7 +8,6 @@ import { ApiTableWidget } from './ApiTableWidget';
 import { MapWidget } from './MapWidget';
 import { MetricCardWidget } from './MetricCardWidget';
 import { ReportCardSettingsDialog } from './ReportCardSettingsDialog';
-import { theme } from '@platform/shell/navStyles'
 import AppTitle from '@platform/ui/AppTitle';
 
 interface ReportWidgetProps {
@@ -73,7 +72,10 @@ export function ReportWidget({ item, sectionId, onUpdated }: ReportWidgetProps) 
             <ChartWidget reportType={report.reportType} data={data} />
           </div>
         </Card> */}
-        <div className='h-full min-h-0 flex flex-col shadow rounded p-4 border border-gray-200' style={{ backgroundColor: theme.colorNeutralBackground1 }}>
+        <div
+          className='h-full min-h-0 flex flex-col shadow rounded p-4 border border-gray-200'
+          style={{ backgroundColor: 'var(--colorNeutralBackground1)' }}
+        >
           <div className='flex items-center justify-between w-full'>
               <div className='flex flex-col'>
                 <Text weight="semibold">{report.name}</Text>

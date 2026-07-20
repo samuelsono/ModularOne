@@ -26,6 +26,8 @@ export interface AppSettingsOverview {
 export interface PlatformSettings {
   defaultModuleSlug: string;
   installedAppSlugs: string[];
+  defaultThemeName: string;
+  appThemeNamesByModuleSlug: Record<string, string>;
   updatedAt: string | null;
 }
 
@@ -41,6 +43,8 @@ export interface UpdateExpenseSettingsRequest {
 export interface UpdatePlatformSettingsRequest {
   defaultModuleSlug?: string;
   installedAppSlugs?: string[];
+  defaultThemeName?: string;
+  appThemeNamesByModuleSlug?: Record<string, string>;
 }
 
 export interface ExternalAuthSettings {

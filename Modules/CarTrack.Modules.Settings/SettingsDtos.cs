@@ -18,11 +18,15 @@ public record TestCarTrackConnectionResponse(
 public record PlatformSettingsDto(
     string DefaultModuleSlug,
     string[] InstalledAppSlugs,
+    string DefaultThemeName,
+    Dictionary<string, string> AppThemeNamesByModuleSlug,
     string? UpdatedAt);
 
 public record UpdatePlatformSettingsRequest(
     string? DefaultModuleSlug = null,
-    string[]? InstalledAppSlugs = null);
+    string[]? InstalledAppSlugs = null,
+    string? DefaultThemeName = null,
+    Dictionary<string, string>? AppThemeNamesByModuleSlug = null);
 
 public record AppSettingsOverviewDto(
     string ApplicationName,

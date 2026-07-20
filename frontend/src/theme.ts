@@ -209,3 +209,18 @@ export const themeNames = {
   lightTeamsTheme: lightTeamsTheme,
   darkTeamsTheme: darkTeamsTheme
 }
+
+export type ThemeName = keyof typeof themeNames;
+
+export const DEFAULT_THEME_NAME: ThemeName = 'talisLightTheme';
+
+export const availableThemeNames = Object.keys(themeNames) as ThemeName[];
+
+export function resolveThemeByName(themeName?: string | null): Theme {
+  if (!themeName) {
+    return themeNames[DEFAULT_THEME_NAME];
+  }
+
+  const selectedTheme = themeNames[themeName as ThemeName];
+  return selectedTheme ?? themeNames[DEFAULT_THEME_NAME];
+}

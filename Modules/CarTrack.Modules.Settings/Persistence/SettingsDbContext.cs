@@ -34,8 +34,15 @@ public sealed class SettingsDbContext(DbContextOptions<SettingsDbContext> option
                 .HasColumnName("DefaultModuleSlug")
                 .HasMaxLength(64)
                 .IsRequired();
+            entity.Property(settings => settings.DefaultThemeNameValue)
+                .HasColumnName("DefaultThemeName")
+                .HasMaxLength(64)
+                .IsRequired();
             entity.Property(settings => settings.InstalledAppSlugs)
                 .HasMaxLength(512)
+                .IsRequired();
+            entity.Property(settings => settings.AppThemeNamesByModuleSlug)
+                .HasMaxLength(2048)
                 .IsRequired();
         });
 

@@ -5,6 +5,8 @@ import { authorizedFetch } from '@platform/api/authService';
 export interface PlatformSettingsSlice {
   defaultModuleSlug: string;
   installedAppSlugs?: string[];
+  defaultThemeName?: string;
+  appThemeNamesByModuleSlug?: Record<string, string>;
   updatedAt: string | null;
 }
 

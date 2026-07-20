@@ -16,7 +16,6 @@ import type { PopoverProps } from "@fluentui/react-components";
 import { GridDotsRegular } from "@fluentui/react-icons/fonts/grid-dots";
 import { useActiveApp } from '@platform/shell/ActiveAppContext';
 import type { AppModuleDefinition } from '@platform/permissions/apps';
-import { theme } from '@platform/shell/navStyles';
 
 const useStyles = makeStyles({
   icon18: { fontSize: "18px" },
@@ -109,7 +108,11 @@ export const AppLauncher = (props?: PopoverProps) => {
       onOpenChange={(_event, data) => setOpen(data.open)}
     >
       <PopoverTrigger disableButtonEnhancement>
-        <Button appearance="transparent" icon={<GridDotsRegular className={`${styles.icon18}`} />} style={{ color: theme.colorBrandBackgroundInverted }} />
+        <Button
+          appearance="transparent"
+          icon={<GridDotsRegular className={`${styles.icon18}`} />}
+          style={{ color: 'var(--colorBrandBackgroundInverted)' }}
+        />
       </PopoverTrigger>
 
       <PopoverSurface tabIndex={-1} className="mt-3!">

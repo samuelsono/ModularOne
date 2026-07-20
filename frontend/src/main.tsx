@@ -7,9 +7,9 @@ import App from './app/App';
 import { AuthProvider } from '@platform/auth/AuthContext';
 import { HelpDrawerProvider } from '@modules/help/context/HelpDrawerContext';
 import { NotificationProvider } from '@modules/notifications/context/NotificationContext';
-import { theme } from './theme';
+import { resolveThemeByName } from './theme';
 
-export { theme };
+export const theme = resolveThemeByName();
 
 export const useStyles = makeStyles({
   content: {

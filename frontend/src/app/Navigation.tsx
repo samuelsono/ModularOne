@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePageSearch } from '@platform/shell/PageSearchContext';
 import { AppLauncher } from '@platform/shell/AppLauncher';
 import { useAuth } from '@platform/auth/AuthContext';
-import { theme, useStyles } from '@platform/shell/navStyles';
+import { useStyles } from '@platform/shell/navStyles';
 import { NotificationsDialog } from '@modules/notifications/components/NotificationsDialog';
 import { HelpCenterDrawer } from '@modules/help/components/HelpCenterDrawer';
 import { SupportDialog } from '@modules/support/components/SupportDialog';
@@ -42,7 +42,10 @@ const Navigation = () => {
   return (
     <nav
       className={`${styles.nav} fixed top-0 left-0 right-0 border-b`}
-      style={{ backgroundColor: theme.colorBrandBackground, color: theme.colorBrandBackgroundInverted }}
+      style={{
+        backgroundColor: 'var(--colorBrandBackground)',
+        color: 'var(--colorBrandBackgroundInverted)',
+      }}
     >
       <div className={styles.navGroup}>
         <AppLauncher>
@@ -68,7 +71,7 @@ const Navigation = () => {
           appearance="transparent"
           aria-label="Settings"
           onClick={() => navigate('/settings')}
-          style={{ color: theme.colorBrandBackgroundInverted }}
+          style={{ color: 'var(--colorBrandBackgroundInverted)' }}
         />
         <HelpCenterDrawer />
         <Divider vertical style={{ height: '100%', marginInline: '5px' }} />

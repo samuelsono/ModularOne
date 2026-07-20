@@ -81,11 +81,22 @@ namespace CarTrack.Modules.Settings.Persistence.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
+                    b.Property<string>("AppThemeNamesByModuleSlug")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
                     b.Property<string>("DefaultModuleSlugValue")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .HasColumnName("DefaultModuleSlug");
+
+                    b.Property<string>("DefaultThemeNameValue")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("DefaultThemeName");
 
                     b.Property<string>("InstalledAppSlugs")
                         .IsRequired()

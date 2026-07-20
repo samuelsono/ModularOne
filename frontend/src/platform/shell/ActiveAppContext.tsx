@@ -20,6 +20,11 @@ import {
   readStoredCurrentModule,
   writeStoredCurrentModule,
 } from '@platform/utils/appModuleStorage';
+import {
+  DEFAULT_THEME_NAME,
+  resolveThemeByName,
+  type ThemeName,
+} from '../../theme';
 
 function resolveCurrentModuleSlug(
   pathname: string,
@@ -60,13 +65,50 @@ function resolveCurrentModuleSlug(
 interface ActiveAppContextValue {
   isLoading: boolean;
   defaultModuleSlug: string;
+  defaultThemeName: ThemeName;
+  appThemeNamesByModuleSlug: Record<string, ThemeName>;
   visibleModules: AppModuleDefinition[];
   currentModuleSlug: string | null;
   currentModule: AppModuleDefinition | null;
+  currentThemeName: ThemeName;
+  currentTheme: ReturnType<typeof resolveThemeByName>;
   currentNavItems: SidebarNavEntry[];
   isDefaultModule: (slug: string) => boolean;
   selectModule: (slug: string) => void;
   refreshPlatformSettings: () => Promise<void>;
+}
+
+function normalizeThemeName(themeName?: string | null): ThemeName {
+  if (!themeName) {
+    return DEFAULT_THEME_NAME;
+  }
+
+  const resolved = resolveThemeByName(themeName);
+  if (resolved === resolveThemeByName(DEFAULT_THEME_NAME) && themeName !== DEFAULT_THEME_NAME) {
+    return DEFAULT_THEME_NAME;
+  }
+
+  return themeName as ThemeName;
+}
+
+function normalizeAppThemeMap(
+  appThemeMap?: Record<string, string> | null,
+): Record<string, ThemeName> {
+  if (!appThemeMap) {
+    return {};
+  }
+
+  const normalized: Record<string, ThemeName> = {};
+  for (const [slug, themeName] of Object.entries(appThemeMap)) {
+    if (!slug || !themeName) {
+      continue;
+    }
+
+    const normalizedTheme = normalizeThemeName(themeName);
+    normalized[slug.toLowerCase()] = normalizedTheme;
+  }
+
+  return normalized;
 }
 
 const ActiveAppContext = React.createContext<ActiveAppContextValue | undefined>(undefined);
@@ -82,6 +124,8 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [defaultModuleSlug, setDefaultModuleSlug] = React.useState(DEFAULT_MODULE_SLUG);
   const [installedAppSlugs, setInstalledAppSlugs] = React.useState<string[]>([]);
+  const [defaultThemeName, setDefaultThemeName] = React.useState<ThemeName>(DEFAULT_THEME_NAME);
+  const [appThemeNamesByModuleSlug, setAppThemeNamesByModuleSlug] = React.useState<Record<string, ThemeName>>({});
   // null until bootstrap — avoids persisting DEFAULT_MODULE_SLUG (fleet) on first paint
   // and wiping the real active module before /core/* refresh resolution runs.
   const [currentModuleSlug, setCurrentModuleSlug] = React.useState<string | null>(null);
@@ -108,10 +152,16 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
       const overview = await getSettingsOverview();
       const slug = overview.platform?.defaultModuleSlug ?? DEFAULT_MODULE_SLUG;
       const installed = overview.platform?.installedAppSlugs ?? [];
+      const fallbackTheme = normalizeThemeName(overview.platform?.defaultThemeName);
+      const appThemes = normalizeAppThemeMap(overview.platform?.appThemeNamesByModuleSlug);
       setDefaultModuleSlug(slug);
       setInstalledAppSlugs(installed);
+      setDefaultThemeName(fallbackTheme);
+      setAppThemeNamesByModuleSlug(appThemes);
     } catch {
       setDefaultModuleSlug(DEFAULT_MODULE_SLUG);
+      setDefaultThemeName(DEFAULT_THEME_NAME);
+      setAppThemeNamesByModuleSlug({});
     }
   }, []);
 
@@ -147,10 +197,14 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
 
       const adminDefault = overview?.platform?.defaultModuleSlug ?? DEFAULT_MODULE_SLUG;
       const installed = overview?.platform?.installedAppSlugs ?? [];
+      const fallbackTheme = normalizeThemeName(overview?.platform?.defaultThemeName);
+      const appThemes = normalizeAppThemeMap(overview?.platform?.appThemeNamesByModuleSlug);
       const useDefaultOnLogin = consumeUseDefaultModuleOnLogin();
 
       setInstalledAppSlugs(installed);
       setDefaultModuleSlug(adminDefault);
+      setDefaultThemeName(fallbackTheme);
+      setAppThemeNamesByModuleSlug(appThemes);
 
       // Only pick the active module on first load / user change — never while switching apps.
       if (userChanged || !hasInitializedRef.current) {
@@ -292,6 +346,19 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
 
   const currentModule = currentModuleSlug ? getAppModule(currentModuleSlug) ?? null : null;
 
+  const currentThemeName = React.useMemo<ThemeName>(() => {
+    if (!currentModuleSlug) {
+      return defaultThemeName;
+    }
+
+    return appThemeNamesByModuleSlug[currentModuleSlug] ?? defaultThemeName;
+  }, [appThemeNamesByModuleSlug, currentModuleSlug, defaultThemeName]);
+
+  const currentTheme = React.useMemo(
+    () => resolveThemeByName(currentThemeName),
+    [currentThemeName],
+  );
+
   const currentNavItems = React.useMemo(
     () => (currentModuleSlug ? buildModuleSidebarNavItems(user, currentModuleSlug) : []),
     [user, currentModuleSlug],
@@ -300,9 +367,13 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
   const value = React.useMemo<ActiveAppContextValue>(() => ({
     isLoading,
     defaultModuleSlug,
+    defaultThemeName,
+    appThemeNamesByModuleSlug,
     visibleModules,
     currentModuleSlug,
     currentModule,
+    currentThemeName,
+    currentTheme,
     currentNavItems,
     isDefaultModule,
     selectModule,
@@ -310,9 +381,13 @@ export function ActiveAppProvider({ children }: { children: React.ReactNode }) {
   }), [
     isLoading,
     defaultModuleSlug,
+    defaultThemeName,
+    appThemeNamesByModuleSlug,
     visibleModules,
     currentModuleSlug,
     currentModule,
+    currentThemeName,
+    currentTheme,
     currentNavItems,
     isDefaultModule,
     selectModule,

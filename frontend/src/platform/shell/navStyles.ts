@@ -1,7 +1,4 @@
 import { makeStyles } from '@fluentui/react-components';
-import { theme as appTheme } from '../../theme';
-
-export const theme = appTheme;
 
 export const useStyles = makeStyles({
   sideNav: {
@@ -24,11 +21,11 @@ export const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'center',
     display: 'flex',
-    backgroundColor: theme.colorNeutralBackground5,
+    backgroundColor: 'var(--colorNeutralBackground5)',
   },
   activeLink: {
-    color: theme.colorNeutralForeground2BrandHover,
-    borderBlockColor: theme.colorBrandForegroundInverted,
+    color: 'var(--colorNeutralForeground2BrandHover)',
+    borderBlockColor: 'var(--colorBrandForegroundInverted)',
     fontWeight: 'bold',
   },
   ul: {
