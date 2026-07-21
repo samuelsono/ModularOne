@@ -20,9 +20,10 @@ public sealed class HostModule : IModule
 
     private const string MigrationsHistoryTable = "__EFMigrationsHistory";
 
-    // InitialAuth creates AspNetRoles before AspNetUsers. Require both probes so a
-    // partial Identity schema fails clearly instead of re-running CREATE AspNetRoles.
-    private static readonly string[] ProbeTables = ["AspNetUsers", "AspNetRoles"];
+    // Identity + a table from the pre-modular Host chain. Live DBs that already have
+    // AspNet* but an incomplete __EFMigrationsHistory must baseline the rest of the
+    // Host migration chain (AddCarTrackSettings, Vehicles, Remove*FromHost, …).
+    private static readonly string[] ProbeTables = ["AspNetUsers", "AspNetRoles", "CarTrackSettings"];
 
     public void AddModule(IHostApplicationBuilder builder)
     {

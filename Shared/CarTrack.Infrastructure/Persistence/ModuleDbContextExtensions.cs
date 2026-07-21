@@ -100,43 +100,33 @@ public static partial class ModuleDbContextExtensions
         }
 
         // Schema already present for this module: baseline history gaps so EF does not
-        // re-execute CREATE for tables like AspNetRoles (42P07).
+        // re-execute CREATE for tables like AspNetRoles / CarTrackSettings (42P07).
         if (existingProbes.Count == probeTables.Count)
         {
             var pendingSet = pending.ToHashSet(StringComparer.Ordinal);
             var appliedSet = applied.ToHashSet(StringComparer.Ordinal);
             var firstMigration = allMigrations.FirstOrDefault();
             var initialStillPending = firstMigration is not null && pendingSet.Contains(firstMigration);
+            var firstPendingIndex = allMigrations.FindIndex(pendingSet.Contains);
 
-            // Empty history, or history missing the initial migration while tables exist.
-            if (applied.Count == 0 || initialStillPending)
+            // Catch-up: probe tables exist but history is empty, missing Initial*, or only
+            // partially recorded (e.g. InitialAuth inserted manually while AddCarTrackSettings
+            // and the rest of the monolith chain are still pending). Baseline the pending
+            // suffix when it starts well before the tip of the migration chain so brand-new
+            // tip migrations (last few) still run via MigrateAsync.
+            const int forwardMigrateTipWindow = 5;
+            var isLegacyCatchUp = applied.Count == 0
+                || initialStillPending
+                || (firstPendingIndex >= 0
+                    && firstPendingIndex < Math.Max(0, allMigrations.Count - forwardMigrateTipWindow));
+
+            if (isLegacyCatchUp)
             {
-                IReadOnlyList<string> toBaseline;
-                if (applied.Count == 0)
-                {
-                    toBaseline = pending;
-                }
-                else
-                {
-                    // Baseline contiguous pending migrations that appear before the first
-                    // applied assembly migration. Forward migrations after that still run.
-                    var firstAppliedIndex = allMigrations.FindIndex(appliedSet.Contains);
-                    toBaseline = firstAppliedIndex < 0
-                        ? pending
-                        : allMigrations
-                            .Take(firstAppliedIndex)
-                            .Where(pendingSet.Contains)
-                            .ToList();
-                }
-
-                if (toBaseline.Count > 0)
-                {
-                    await BaselineMigrationsAsync(
-                        dbContext,
-                        historyTable,
-                        toBaseline,
-                        cancellationToken);
-                }
+                await BaselineMigrationsAsync(
+                    dbContext,
+                    historyTable,
+                    pending,
+                    cancellationToken);
 
                 pending = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
                 if (pending.Count == 0)
