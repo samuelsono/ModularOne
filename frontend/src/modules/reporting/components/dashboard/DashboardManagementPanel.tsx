@@ -378,7 +378,7 @@ export function DashboardManagementPanel({
       {error && <Text className="text-red-600 px-1 shrink-0">{error}</Text>}
 
       <div className="rounded shadow shrink-0" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-b border-neutral-stroke-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-b" style={{ borderBottomColor: tokens.colorNeutralStroke3 }}>
           <Subtitle2 className="mb-0">Dashboards</Subtitle2>
           <DashboardFormDialog
             nextSortOrder={nextDashboardSortOrder}
@@ -433,7 +433,7 @@ export function DashboardManagementPanel({
       </div>
 
       <div className="flex flex-col flex-1 min-h-0 rounded shadow" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-b border-neutral-stroke-2 shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-b shrink-0" style={{ borderBottomColor: tokens.colorNeutralStroke3 }}>
           <div className="flex flex-col gap-1">
             <Subtitle2 className="mb-0">Sections</Subtitle2>
             <Text size={200} className="text-neutral-600">

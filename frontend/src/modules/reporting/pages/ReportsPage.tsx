@@ -63,7 +63,7 @@ const ReportsPage = () => {
 
       {selectedTab === "reports" ? (
         <div className="flex flex-col w-full flex-1 min-h-0 rounded shadow overflow-hidden" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
-          <div className="p-3 border-b border-neutral-stroke-2">
+          <div className="p-3 border-b" style={{ borderBottomColor: tokens.colorNeutralStroke3 }}>
             <Subtitle2 className="">Your Reports</Subtitle2>
           </div>
           <div className="flex-1 min-h-0 overflow-auto">

@@ -80,3 +80,14 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Soften Fluent DataGrid / Table row dividers (Stroke2 is too strong in both modes). */
+.fui-DataGridRow,
+.fui-TableRow {
+  border-bottom-color: var(--colorNeutralStroke3);
+}
+
+.fui-DataGridHeader .fui-DataGridRow,
+.fui-TableHeader .fui-TableRow {
+  border-bottom-color: var(--colorNeutralStroke3);
+}

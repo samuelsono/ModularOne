@@ -70,7 +70,7 @@ const DriversList = () => {
       </div>
 
       <div className="flex flex-col w-full h-full rounded shadow overflow-hidden" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
-        <div className="p-3 border-b border-neutral-stroke-2 flex justify-between items-center">
+        <div className="p-3 border-b flex justify-between items-center" style={{ borderBottomColor: tokens.colorNeutralStroke3 }}>
           <Subtitle2>Your Drivers</Subtitle2>
           {!isLoading && !error && (
             <span className="text-sm text-neutral-foreground-3">{visibleDrivers.length} drivers</span>

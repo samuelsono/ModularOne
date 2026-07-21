@@ -136,7 +136,7 @@ const VehicleList = () => {
         </div>
       </div>
       <div className="flex flex-col w-full min-w-0 h-full rounded shadow overflow-hidden" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
-        <div className="p-3 border-b border-neutral-stroke-2 flex justify-between items-center gap-3">
+        <div className="p-3 border-b flex justify-between items-center gap-3" style={{ borderBottomColor: tokens.colorNeutralStroke3 }}>
           <Subtitle2>All Vehicles</Subtitle2>
           <div className="flex items-center gap-3">
             {selectedIds.length > 0 && (
