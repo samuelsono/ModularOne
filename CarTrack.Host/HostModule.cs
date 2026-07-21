@@ -19,7 +19,10 @@ public sealed class HostModule : IModule
     public string Name => "host";
 
     private const string MigrationsHistoryTable = "__EFMigrationsHistory";
-    private const string ProbeTable = "AspNetUsers";
+
+    // InitialAuth creates AspNetRoles before AspNetUsers. Require both probes so a
+    // partial Identity schema fails clearly instead of re-running CREATE AspNetRoles.
+    private static readonly string[] ProbeTables = ["AspNetUsers", "AspNetRoles"];
 
     public void AddModule(IHostApplicationBuilder builder)
     {
@@ -50,7 +53,7 @@ public sealed class HostModule : IModule
     {
         await using var scope = services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.MigrateModuleAsync(MigrationsHistoryTable, ProbeTable, cancellationToken);
+        await dbContext.MigrateModuleAsync(MigrationsHistoryTable, ProbeTables, cancellationToken);
     }
 
     public Task SeedAsync(IServiceProvider services, CancellationToken cancellationToken = default) =>

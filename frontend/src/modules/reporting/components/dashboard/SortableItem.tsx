@@ -1,5 +1,6 @@
 import { ReOrderDotsVerticalRegular } from '@fluentui/react-icons';
 import type { ReactNode } from 'react';
+import { tokens } from '@fluentui/react-components';
 
 interface SortableItemProps {
   id: string;
@@ -28,7 +29,7 @@ export function SortableItem({ id, index, label, onMove, className }: SortableIt
           onMove(fromIndex, index);
         }
       }}
-      className={`flex items-center gap-2 rounded border border-[#e3e5e7] bg-white px-3 py-2 shadow-sm cursor-grab active:cursor-grabbing ${className ?? ''}`}
+      className={`flex items-center gap-2 rounded border border-neutral-stroke-2 px-3 py-2 shadow-sm cursor-grab active:cursor-grabbing ${className ?? ''}`} style={{ backgroundColor: tokens.colorNeutralBackground1 }}
       data-sortable-id={id}
     >
       <ReOrderDotsVerticalRegular className="text-neutral-500 shrink-0" />

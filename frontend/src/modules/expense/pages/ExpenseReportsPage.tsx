@@ -269,6 +269,7 @@ export default function ExpenseReportsPage() {
                   columns={categoryColumns}
                   getRowId={(item) => item.label}
                   size="small"
+                  storageKey="expense.reports.byCategory"
                 />
               </div>
             </Card>
@@ -315,6 +316,7 @@ export default function ExpenseReportsPage() {
                 columns={historyColumns}
                 getRowId={(item) => item.id}
                 size="small"
+                storageKey="expense.reports.history"
               />
               <AppPagination
                 className="py-4"

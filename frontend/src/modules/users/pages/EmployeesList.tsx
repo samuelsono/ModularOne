@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, MessageBar, MessageBarBody, Subtitle2 } from '@fluentui/react-components';
+import { tokens, Button, MessageBar, MessageBarBody, Subtitle2 } from '@fluentui/react-components';
 import {
   MailRegular,
   MapPinRegular,
@@ -18,10 +18,11 @@ import { EmployeeFormDialog } from '@modules/users/components/EmployeeFormDialog
 import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
 import { usePermissions } from '@platform/permissions/usePermissions';
 import { ApiError } from '@platform/api/apiClient';
-import { getUsers, sendUserInvite, setUserActive } from '@modules/users/services/userService';
+import { getUsers, sendUserInvite, setUserActive, setUserInvitePending } from '@modules/users/services/userService';
 import type { UserListItem } from '@modules/users/types/user';
 import { filterEmployees } from '@modules/users/search/filters';
 import { AdjustUserLeaveBalancesDialog } from '@modules/leave/components/AdjustUserLeaveBalancesDialog';
+import { AdminResetPasswordDialog } from '@modules/users/components/AdminResetPasswordDialog';
 import { useActiveApp } from '@platform/shell/ActiveAppContext';
 
 const filters = [
@@ -46,6 +47,7 @@ const EmployeesList = () => {
   const [deactivateConfirmOpen, setDeactivateConfirmOpen] = useState(false);
   const [pendingDeactivateIds, setPendingDeactivateIds] = useState<string[]>([]);
   const [leaveAdjustmentUser, setLeaveAdjustmentUser] = useState<UserListItem | null>(null);
+  const [resetPasswordUser, setResetPasswordUser] = useState<UserListItem | null>(null);
 
   const loadEmployees = useCallback(async () => {
     setIsLoading(true);
@@ -169,8 +171,8 @@ const EmployeesList = () => {
         </div>
       )}
 
-      <div className="flex flex-col w-full h-full bg-white rounded shadow overflow-hidden">
-        <div className="p-3 border-b border-[#e3e5e7] flex justify-between items-center gap-3">
+      <div className="flex flex-col w-full h-full rounded shadow overflow-hidden" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+        <div className="p-3 border-b border-neutral-stroke-2 flex justify-between items-center gap-3">
           <Subtitle2>Your Employees</Subtitle2>
           <div className="flex items-center gap-3">
             {selectedIds.length > 0 && canEditUsers && (
@@ -236,6 +238,17 @@ const EmployeesList = () => {
           onActivate={(employee) => void runBulkAction([employee.id], (id) => setUserActive(id, { isActive: true }), 'Failed to activate employee.')}
           onDeactivate={(employee) => requestDeactivate([employee.id])}
           onSendInvite={(employee) => void runBulkAction([employee.id], (id) => sendUserInvite(id), 'Failed to send invite.')}
+          onResetPassword={setResetPasswordUser}
+          onClearInvitePending={(employee) => void runBulkAction(
+            [employee.id],
+            (id) => setUserInvitePending(id, { invitePending: false }),
+            'Failed to clear invite pending.',
+          )}
+          onMarkInvitePending={(employee) => void runBulkAction(
+            [employee.id],
+            (id) => setUserInvitePending(id, { invitePending: true }),
+            'Failed to mark invite pending.',
+          )}
           onStartLeaveAdjustment={(employee) => setLeaveAdjustmentUser(employee)}
         />
       </div>
@@ -248,6 +261,17 @@ const EmployeesList = () => {
           setDetailsEmployee(null);
           setEditEmployee(employee);
         }}
+      />
+
+      <AdminResetPasswordDialog
+        user={resetPasswordUser}
+        open={resetPasswordUser !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setResetPasswordUser(null);
+          }
+        }}
+        onSaved={handleUpdated}
       />
 
       <AdjustUserLeaveBalancesDialog

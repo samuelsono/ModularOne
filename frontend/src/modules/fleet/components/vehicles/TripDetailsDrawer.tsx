@@ -1,21 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Badge,
-  Button,
-  DrawerBody,
-  DrawerHeader,
-  DrawerHeaderTitle,
-  Menu,
-  MenuItem,
-  MenuList,
-  MenuPopover,
-  MenuTrigger,
-  MessageBar,
-  MessageBarBody,
-  OverlayDrawer,
-  Spinner,
-  Tooltip,
-} from '@fluentui/react-components';
+import { tokens, Badge, Button, DrawerBody, DrawerHeader, DrawerHeaderTitle, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, MessageBar, MessageBarBody, OverlayDrawer, Spinner, Tooltip } from '@fluentui/react-components';
 import {
   ArrowDownRegular,
   ArrowSyncRegular,
@@ -95,7 +79,7 @@ function TripEventRow({ event }: { event: VehicleEvent }) {
     : 'bg-neutral-background-3 text-neutral-foreground-2';
 
   return (
-    <li className="flex gap-3 border-b border-[#e3e5e7] px-1 py-2.5">
+    <li className="flex gap-3 border-b border-neutral-stroke-2 px-1 py-2.5">
       <Tooltip
         content={harshType ? getHarshEventLabel(harshType) : humanizeEventDescription(event.eventDescription)}
         relationship="label"
@@ -290,7 +274,7 @@ export function TripDetailsDrawer({
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
             <div className="flex flex-col gap-4">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-[#e3e5e7] p-3">
+                <div className="rounded-lg border border-neutral-stroke-2 p-3">
                   <div className="mb-1 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-neutral-foreground-3">
                     <LocationRegular fontSize={14} />
                     Start
@@ -303,7 +287,7 @@ export function TripDetailsDrawer({
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-[#e3e5e7] p-3">
+                <div className="rounded-lg border border-neutral-stroke-2 p-3">
                   <div className="mb-1 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-neutral-foreground-3">
                     <LocationRegular fontSize={14} />
                     End
@@ -318,7 +302,7 @@ export function TripDetailsDrawer({
               </div>
 
               {harshTotal > 0 && (
-                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-[#fde7e9] bg-[#fff5f6] px-3 py-2">
+                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-palette-red-border-1 bg-palette-red-background-2 px-3 py-2">
                   <div className="flex items-center gap-1 text-sm font-medium text-[#b10e1c]">
                     <WarningRegular fontSize={16} />
                     Harsh events
@@ -335,8 +319,13 @@ export function TripDetailsDrawer({
                 <div
                   className={
                     isReplayFullscreen
-                      ? 'fixed inset-0 z-[1200] flex flex-col bg-white'
-                      : 'overflow-hidden rounded-lg border border-[#e3e5e7]'
+                      ? 'fixed inset-0 z-[1200] flex flex-col'
+                      : 'overflow-hidden rounded-lg border border-neutral-stroke-2'
+                  }
+                  style={
+                    isReplayFullscreen
+                      ? { backgroundColor: tokens.colorNeutralBackground1 }
+                      : undefined
                   }
                 >
                   <TripReplayMap
@@ -380,7 +369,7 @@ export function TripDetailsDrawer({
               )}
 
               {!isLoading && !error && events.length > 0 && (
-                <ul className="max-h-[65vh] overflow-y-auto rounded-lg border border-[#e3e5e7]">
+                <ul className="max-h-[65vh] overflow-y-auto rounded-lg border border-neutral-stroke-2">
                   {events.map((event) => (
                     <TripEventRow key={event.eventId} event={event} />
                   ))}

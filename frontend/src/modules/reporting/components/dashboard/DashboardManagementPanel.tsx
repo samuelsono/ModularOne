@@ -1,20 +1,6 @@
 import * as React from 'react';
 import type { JSXElement, TableColumnDefinition } from '@fluentui/react-components';
-import {
-  Badge,
-  Button,
-  DataGrid,
-  DataGridBody,
-  DataGridCell,
-  DataGridHeader,
-  DataGridHeaderCell,
-  DataGridRow,
-  Spinner,
-  Subtitle2,
-  TableCellLayout,
-  Text,
-  createTableColumn,
-} from '@fluentui/react-components';
+import { tokens, Badge, Button, DataGrid, DataGridBody, DataGridCell, DataGridHeader, DataGridHeaderCell, DataGridRow, Spinner, Subtitle2, TableCellLayout, Text, createTableColumn } from '@fluentui/react-components';
 import { DeleteRegular, LayoutRowTwoRegular } from '@fluentui/react-icons';
 
 import { ApiError } from '@platform/api/apiClient';
@@ -391,8 +377,8 @@ export function DashboardManagementPanel({
     <div className="flex flex-col flex-1 min-h-0 gap-4 p-3 overflow-hidden h-full">
       {error && <Text className="text-red-600 px-1 shrink-0">{error}</Text>}
 
-      <div className="bg-white rounded shadow shrink-0">
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-b border-[#e3e5e7]">
+      <div className="rounded shadow shrink-0" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-b border-neutral-stroke-2">
           <Subtitle2 className="mb-0">Dashboards</Subtitle2>
           <DashboardFormDialog
             nextSortOrder={nextDashboardSortOrder}
@@ -446,8 +432,8 @@ export function DashboardManagementPanel({
         )}
       </div>
 
-      <div className="flex flex-col flex-1 min-h-0 bg-white rounded shadow">
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-b border-[#e3e5e7] shrink-0">
+      <div className="flex flex-col flex-1 min-h-0 rounded shadow" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-b border-neutral-stroke-2 shrink-0">
           <div className="flex flex-col gap-1">
             <Subtitle2 className="mb-0">Sections</Subtitle2>
             <Text size={200} className="text-neutral-600">

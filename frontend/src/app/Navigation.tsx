@@ -11,6 +11,7 @@ import {
   Persona,
   SearchBox,
   Subtitle2,
+  tokens,
 } from '@fluentui/react-components';
 import {
   BugRegular,
@@ -31,6 +32,7 @@ import { SupportDialog } from '@modules/support/components/SupportDialog';
 import { useHelpDrawer } from '@modules/help/context/HelpDrawerContext';
 import type { TicketType } from '@modules/support/types/support';
 import { useActiveApp } from '@platform/shell/ActiveAppContext';
+import { ThemeModeToggle } from '@platform/shell/ThemeModeToggle';
 
 /** App-shell composition: may import feature modules; platform shell must not. */
 const Navigation = () => {
@@ -43,8 +45,9 @@ const Navigation = () => {
     <nav
       className={`${styles.nav} fixed top-0 left-0 right-0 border-b`}
       style={{
-        backgroundColor: 'var(--colorBrandBackground)',
-        color: 'var(--colorBrandBackgroundInverted)',
+        backgroundColor: tokens.colorBrandBackground,
+        color: tokens.colorBrandBackgroundInverted,
+        borderBottomColor: tokens.colorNeutralStrokeOnBrand,
       }}
     >
       <div className={styles.navGroup}>
@@ -66,12 +69,13 @@ const Navigation = () => {
 
       <div className={styles.navGroup}>
         <NotificationsDialog />
+        <ThemeModeToggle />
         <Button
           icon={<SettingsRegular className={styles.icon18} />}
           appearance="transparent"
           aria-label="Settings"
           onClick={() => navigate('/settings')}
-          style={{ color: 'var(--colorBrandBackgroundInverted)' }}
+          style={{ color: tokens.colorBrandBackgroundInverted }}
         />
         <HelpCenterDrawer />
         <Divider vertical style={{ height: '100%', marginInline: '5px' }} />

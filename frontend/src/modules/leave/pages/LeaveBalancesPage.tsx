@@ -418,6 +418,7 @@ function LeaveRequestSection({
           getRowId={(item) => item.id}
 
           columnSizingOptions={leaveTableColumnSizing}
+          storageKey="leave.balances"
 
         />
         </ScrollableDiv>
@@ -916,6 +917,7 @@ export default function LeaveBalancesPage() {
                 columns={leaveBalanceLiabilityColumns}
                 getRowId={(item) => item.id}
                 columnSizingOptions={leaveTableColumnSizing}
+                storageKey="leave.balances.liability"
               />
               </ScrollableDiv>
 

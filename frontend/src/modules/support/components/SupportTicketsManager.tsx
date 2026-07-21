@@ -132,7 +132,7 @@ function TicketDetailPanel({
   }
 
   return (
-    <aside className="w-[360px] shrink-0 border-l border-[#e3e5e7] p-4 flex flex-col gap-4 overflow-y-auto">
+    <aside className="w-[360px] shrink-0 border-l border-neutral-stroke-2 p-4 flex flex-col gap-4 overflow-y-auto">
       <div className="flex items-start justify-between gap-2">
         <div>
           <Subtitle2>{ticket.subject}</Subtitle2>

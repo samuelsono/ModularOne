@@ -489,7 +489,7 @@ export function ReportBuilderDialog({ report, onSaved, trigger }: ReportBuilderD
                     </Field>
 
                     <Field label="Dashboard sections" className="col-span-2">
-                      <div className="flex flex-col gap-3 rounded border border-[#e3e5e7] p-3 max-h-56 overflow-y-auto">
+                      <div className="flex flex-col gap-3 rounded border border-neutral-stroke-2 p-3 max-h-56 overflow-y-auto">
                         {isEdit && (
                           <span className="text-sm text-neutral-600">
                             Checked sections control where this report appears on dashboards. Add or remove sections, then save.

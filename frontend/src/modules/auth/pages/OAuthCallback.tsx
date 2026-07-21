@@ -26,7 +26,7 @@ export default function OAuthCallbackPage() {
       }
 
       try {
-        setTokens(accessToken, refreshToken, true);
+        setTokens(accessToken, refreshToken, true, Number.parseInt(params.get('expiresIn') ?? '', 10) || undefined);
         await getCurrentUser();
         await refreshUser();
         markUseDefaultModuleOnLogin();

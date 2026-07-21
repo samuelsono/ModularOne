@@ -149,6 +149,7 @@ export default function LeaveApprovalsPage() {
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
               getRowId={(item) => item.id}
+              storageKey="leave.approvals"
             />
           </>
         )}

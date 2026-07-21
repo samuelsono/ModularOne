@@ -27,7 +27,7 @@ Install the .NET 10 ASP.NET Core runtime (or hosting bundle) from [Microsoft’s
 
 ## 2. PostgreSQL
 
-See [postgres/setup.md](./postgres/setup.md).
+See [postgres/setup.md](./postgres/setup.md). If startup fails with `AspNetRoles already exists`, follow [postgres/migration-recovery.md](./postgres/migration-recovery.md).
 
 ## 3. Redis
 

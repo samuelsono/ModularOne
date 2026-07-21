@@ -4,7 +4,7 @@ public record LoginRequest(string Username, string Password, bool RememberMe = f
 
 public record MfaLoginRequest(string MfaToken, string Code, bool RememberMe = false);
 
-public record RefreshTokenRequest(string RefreshToken);
+public record RefreshTokenRequest(string RefreshToken, bool RememberMe = false);
 
 public record ForgotPasswordRequest(string Email);
 

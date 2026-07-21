@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { FluentProvider, makeStyles } from '@fluentui/react-components';
+import { FluentProvider, makeStyles, tokens } from '@fluentui/react-components';
 
 import './index.css';
 import App from './app/App';
@@ -13,7 +13,7 @@ export const theme = resolveThemeByName();
 
 export const useStyles = makeStyles({
   content: {
-    backgroundColor: theme.colorNeutralBackground3,
+    backgroundColor: tokens.colorNeutralBackground3,
   },
 });
 

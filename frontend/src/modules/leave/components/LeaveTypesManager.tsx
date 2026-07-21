@@ -39,6 +39,7 @@ import {
 } from '@modules/leave/services/leaveService';
 import type { LeaveType, SaveLeaveTypeRequest } from '@modules/leave/types/leave';
 import AppTitle from '@platform/ui/AppTitle';
+import { usePersistedColumnSizing } from '@platform/utils/usePersistedColumnSizing';
 import { withAuditableColumns } from '@platform/ui/auditTableColumns';
 import { LeaveNoticeDialog } from './LeaveNoticeDialog';
 import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
@@ -494,6 +495,13 @@ export function LeaveTypesManager({ canWrite }: LeaveTypesManagerProps) {
     [canWrite, loadTypes],
   );
 
+  const { columnSizingOptions: persistedSizing, onColumnResize } = usePersistedColumnSizing(
+    'leave.types',
+    columns,
+    columnSizingOptions,
+  );
+
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-4 px-3">
@@ -555,7 +563,8 @@ export function LeaveTypesManager({ canWrite }: LeaveTypesManagerProps) {
           No leave types match your search.
         </Text>
       ) : (
-        <DataGrid items={filteredTypes} columnSizingOptions={columnSizingOptions} resizableColumns columns={columns} getRowId={(item) => item.id}>
+        <DataGrid items={filteredTypes} columnSizingOptions={persistedSizing}
+        onColumnResize={onColumnResize} resizableColumns columns={columns} getRowId={(item) => item.id}>
           <DataGridHeader>
             <DataGridRow>
               {({ renderHeaderCell }) => (

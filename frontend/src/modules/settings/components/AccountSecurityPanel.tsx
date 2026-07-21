@@ -183,7 +183,7 @@ export function AccountSecurityPanel() {
         </Button>
       </form>
 
-      <div className="flex flex-col gap-3 border-t border-[#e3e5e7] pt-4">
+      <div className="flex flex-col gap-3 border-t border-neutral-stroke-2 pt-4">
         <Subtitle2>Two-factor authentication</Subtitle2>
         <Text className="text-sm text-neutral-foreground-3">
           {user?.twoFactorEnabled

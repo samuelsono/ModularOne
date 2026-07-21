@@ -7,6 +7,8 @@ import type {
   RoleSummary,
   SetUserActiveRequest,
   SetUserRolesRequest,
+  AdminSetPasswordRequest,
+  SetInvitePendingRequest,
   UpdateUserRequest,
   UserDetail,
   UserListResponse,
@@ -89,6 +91,26 @@ export function createUserFromDriver(
 export function sendUserInvite(id: string): Promise<UserDetail> {
   return authorizedFetch<UserDetail>(`${USERS_BASE}/${id}/invite`, {
     method: 'POST',
+  });
+}
+
+export function adminSetUserPassword(
+  id: string,
+  request: AdminSetPasswordRequest,
+): Promise<UserDetail> {
+  return authorizedFetch<UserDetail>(`${USERS_BASE}/${id}/password`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export function setUserInvitePending(
+  id: string,
+  request: SetInvitePendingRequest,
+): Promise<UserDetail> {
+  return authorizedFetch<UserDetail>(`${USERS_BASE}/${id}/invite-pending`, {
+    method: 'PATCH',
+    body: JSON.stringify(request),
   });
 }
 

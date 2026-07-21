@@ -15,7 +15,7 @@ import { NavLink } from "react-router-dom";
 import { useStyles } from '@platform/shell/navStyles';
 import { useActiveApp } from '@platform/shell/ActiveAppContext';
 import { isModuleNavItem } from '@platform/permissions/apps';
-import { Divider } from "@fluentui/react-components";
+import { tokens } from "@fluentui/react-components";
 
 const NAV_ICONS: Record<string, typeof HomeRegular> = {
   Home: HomeRegular,
@@ -63,7 +63,11 @@ const SideNavigation = () => {
   }
 
   return (
-    <nav className={`${styles.sideNav} px-x bg-slate-50`} aria-label={`${currentModule?.name ?? 'Application'} navigation`}>
+    <nav
+      className={`${styles.sideNav} px-x`}
+      style={{ backgroundColor: tokens.colorNeutralBackground2 }}
+      aria-label={`${currentModule?.name ?? 'Application'} navigation`}
+    >
       {currentNavItems.map((entry) => {
         if (!isModuleNavItem(entry)) {
           return (
@@ -72,7 +76,10 @@ const SideNavigation = () => {
               className="flex justify-center w-14 shrink-0"
               aria-hidden="true"
             >
-              <div className="w-9 h-px bg-neutral-stroke-2" />
+              <div
+                className="w-9 h-px"
+                style={{ backgroundColor: tokens.colorNeutralStroke2 }}
+              />
             </div>
           );
         }
@@ -86,9 +93,7 @@ const SideNavigation = () => {
             end={entry.path === '/' || entry.path === '/leave' || entry.path === '/expense' || entry.path === '/expense/reports'}
             title={entry.label}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center w-14 h-14 hover:bg-gray-200 ${
-                isActive ? 'bg-gray-100 font-semibold border-l-2 ' + styles.activeLink : ''
-              }`
+              `${styles.navLink}${isActive ? ` ${styles.activeLink}` : ''}`
             }
           >
             <Icon className={styles.icon18} />

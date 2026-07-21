@@ -28,6 +28,7 @@ import type {
   TableColumnDefinition,
 } from "@fluentui/react-components";
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
+import { usePersistedColumnSizing } from '@platform/utils/usePersistedColumnSizing';
 import { notifyDashboardChanged } from '@modules/reporting/utils/dashboardStorage';
 import type { Report, ReportType } from '@modules/reporting/types/report';
 import { ApiError } from '@platform/api/apiClient';
@@ -368,6 +369,12 @@ export const ReportsTable = ({
     actions: { minWidth: 160, defaultWidth: 170 },
   };
 
+  const { columnSizingOptions: persistedSizing, onColumnResize } = usePersistedColumnSizing(
+    'reporting.reports',
+    columns,
+    columnSizingOptions,
+  );
+
   if (loading) {
     return (
       <div className="flex h-[80vh] justify-center items-center gap-2 p-6">
@@ -403,7 +410,8 @@ export const ReportsTable = ({
         columns={columns}
         sortable
         resizableColumns
-        columnSizingOptions={columnSizingOptions}
+        columnSizingOptions={persistedSizing}
+        onColumnResize={onColumnResize}
         selectionMode="multiselect"
         getRowId={(item) => item.id}
         focusMode="composite"

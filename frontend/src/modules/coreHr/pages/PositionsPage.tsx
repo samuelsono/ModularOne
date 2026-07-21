@@ -93,12 +93,14 @@ export default function PositionsPage() {
       <div className="flex-1 min-h-0 overflow-auto">
         {isLoading ? <Spinner label="Loading positions..." /> : (
           <AutoFitDataGrid
-            enableColumnSizing 
+            enableColumnSizing
             selectionMode='multiselect'
-            items={filteredItems} 
-            columns={columns} 
-            getRowId={(item) => item.id} 
-            size="small" />
+            items={filteredItems}
+            columns={columns}
+            getRowId={(item) => item.id}
+            size="small"
+            storageKey="corehr.positions"
+          />
         )}
       </div>
       <PositionFormDialog open={dialogOpen} initial={editing} onClose={() => setDialogOpen(false)} onSaved={() => void loadItems()} />

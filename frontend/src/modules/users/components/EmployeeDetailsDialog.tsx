@@ -126,7 +126,7 @@ export function EmployeeDetailsDialog({
       }}
     >
       <DialogSurface className="flex! max-h-[90vh]! w-[640px]! max-w-[95vw]! flex-col! p-0!">
-        <div className="border-b border-[#e3e5e7] px-6 pb-4 pt-6">
+        <div className="border-b border-neutral-stroke-2 px-6 pb-4 pt-6">
           <div className="flex items-start gap-4">
             <Avatar name={displayName} color="brand" size={72} />
             <div className="min-w-0 flex-1">
@@ -231,7 +231,7 @@ export function EmployeeDetailsDialog({
           )}
         </div>
 
-        <div className="border-t border-[#e3e5e7] px-6 py-4">
+        <div className="border-t border-neutral-stroke-2 px-6 py-4">
           <Button
             appearance="secondary"
             className="w-full"

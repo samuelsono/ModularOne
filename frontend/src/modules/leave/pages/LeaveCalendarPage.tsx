@@ -1,16 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Badge,
-  Button,
-  Dropdown,
-  Field,
-  MessageBar,
-  MessageBarBody,
-  Option,
-  Spinner,
-  Text,
-  Tooltip,
-} from '@fluentui/react-components';
+import { tokens, Badge, Button, Dropdown, Field, MessageBar, MessageBarBody, Option, Spinner, Text, Tooltip } from '@fluentui/react-components';
 import { ChevronLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
 import { getLeaveCalendar } from '@modules/leave/services/leaveService';
@@ -97,9 +86,15 @@ function LeaveDayCell({
 
   return (
     <td
-      className={`align-top border border-[#e3e5e7] p-2 min-w-[120px] h-[120px] vertical-align-top ${
-        isWeekend ? 'bg-neutral-50' : 'bg-white'
-      } ${isToday ? 'ring-2 ring-inset ring-blue-500' : ''}`}
+      className={`align-top border p-2 min-w-[120px] h-[120px] vertical-align-top ${
+        isToday ? 'ring-2 ring-inset ring-blue-500' : ''
+      }`}
+      style={{
+        borderColor: tokens.colorNeutralStroke3,
+        backgroundColor: isWeekend
+          ? tokens.colorNeutralBackground2
+          : tokens.colorNeutralBackground1,
+      }}
     >
       <div className="flex items-start justify-between gap-1 mb-1">
         <Text weight="semibold" size={200}>{day.getDate()}</Text>
@@ -334,14 +329,24 @@ export default function LeaveCalendarPage() {
       {isLoading ? (
         <Spinner label="Loading calendar..." />
       ) : (
-        <div className="overflow-x-auto rounded border border-[#e3e5e7] bg-white">
+        <div
+          className="overflow-x-auto rounded border"
+          style={{
+            backgroundColor: tokens.colorNeutralBackground1,
+            borderColor: tokens.colorNeutralStroke3,
+          }}
+        >
           <table className="w-full min-w-[840px] border-collapse table-fixed">
             <thead>
               <tr>
                 {WEEKDAY_LABELS.map((label) => (
                   <th
                     key={label}
-                    className="border border-[#e3e5e7] bg-neutral-background-2 px-2 py-2 text-left text-sm font-semibold"
+                    className="border px-2 py-2 text-left text-sm font-semibold"
+                    style={{
+                      backgroundColor: tokens.colorNeutralBackground2,
+                      borderColor: tokens.colorNeutralStroke3,
+                    }}
                   >
                     {label}
                   </th>
@@ -356,7 +361,11 @@ export default function LeaveCalendarPage() {
                       return (
                         <td
                           key={`empty-${weekIndex}-${dayIndex}`}
-                          className="border border-[#e3e5e7] bg-neutral-100 min-w-[120px] h-[120px]"
+                          className="border min-w-[120px] h-[120px]"
+                          style={{
+                            backgroundColor: tokens.colorNeutralBackground3,
+                            borderColor: tokens.colorNeutralStroke3,
+                          }}
                         />
                       );
                     }

@@ -220,6 +220,7 @@ export default function LeaveRequestsPage() {
               onSelectionChange={setSelectedIds}
               getRowId={(item) => item.id}
               columnSizingOptions={leaveTableColumnSizing}
+              storageKey="leave.requests"
             />
           </>
         )}

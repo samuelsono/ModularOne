@@ -604,6 +604,111 @@ public class UserService(
         return await GetByIdAsync(id, cancellationToken);
     }
 
+    public async Task<UserDetailDto?> AdminSetPasswordAsync(
+        string id,
+        AdminSetPasswordRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            throw new InvalidOperationException("A new password is required.");
+        }
+
+        var user = await userManager.Users.SingleOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+        if (user is null)
+        {
+            return null;
+        }
+
+        if (!user.IsActive)
+        {
+            throw new InvalidOperationException("Cannot reset the password for an inactive user.");
+        }
+
+        var hasPassword = await userManager.HasPasswordAsync(user);
+        IdentityResult result;
+        if (hasPassword)
+        {
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            result = await userManager.ResetPasswordAsync(user, token, request.NewPassword);
+        }
+        else
+        {
+            result = await userManager.AddPasswordAsync(user, request.NewPassword);
+        }
+
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException(string.Join(" ", result.Errors.Select(error => error.Description)));
+        }
+
+        user.MustChangePassword = request.MustChangePassword;
+        if (request.ClearInvitePending)
+        {
+            user.InvitePendingAt = null;
+            user.EmailConfirmed = true;
+        }
+
+        await userManager.UpdateAsync(user);
+        await tokenService.RevokeAllRefreshTokensAsync(user.Id, cancellationToken);
+        await auditService.LogAsync(
+            SecurityAuditActions.UserPasswordResetByAdmin,
+            user.Id,
+            user.DisplayName ?? user.UserName,
+            request.ClearInvitePending
+                ? "Password reset by administrator; invite pending cleared."
+                : "Password reset by administrator.",
+            cancellationToken);
+
+        return await GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task<UserDetailDto?> SetInvitePendingAsync(
+        string id,
+        SetInvitePendingRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.Users.SingleOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+        if (user is null)
+        {
+            return null;
+        }
+
+        if (!user.IsActive && request.InvitePending)
+        {
+            throw new InvalidOperationException("Cannot mark an inactive user as invite pending.");
+        }
+
+        if (request.InvitePending)
+        {
+            user.InvitePendingAt = DateTimeOffset.UtcNow;
+            user.MustChangePassword = true;
+            user.EmailConfirmed = false;
+            await userManager.UpdateAsync(user);
+            await auditService.LogAsync(
+                SecurityAuditActions.UserInvitePendingSet,
+                user.Id,
+                user.DisplayName ?? user.UserName,
+                "Invite pending set by administrator.",
+                cancellationToken);
+        }
+        else
+        {
+            user.InvitePendingAt = null;
+            user.MustChangePassword = false;
+            user.EmailConfirmed = true;
+            await userManager.UpdateAsync(user);
+            await auditService.LogAsync(
+                SecurityAuditActions.UserInvitePendingCleared,
+                user.Id,
+                user.DisplayName ?? user.UserName,
+                "Invite pending cleared by administrator.",
+                cancellationToken);
+        }
+
+        return await GetByIdAsync(id, cancellationToken);
+    }
+
     private async Task<UserDetailDto> MapDetailAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         var roles = await userManager.GetRolesAsync(user);

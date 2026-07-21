@@ -3,6 +3,8 @@ import type { AuthUser } from '@platform/auth/types';
 import { ApiError } from '@platform/api/apiClient';
 import * as authService from '@platform/api/authService';
 import { clearTokens, hasStoredSession } from '@platform/api/tokenStorage';
+import { SESSION_EXPIRED_EVENT } from '@platform/auth/sessionEvents';
+import { startSessionKeepAlive, stopSessionKeepAlive } from '@platform/auth/sessionKeepAlive';
 import { markUseDefaultModuleOnLogin } from '@platform/utils/appModuleStorage';
 
 interface AuthContextValue {
@@ -63,6 +65,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  React.useEffect(() => {
+    function onSessionExpired() {
+      setUser(null);
+      stopSessionKeepAlive();
+    }
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () => {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (user) {
+      startSessionKeepAlive();
+      return () => {
+        stopSessionKeepAlive();
+      };
+    }
+
+    stopSessionKeepAlive();
+    return undefined;
+  }, [user]);
+
   const login = React.useCallback(async (username: string, password: string, rememberMe = false) => {
     const result = await authService.loginAndStoreSession({ username, password, rememberMe });
 
@@ -85,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await authService.logout();
     } finally {
+      stopSessionKeepAlive();
       setUser(null);
     }
   }, []);

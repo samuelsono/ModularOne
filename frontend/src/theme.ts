@@ -212,9 +212,24 @@ export const themeNames = {
 
 export type ThemeName = keyof typeof themeNames;
 
+export type ColorMode = 'light' | 'dark' | 'system';
+
+export const COLOR_MODES: ColorMode[] = ['light', 'dark', 'system'];
+
 export const DEFAULT_THEME_NAME: ThemeName = 'talisLightTheme';
+export const DEFAULT_COLOR_MODE: ColorMode = 'system';
 
 export const availableThemeNames = Object.keys(themeNames) as ThemeName[];
+
+/** Light/dark pairs for each brand palette configured in settings. */
+const themePairs: Array<{ light: ThemeName; dark: ThemeName }> = [
+  { light: 'nelotecLightTheme', dark: 'nelotecDarkTheme' },
+  { light: 'bronzeLightTheme', dark: 'bronzeDarkTheme' },
+  { light: 'talisFleetLight', dark: 'talisFleetDark' },
+  { light: 'talisLightTheme', dark: 'talisDarkTheme' },
+  { light: 'lightBlackTheme', dark: 'darkBlackTheme' },
+  { light: 'lightTeamsTheme', dark: 'darkTeamsTheme' },
+];
 
 export function resolveThemeByName(themeName?: string | null): Theme {
   if (!themeName) {
@@ -223,4 +238,30 @@ export function resolveThemeByName(themeName?: string | null): Theme {
 
   const selectedTheme = themeNames[themeName as ThemeName];
   return selectedTheme ?? themeNames[DEFAULT_THEME_NAME];
+}
+
+export function getThemePair(themeName: ThemeName): { light: ThemeName; dark: ThemeName } {
+  const pair = themePairs.find(
+    (entry) => entry.light === themeName || entry.dark === themeName,
+  );
+
+  return pair ?? {
+    light: DEFAULT_THEME_NAME,
+    dark: 'talisDarkTheme',
+  };
+}
+
+export function resolveEffectiveThemeName(
+  configuredThemeName: ThemeName,
+  colorMode: ColorMode,
+  prefersDark: boolean,
+): ThemeName {
+  const pair = getThemePair(configuredThemeName);
+  const useDark = colorMode === 'dark' || (colorMode === 'system' && prefersDark);
+  return useDark ? pair.dark : pair.light;
+}
+
+export function nextColorMode(current: ColorMode): ColorMode {
+  const index = COLOR_MODES.indexOf(current);
+  return COLOR_MODES[(index + 1) % COLOR_MODES.length] ?? DEFAULT_COLOR_MODE;
 }

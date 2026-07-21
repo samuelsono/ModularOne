@@ -34,7 +34,7 @@ export function LeaveBulkActionBar({
     .map((item) => item.id);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded border border-[#e3e5e7] bg-neutral-background-2 px-4 py-3 mx-6">
+    <div className="flex flex-wrap items-center gap-2 rounded border border-neutral-stroke-2 bg-neutral-background-2 px-4 py-3 mx-6">
       <Text size={200} weight="semibold">
         {selectedItems.length} selected
       </Text>

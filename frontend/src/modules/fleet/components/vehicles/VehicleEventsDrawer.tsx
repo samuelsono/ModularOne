@@ -73,7 +73,7 @@ const EventRow = ({ event }: { event: VehicleEvent }) => {
   const speed = formatSpeed(event.speed);
 
   return (
-    <li className="flex gap-3 border-b border-[#e3e5e7] px-1 py-3">
+    <li className="flex gap-3 border-b border-neutral-stroke-2 px-1 py-3">
       <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-background-3 text-neutral-foreground-2">
         <VehicleCarProfileLtrRegular fontSize={18} />
       </div>

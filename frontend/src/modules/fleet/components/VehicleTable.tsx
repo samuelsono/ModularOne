@@ -367,6 +367,7 @@ export const VehicleTable = ({
         selectedIds={selectedIds ? [...selectedIds].map(String) : undefined}
         onSelectionChange={onSelectionChange}
         getRowId={(item) => item.id}
+        storageKey="fleet.vehicles"
       />
     </div>
   );

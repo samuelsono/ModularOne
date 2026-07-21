@@ -10,6 +10,7 @@ interface LeaveSelectableDataGridProps<TItem> {
   getRowId: (item: TItem) => string;
   columnSizingOptions?: TableColumnSizingOptions;
   enableColumnSizing?: boolean;
+  storageKey?: string;
 }
 
 export function LeaveSelectableDataGrid<TItem>({
@@ -20,6 +21,7 @@ export function LeaveSelectableDataGrid<TItem>({
   getRowId,
   columnSizingOptions = leaveTableColumnSizing,
   enableColumnSizing = true,
+  storageKey,
 }: LeaveSelectableDataGridProps<TItem>) {
   return (
     <AutoFitDataGrid
@@ -28,6 +30,7 @@ export function LeaveSelectableDataGrid<TItem>({
       getRowId={getRowId}
       columnSizingOptions={columnSizingOptions}
       enableColumnSizing={enableColumnSizing}
+      storageKey={storageKey}
       selectionMode="multiselect"
       selectedIds={selectedIds}
       onSelectionChange={onSelectionChange}

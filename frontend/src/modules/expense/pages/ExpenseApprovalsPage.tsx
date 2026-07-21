@@ -315,6 +315,7 @@ export default function ExpenseApprovalsPage() {
             columns={activeColumns}
             getRowId={(item) => item.id}
             size="small"
+            storageKey="expense.approvals"
           />
         )}
       </div>

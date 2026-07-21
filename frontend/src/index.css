@@ -2,6 +2,27 @@
 
 @theme {
   --container-8xl: 90rem;
+
+  /* Bridge Fluent CSS variables so Tailwind color utilities follow the active theme. */
+  --color-neutral-background-1: var(--colorNeutralBackground1);
+  --color-neutral-background-2: var(--colorNeutralBackground2);
+  --color-neutral-background-3: var(--colorNeutralBackground3);
+  --color-neutral-background-1-hover: var(--colorNeutralBackground1Hover);
+  --color-neutral-stroke-1: var(--colorNeutralStroke1);
+  --color-neutral-stroke-2: var(--colorNeutralStroke2);
+  --color-neutral-stroke-3: var(--colorNeutralStroke3);
+  --color-neutral-stroke-alpha: var(--colorNeutralStrokeAlpha);
+  --color-neutral-stroke-accessible: var(--colorNeutralStrokeAccessible);
+  --color-neutral-foreground-1: var(--colorNeutralForeground1);
+  --color-neutral-foreground-2: var(--colorNeutralForeground2);
+  --color-neutral-foreground-3: var(--colorNeutralForeground3);
+  --color-brand-background: var(--colorBrandBackground);
+  --color-brand-background-2: var(--colorBrandBackground2);
+  --color-brand-stroke-1: var(--colorBrandStroke1);
+  --color-brand-foreground-1: var(--colorBrandForeground1);
+  --color-palette-red-border-1: var(--colorPaletteRedBorder1);
+  --color-palette-red-background-1: var(--colorPaletteRedBackground1);
+  --color-palette-red-background-2: var(--colorPaletteRedBackground2);
 }
 
 :root {

@@ -73,7 +73,7 @@ export default function CompaniesPage() {
       {error ? <MessageBar intent="error" className="mx-3"><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
       <div className="flex-1 min-h-0 overflow-auto">
         {isLoading ? <Spinner label="Loading companies..." /> : (
-          <AutoFitDataGrid items={filteredItems} columns={columns} getRowId={(item) => item.id} size="small" />
+          <AutoFitDataGrid items={filteredItems} columns={columns} getRowId={(item) => item.id} size="small" storageKey="corehr.companies" />
         )}
       </div>
       <CompanyFormDialog open={dialogOpen} initial={editing} onClose={() => setDialogOpen(false)} onSaved={() => void loadItems()} />

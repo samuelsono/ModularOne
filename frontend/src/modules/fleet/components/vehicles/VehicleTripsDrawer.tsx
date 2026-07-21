@@ -81,7 +81,7 @@ const TripRow = ({ trip, onSelect }: { trip: Trip; onSelect: (trip: Trip) => voi
     <li>
       <button
         type="button"
-        className="flex w-full gap-3 border-b border-[#e3e5e7] px-1 py-3 text-left transition-colors hover:bg-neutral-background-2"
+        className="flex w-full gap-3 border-b border-neutral-stroke-2 px-1 py-3 text-left transition-colors hover:bg-neutral-background-2"
         onClick={() => onSelect(trip)}
       >
         <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-background-3 text-neutral-foreground-2">

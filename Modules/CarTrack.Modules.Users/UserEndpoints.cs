@@ -47,6 +47,12 @@ public static class UserEndpoints
         group.MapPost("/{id}/invite", SendInviteAsync)
             .RequirePermission(WritePermission);
 
+        group.MapPost("/{id}/password", AdminSetPasswordAsync)
+            .RequirePermission(WritePermission);
+
+        group.MapPatch("/{id}/invite-pending", SetInvitePendingAsync)
+            .RequirePermission(WritePermission);
+
         return group;
     }
 
@@ -227,6 +233,46 @@ public static class UserEndpoints
         {
             return Results.Problem(
                 title: "Unable to send invite",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<IResult> AdminSetPasswordAsync(
+        string id,
+        AdminSetPasswordRequest request,
+        IUserService userService,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await userService.AdminSetPasswordAsync(id, request, cancellationToken);
+            return user is null ? Results.NotFound() : Results.Ok(user);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Problem(
+                title: "Unable to reset password",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<IResult> SetInvitePendingAsync(
+        string id,
+        SetInvitePendingRequest request,
+        IUserService userService,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await userService.SetInvitePendingAsync(id, request, cancellationToken);
+            return user is null ? Results.NotFound() : Results.Ok(user);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Problem(
+                title: "Unable to update invite status",
                 detail: ex.Message,
                 statusCode: StatusCodes.Status400BadRequest);
         }

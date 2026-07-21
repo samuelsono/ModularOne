@@ -1,4 +1,4 @@
-import { makeStyles } from '@fluentui/react-components';
+import { makeStyles, tokens } from '@fluentui/react-components';
 
 export const useStyles = makeStyles({
   sideNav: {
@@ -21,12 +21,27 @@ export const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'center',
     display: 'flex',
-    backgroundColor: 'var(--colorNeutralBackground5)',
+  },
+  navLink: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '56px',
+    height: '56px',
+    textDecoration: 'none',
+    color: tokens.colorNeutralForeground2,
+    borderLeft: `2px solid transparent`,
+    ':hover': {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+      color: tokens.colorNeutralForeground1,
+    },
   },
   activeLink: {
-    color: 'var(--colorNeutralForeground2BrandHover)',
-    borderBlockColor: 'var(--colorBrandForegroundInverted)',
-    fontWeight: 'bold',
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorBrandForeground1,
+    borderLeftColor: tokens.colorBrandStroke1,
+    fontWeight: 600,
   },
   ul: {
     listStyleType: 'none',
@@ -47,7 +62,7 @@ export const useStyles = makeStyles({
   },
   a: {
     textDecoration: 'none',
-    color: '#007bff',
+    color: tokens.colorBrandForeground1,
   },
   searchBox: {
     width: '400px',

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Body1, Button, Card, CardHeader, Text } from '@fluentui/react-components';
+import { Body1, Button, Card, CardHeader, Text, tokens } from '@fluentui/react-components';
 import { MoreHorizontal20Regular } from '@fluentui/react-icons/svg/more-horizontal';
 
 import type { ReportWithData } from '@modules/reporting/types/report';
@@ -73,8 +73,11 @@ export function ReportWidget({ item, sectionId, onUpdated }: ReportWidgetProps) 
           </div>
         </Card> */}
         <div
-          className='h-full min-h-0 flex flex-col shadow rounded p-4 border border-gray-200'
-          style={{ backgroundColor: 'var(--colorNeutralBackground1)' }}
+          className="h-full min-h-0 flex flex-col shadow rounded p-4 border"
+          style={{
+            backgroundColor: tokens.colorNeutralBackground1,
+            borderColor: tokens.colorNeutralStroke3,
+          }}
         >
           <div className='flex items-center justify-between w-full'>
               <div className='flex flex-col'>

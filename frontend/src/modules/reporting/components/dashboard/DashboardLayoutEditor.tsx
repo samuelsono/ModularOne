@@ -1,10 +1,4 @@
-import {
-  Button,
-  MessageBar,
-  MessageBarBody,
-  Subtitle2,
-  Text,
-} from '@fluentui/react-components';
+import { tokens, Button, MessageBar, MessageBarBody, Subtitle2, Text } from '@fluentui/react-components';
 import { useEffect, useState } from 'react';
 
 import type { Dashboard } from '@modules/reporting/types/dashboard';
@@ -153,7 +147,7 @@ function SectionEditorNode({ section, path, onMoveSection, onMoveLayoutItem }: S
   const rootIndex = path[0] ?? 0;
 
   return (
-    <div className="rounded border border-[#d1d5db] bg-neutral-50 p-3">
+    <div className="rounded border border-neutral-stroke-1 p-3" style={{ backgroundColor: tokens.colorNeutralBackground2 }}>
       {isRoot ? (
         <SortableItem
           id={section.id}

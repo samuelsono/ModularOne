@@ -34,4 +34,14 @@ public interface IUserService
         CancellationToken cancellationToken = default);
 
     Task<UserDetailDto?> SendInviteAsync(string id, CancellationToken cancellationToken = default);
+
+    Task<UserDetailDto?> AdminSetPasswordAsync(
+        string id,
+        AdminSetPasswordRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<UserDetailDto?> SetInvitePendingAsync(
+        string id,
+        SetInvitePendingRequest request,
+        CancellationToken cancellationToken = default);
 }

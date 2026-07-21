@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
-import { Subtitle2, Tab, TabList } from "@fluentui/react-components";
+import { tokens, Subtitle2, Tab, TabList } from '@fluentui/react-components';
 import { ReportsTable } from '@modules/reporting/components/ReportsTable';
 import AppFilters from '@platform/ui/AppFilters';
 import { DashboardManagementPanel } from '@modules/reporting/components/dashboard/DashboardManagementPanel';
@@ -62,8 +62,8 @@ const ReportsPage = () => {
       </TabList>
 
       {selectedTab === "reports" ? (
-        <div className="flex flex-col w-full flex-1 min-h-0 bg-white rounded shadow overflow-hidden">
-          <div className="p-3 border-b border-[#e3e5e7]">
+        <div className="flex flex-col w-full flex-1 min-h-0 rounded shadow overflow-hidden" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+          <div className="p-3 border-b border-neutral-stroke-2">
             <Subtitle2 className="">Your Reports</Subtitle2>
           </div>
           <div className="flex-1 min-h-0 overflow-auto">

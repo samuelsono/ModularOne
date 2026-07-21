@@ -27,6 +27,9 @@ import {
   CalendarCheckmarkRegular,
   EditRegular,
   EyeRegular,
+  KeyRegular,
+  MailCheckmarkRegular,
+  MailDismissRegular,
   MailRegular,
   MoreHorizontalRegular,
   PersonAccountsRegular,
@@ -35,6 +38,7 @@ import {
 } from '@fluentui/react-icons';
 import type { UserListItem } from '@modules/users/types/user';
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
+import { usePersistedColumnSizing } from '@platform/utils/usePersistedColumnSizing';
 import { usePermissions } from '@platform/permissions/usePermissions';
 import { withAuditableColumns } from '@platform/ui/auditTableColumns';
 import { useActiveApp } from '@platform/shell/ActiveAppContext';
@@ -50,6 +54,9 @@ interface EmployeesTableProps {
   onActivate?: (employee: UserListItem) => void;
   onDeactivate?: (employee: UserListItem) => void;
   onSendInvite?: (employee: UserListItem) => void;
+  onResetPassword?: (employee: UserListItem) => void;
+  onClearInvitePending?: (employee: UserListItem) => void;
+  onMarkInvitePending?: (employee: UserListItem) => void;
   onStartLeaveAdjustment?: (employee: UserListItem) => void;
 }
 
@@ -87,6 +94,9 @@ const EmployeeActions = ({
   onActivate,
   onDeactivate,
   onSendInvite,
+  onResetPassword,
+  onClearInvitePending,
+  onMarkInvitePending,
   onStartLeaveAdjustment,
 }: {
   item: UserListItem;
@@ -97,6 +107,9 @@ const EmployeeActions = ({
   onActivate?: (employee: UserListItem) => void;
   onDeactivate?: (employee: UserListItem) => void;
   onSendInvite?: (employee: UserListItem) => void;
+  onResetPassword?: (employee: UserListItem) => void;
+  onClearInvitePending?: (employee: UserListItem) => void;
+  onMarkInvitePending?: (employee: UserListItem) => void;
   onStartLeaveAdjustment?: (employee: UserListItem) => void;
 }) => (
   <div
@@ -142,9 +155,21 @@ const EmployeeActions = ({
           {canEdit && (
             <>
               <MenuDivider />
+              <MenuItem icon={<KeyRegular />} onClick={() => onResetPassword?.(item)}>
+                Reset password
+              </MenuItem>
               <MenuItem icon={<MailRegular />} onClick={() => onSendInvite?.(item)}>
                 Send invite
               </MenuItem>
+              {item.invitePendingAt ? (
+                <MenuItem icon={<MailDismissRegular />} onClick={() => onClearInvitePending?.(item)}>
+                  Clear invite pending
+                </MenuItem>
+              ) : (
+                <MenuItem icon={<MailCheckmarkRegular />} onClick={() => onMarkInvitePending?.(item)}>
+                  Mark invite pending
+                </MenuItem>
+              )}
             </>
           )}
           {canAdjustLeaveBalances && (
@@ -155,8 +180,6 @@ const EmployeeActions = ({
         </MenuList>
       </MenuPopover>
     </Menu>
-          
-    
   </div>
 );
 
@@ -171,6 +194,9 @@ export function EmployeesTable({
   onActivate,
   onDeactivate,
   onSendInvite,
+  onResetPassword,
+  onClearInvitePending,
+  onMarkInvitePending,
   onStartLeaveAdjustment,
 }: EmployeesTableProps): JSXElement {
   const { canEditUsers, isAdmin, isHr } = usePermissions();
@@ -184,7 +210,7 @@ export function EmployeesTable({
       compare: (a, b) => (a.displayName ?? a.username).localeCompare(b.displayName ?? b.username),
       renderHeaderCell: () => 'Employee',
       renderCell: (item) => (
-        <TableCellLayout media={<Avatar aria-label={item.displayName ?? item.username} name={item.displayName ?? item.username} />}>
+        <TableCellLayout media={<Avatar color={"colorful"} aria-label={item.displayName ?? item.username} name={item.displayName ?? item.username} />}>
           <button
             type="button"
             onClick={(event) => {
@@ -228,7 +254,7 @@ export function EmployeesTable({
       renderCell: (item) => (
         <div className="flex flex-wrap gap-1">
           {item.roles.map((role) => (
-            <Badge key={role} appearance="outline" size="small">{role}</Badge>
+            <Badge key={role} appearance={"filled"} size="small">{role}</Badge>
           ))}
         </div>
       ),
@@ -271,12 +297,20 @@ export function EmployeesTable({
           onActivate={onActivate}
           onDeactivate={onDeactivate}
           onSendInvite={onSendInvite}
+          onResetPassword={onResetPassword}
+          onClearInvitePending={onClearInvitePending}
+          onMarkInvitePending={onMarkInvitePending}
           onStartLeaveAdjustment={onStartLeaveAdjustment}
           canAdjustLeaveBalances={canAdjustLeave}
         />
       ),
     }),
-  ]), [canEditUsers, onActivate, onDeactivate, onEdit, onSendInvite, onViewDetails]);
+  ]), [canAdjustLeave, canEditUsers, onActivate, onClearInvitePending, onDeactivate, onEdit, onMarkInvitePending, onResetPassword, onSendInvite, onStartLeaveAdjustment, onViewDetails]);
+
+  const { columnSizingOptions, onColumnResize } = usePersistedColumnSizing(
+    'users.employees',
+    columns,
+  );
 
   if (isLoading) {
     return (
@@ -321,9 +355,9 @@ export function EmployeesTable({
         size="medium"
         // style={{ minWidth: '900px' }}
         resizableColumns
-        resizableColumnsOptions={
-          {autoFitColumns: false}
-        }
+        columnSizingOptions={columnSizingOptions}
+        onColumnResize={onColumnResize}
+        resizableColumnsOptions={{ autoFitColumns: false }}
       >
         <DataGridHeader>
           <DataGridRow

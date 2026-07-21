@@ -9,6 +9,7 @@ import {
   DataGridRow,
 } from '@fluentui/react-components';
 import { buildColumnSizingOptions } from '@platform/utils/dataGridColumnSizing';
+import { usePersistedColumnSizing } from '@platform/utils/usePersistedColumnSizing';
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
 
 type AutoFitDataGridProps<TItem> = {
@@ -17,6 +18,8 @@ type AutoFitDataGridProps<TItem> = {
   getRowId: (item: TItem) => string;
   columnSizingOptions?: TableColumnSizingOptions;
   enableColumnSizing?: boolean;
+  /** Stable id used to persist resized column widths in localStorage. */
+  storageKey?: string;
   sortable?: boolean;
   selectionMode?: 'multiselect' | 'single' | undefined;
   selectedIds?: string[];
@@ -30,15 +33,29 @@ export function AutoFitDataGrid<TItem>({
   getRowId,
   columnSizingOptions,
   enableColumnSizing = true,
+  storageKey,
   sortable,
   selectionMode,
   selectedIds,
   onSelectionChange,
   size = 'medium',
 }: AutoFitDataGridProps<TItem>) {
+  const baseOverrides = useMemo(
+    () => columnSizingOptions ?? {},
+    [columnSizingOptions],
+  );
+
+  const persisted = usePersistedColumnSizing(
+    enableColumnSizing ? storageKey : undefined,
+    columns,
+    baseOverrides,
+  );
+
   const resolvedColumnSizing = useMemo(
-    () => buildColumnSizingOptions(columns, columnSizingOptions),
-    [columns, columnSizingOptions],
+    () => (storageKey && enableColumnSizing
+      ? persisted.columnSizingOptions
+      : buildColumnSizingOptions(columns, columnSizingOptions)),
+    [columns, columnSizingOptions, enableColumnSizing, persisted.columnSizingOptions, storageKey],
   );
 
   const selectable = Boolean(selectionMode);
@@ -62,6 +79,7 @@ export function AutoFitDataGrid<TItem>({
             resizableColumns: true,
             columnSizingOptions: resolvedColumnSizing,
             resizableColumnsOptions: { autoFitColumns: false },
+            onColumnResize: persisted.onColumnResize,
           }
           : {})}
         style={{ width: '100%' }}

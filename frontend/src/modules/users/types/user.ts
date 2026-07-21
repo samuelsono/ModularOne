@@ -128,6 +128,16 @@ export interface SetUserActiveRequest {
   isActive: boolean;
 }
 
+export interface AdminSetPasswordRequest {
+  newPassword: string;
+  mustChangePassword?: boolean;
+  clearInvitePending?: boolean;
+}
+
+export interface SetInvitePendingRequest {
+  invitePending: boolean;
+}
+
 export interface DirectReport {
   id: string;
   displayName: string;

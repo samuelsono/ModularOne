@@ -16,7 +16,10 @@ public interface ITokenService
 {
     Task<AuthResponse> CreateTokenPairAsync(ApplicationUser user, bool rememberMe, CancellationToken cancellationToken);
 
-    Task<AuthResponse?> RefreshAsync(string refreshToken, CancellationToken cancellationToken);
+    Task<AuthResponse?> RefreshAsync(
+        string refreshToken,
+        bool rememberMe,
+        CancellationToken cancellationToken);
 
     Task RevokeAsync(string refreshToken, CancellationToken cancellationToken);
 
@@ -53,7 +56,10 @@ public class TokenService(
             await MapUserAsync(user, roles, permissions, modules));
     }
 
-    public async Task<AuthResponse?> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
+    public async Task<AuthResponse?> RefreshAsync(
+        string refreshToken,
+        bool rememberMe,
+        CancellationToken cancellationToken)
     {
         var tokenHash = HashToken(refreshToken);
         var storedToken = await dbContext.RefreshTokens
@@ -76,7 +82,9 @@ public class TokenService(
         var permissions = await permissionService.GetPermissionsForRolesAsync(roles, cancellationToken);
         var modules = permissionService.GetModulesFromPermissions(permissions);
         var accessToken = CreateAccessToken(user, roles, permissions, modules);
-        var replacement = await CreateRefreshTokenAsync(user, rememberMe: false, cancellationToken);
+        // Sliding window: each successful refresh while the user is active
+        // issues a new refresh token with a full lifetime.
+        var replacement = await CreateRefreshTokenAsync(user, rememberMe, cancellationToken);
         storedToken.ReplacedByTokenHash = replacement.TokenHash;
 
         await dbContext.SaveChangesAsync(cancellationToken);

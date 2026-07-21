@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { useStyles } from '../../../main';
-import { Card, Divider, Link } from "@fluentui/react-components";
+import { tokens, Card, Divider, Link } from "@fluentui/react-components";
 
 function AuthLayout() {
 
@@ -9,7 +9,7 @@ function AuthLayout() {
     <div className="flex flex-col">
        <div className="flex flex-row max-w-[100vw] h-[100vh] overflow-hidden">
              <div className={`${styles.content} flex items-center flex-col justify-center h-full w-full overflow-hidden`}>
-                <div className={"absolute top-0 left-0 w-full h-[50vh] bg-white"}></div>
+                <div className="absolute top-0 left-0 w-full h-[50vh]" style={{ backgroundColor: tokens.colorNeutralBackground1 }}></div>
 
                 <img src="/talis_logo.png" alt="Talis Logo" className="w-25 z-20 h-auto mb-3" />
                 <Card className="w-full max-w-sm p-5!">

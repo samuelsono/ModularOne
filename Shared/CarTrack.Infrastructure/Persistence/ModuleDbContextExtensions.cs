@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,20 +28,48 @@ public static partial class ModuleDbContextExtensions
     }
 
     /// <summary>
-    /// Applies pending migrations. If the probe table already exists and no migrations
-    /// are applied yet, baseline by inserting history rows without executing (existing DBs).
+    /// Applies pending migrations for a module.
     /// </summary>
-    public static async Task MigrateModuleAsync(
+    /// <remarks>
+    /// When the history table is empty and every probe table already exists, pending
+    /// migrations are baselined (recorded without executing) for legacy databases.
+    /// If only some probe tables exist, startup fails with a partial-schema error so a
+    /// dirty Identity/module schema is not half-applied again.
+    /// A PostgreSQL advisory lock serializes concurrent app instances during migrate.
+    /// </remarks>
+    public static Task MigrateModuleAsync(
         this DbContext dbContext,
         string historyTable,
         string probeTable,
+        CancellationToken cancellationToken = default) =>
+        MigrateModuleAsync(dbContext, historyTable, [probeTable], cancellationToken);
+
+    /// <inheritdoc cref="MigrateModuleAsync(DbContext, string, string, CancellationToken)"/>
+    public static async Task MigrateModuleAsync(
+        this DbContext dbContext,
+        string historyTable,
+        IReadOnlyList<string> probeTables,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(dbContext);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyTable);
-        ArgumentException.ThrowIfNullOrWhiteSpace(probeTable);
+        ArgumentNullException.ThrowIfNull(probeTables);
+        if (probeTables.Count == 0)
+        {
+            throw new ArgumentException("At least one probe table is required.", nameof(probeTables));
+        }
+
         EnsureSafeSqlIdentifier(historyTable);
-        EnsureSafeSqlIdentifier(probeTable);
+        foreach (var probeTable in probeTables)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(probeTable);
+            EnsureSafeSqlIdentifier(probeTable);
+        }
+
+        await using var migrationLock = await PostgresAdvisoryLock.AcquireAsync(
+            dbContext,
+            historyTable,
+            cancellationToken);
 
         var pending = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
         if (pending.Count == 0)
@@ -49,10 +78,29 @@ public static partial class ModuleDbContextExtensions
         }
 
         var applied = (await dbContext.Database.GetAppliedMigrationsAsync(cancellationToken)).ToList();
-        var probeExists = await TableExistsAsync(dbContext, probeTable, cancellationToken);
-
-        if (probeExists && applied.Count == 0)
+        var existingProbes = new List<string>(probeTables.Count);
+        foreach (var probeTable in probeTables)
         {
+            if (await TableExistsAsync(dbContext, probeTable, cancellationToken))
+            {
+                existingProbes.Add(probeTable);
+            }
+        }
+
+        if (applied.Count == 0 && existingProbes.Count > 0)
+        {
+            if (existingProbes.Count != probeTables.Count)
+            {
+                var missing = probeTables.Except(existingProbes, StringComparer.Ordinal).ToList();
+                throw new InvalidOperationException(
+                    $"Database is partially migrated for '{historyTable}'. " +
+                    $"Found existing table(s): {string.Join(", ", existingProbes)}. " +
+                    $"Missing: {string.Join(", ", missing)}. " +
+                    "Clear the schema before a fresh deploy, e.g. " +
+                    "DROP SCHEMA public CASCADE; CREATE SCHEMA public; " +
+                    "GRANT ALL ON SCHEMA public TO CURRENT_USER; GRANT ALL ON SCHEMA public TO public;");
+            }
+
             await EnsureHistoryTableAsync(dbContext, historyTable, cancellationToken);
             var productVersion = ResolveProductVersion();
 
@@ -152,4 +200,70 @@ public static partial class ModuleDbContextExtensions
 
     [GeneratedRegex("^[A-Za-z_][A-Za-z0-9_]*$")]
     private static partial Regex SqlIdentifierRegex();
+}
+
+/// <summary>
+/// Session-scoped Postgres advisory lock so only one process migrates a history table at a time.
+/// </summary>
+file sealed class PostgresAdvisoryLock : IAsyncDisposable
+{
+    private readonly DbConnection _connection;
+    private readonly long _key;
+    private bool _released;
+
+    private PostgresAdvisoryLock(DbConnection connection, long key)
+    {
+        _connection = connection;
+        _key = key;
+    }
+
+    public static async Task<PostgresAdvisoryLock> AcquireAsync(
+        DbContext dbContext,
+        string historyTable,
+        CancellationToken cancellationToken)
+    {
+        var connection = dbContext.Database.GetDbConnection();
+        if (connection.State != System.Data.ConnectionState.Open)
+        {
+            await dbContext.Database.OpenConnectionAsync(cancellationToken);
+        }
+
+        // Stable key per history table (must fit in signed bigint for pg_advisory_lock(bigint)).
+        var key = unchecked((long)(uint)StringComparer.Ordinal.GetHashCode(historyTable));
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "SELECT pg_advisory_lock(@key)";
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "key";
+            parameter.Value = key;
+            command.Parameters.Add(parameter);
+            await command.ExecuteScalarAsync(cancellationToken);
+        }
+
+        return new PostgresAdvisoryLock(connection, key);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_released)
+        {
+            return;
+        }
+
+        _released = true;
+
+        if (_connection.State != System.Data.ConnectionState.Open)
+        {
+            return;
+        }
+
+        await using var command = _connection.CreateCommand();
+        command.CommandText = "SELECT pg_advisory_unlock(@key)";
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "key";
+        parameter.Value = _key;
+        command.Parameters.Add(parameter);
+        await command.ExecuteScalarAsync();
+    }
 }

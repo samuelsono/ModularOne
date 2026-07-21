@@ -26,7 +26,7 @@ import {
   Text,
   createTableColumn,
 } from '@fluentui/react-components';
-import { CalendarRegular, EditRegular, PersonAddRegular } from '@fluentui/react-icons';
+import { CalendarRegular, EditRegular, KeyRegular, PersonAddRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
 import { getDrivers, type DirectoryDriver } from '@platform/org/directoryApi';
 import {
@@ -37,9 +37,11 @@ import {
   getUsers,
   sendUserInvite,
   setUserActive,
+  setUserInvitePending,
   setUserRoles,
   updateUser,
 } from '@modules/users/services/userService';
+import { AdminResetPasswordDialog } from '@modules/users/components/AdminResetPasswordDialog';
 import type {
   CreateUserRequest,
   ManagerOption,
@@ -52,6 +54,7 @@ import { usePermissions } from '@platform/permissions/usePermissions';
 import { useActiveApp } from '@platform/shell/ActiveAppContext';
 import { UserOrgChart } from './UserOrgChart';
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
+import { usePersistedColumnSizing } from '@platform/utils/usePersistedColumnSizing';
 import { matchesSearchQuery } from '@platform/search/searchText';
 
 function formatDateTime(value: string | null): string {
@@ -136,6 +139,7 @@ export function UsersSettingsPanel({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [resetPasswordUser, setResetPasswordUser] = useState<UserListItem | null>(null);
   const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
   const [formState, setFormState] = useState<UserFormState>(emptyFormState);
   const [formError, setFormError] = useState<string | null>(null);
@@ -298,21 +302,38 @@ export function UsersSettingsPanel({
             </Button>
           ) : null}
           {canEditUsers ? (
-            <Button
-              appearance="subtle"
-              icon={<EditRegular />}
-              onClick={(event) => {
-                event.stopPropagation();
-                void openEditDialog(item);
-              }}
-            >
-              Edit
-            </Button>
+            <>
+              <Button
+                appearance="subtle"
+                icon={<KeyRegular />}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setResetPasswordUser(item);
+                }}
+              >
+                Reset password
+              </Button>
+              <Button
+                appearance="subtle"
+                icon={<EditRegular />}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  void openEditDialog(item);
+                }}
+              >
+                Edit
+              </Button>
+            </>
           ) : null}
         </div>
       ),
     }),
   ], [canAdjustLeave, canEditUsers, onAdjustLeave, openEditDialog]);
+
+  const { columnSizingOptions, onColumnResize } = usePersistedColumnSizing(
+    'users.settings',
+    columns,
+  );
 
   async function handleSave() {
     setFormError(null);
@@ -409,6 +430,10 @@ export function UsersSettingsPanel({
 
       {!isLoading && !error && (
         <DataGrid
+          resizableColumns
+          columnSizingOptions={columnSizingOptions}
+          onColumnResize={onColumnResize}
+          resizableColumnsOptions={{ autoFitColumns: false }}
           items={visibleUsers}
           columns={columns}
           getRowId={(item) => item.id}
@@ -479,34 +504,83 @@ export function UsersSettingsPanel({
                 </>
               )}
 
-              {editingUser?.invitePendingAt && canEditUsers && (
-                <Button
-                  appearance="secondary"
-                  onClick={async () => {
-                    if (!editingUser) {
-                      return;
-                    }
-
-                    setIsSaving(true);
-                    setFormError(null);
-
-                    try {
-                      await sendUserInvite(editingUser.id);
-                      await loadUsers();
+              {editingUser && canEditUsers && (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    appearance="secondary"
+                    onClick={async () => {
+                      setIsSaving(true);
                       setFormError(null);
-                    } catch (inviteError) {
-                      const message = inviteError instanceof ApiError
-                        ? inviteError.message
-                        : 'Failed to resend invite.';
-                      setFormError(message);
-                    } finally {
-                      setIsSaving(false);
-                    }
-                  }}
-                  disabled={isSaving}
-                >
-                  Resend invite email
-                </Button>
+                      try {
+                        await sendUserInvite(editingUser.id);
+                        await loadUsers();
+                      } catch (inviteError) {
+                        const message = inviteError instanceof ApiError
+                          ? inviteError.message
+                          : 'Failed to resend invite.';
+                        setFormError(message);
+                      } finally {
+                        setIsSaving(false);
+                      }
+                    }}
+                    disabled={isSaving}
+                  >
+                    {editingUser.invitePendingAt ? 'Resend invite email' : 'Send invite email'}
+                  </Button>
+                  {editingUser.invitePendingAt ? (
+                    <Button
+                      appearance="secondary"
+                      onClick={async () => {
+                        setIsSaving(true);
+                        setFormError(null);
+                        try {
+                          await setUserInvitePending(editingUser.id, { invitePending: false });
+                          await loadUsers();
+                          setDialogOpen(false);
+                        } catch (inviteError) {
+                          const message = inviteError instanceof ApiError
+                            ? inviteError.message
+                            : 'Failed to clear invite pending.';
+                          setFormError(message);
+                        } finally {
+                          setIsSaving(false);
+                        }
+                      }}
+                      disabled={isSaving}
+                    >
+                      Clear invite pending
+                    </Button>
+                  ) : (
+                    <Button
+                      appearance="secondary"
+                      onClick={async () => {
+                        setIsSaving(true);
+                        setFormError(null);
+                        try {
+                          await setUserInvitePending(editingUser.id, { invitePending: true });
+                          await loadUsers();
+                        } catch (inviteError) {
+                          const message = inviteError instanceof ApiError
+                            ? inviteError.message
+                            : 'Failed to mark invite pending.';
+                          setFormError(message);
+                        } finally {
+                          setIsSaving(false);
+                        }
+                      }}
+                      disabled={isSaving}
+                    >
+                      Mark invite pending
+                    </Button>
+                  )}
+                  <Button
+                    appearance="secondary"
+                    onClick={() => setResetPasswordUser(editingUser)}
+                    disabled={isSaving}
+                  >
+                    Reset password
+                  </Button>
+                </div>
               )}
 
               <div className="grid grid-cols-2 gap-3">
@@ -622,7 +696,7 @@ export function UsersSettingsPanel({
               </Field>
 
               {editingUser && userOrg && (
-                <div className="rounded border border-[#e3e5e7] p-3 bg-neutral-background-2">
+                <div className="rounded border border-neutral-stroke-2 p-3 bg-neutral-background-2">
                   {userOrg.manager && (
                     <Text className="text-sm block mb-2">
                       Manager: <strong>{userOrg.manager.displayName}</strong>
@@ -651,6 +725,18 @@ export function UsersSettingsPanel({
         </DialogSurface>
       </Dialog>
 
+      <AdminResetPasswordDialog
+        user={resetPasswordUser}
+        open={resetPasswordUser !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setResetPasswordUser(null);
+          }
+        }}
+        onSaved={() => {
+          void loadUsers();
+        }}
+      />
     </div>
   );
 }

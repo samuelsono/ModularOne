@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Subtitle2 } from '@fluentui/react-components';
+import { tokens, Subtitle2 } from '@fluentui/react-components';
 import { MapPinRegular, PersonAccountsRegular, PersonSwapRegular, VehicleCarRegular } from '@fluentui/react-icons';
 import AppFilters from '@platform/ui/AppFilters';
 import { DriversTable } from '@modules/fleet/components/DriversTable';
@@ -69,8 +69,8 @@ const DriversList = () => {
         </div>
       </div>
 
-      <div className="flex flex-col w-full h-full bg-white rounded shadow overflow-hidden">
-        <div className="p-3 border-b border-[#e3e5e7] flex justify-between items-center">
+      <div className="flex flex-col w-full h-full rounded shadow overflow-hidden" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+        <div className="p-3 border-b border-neutral-stroke-2 flex justify-between items-center">
           <Subtitle2>Your Drivers</Subtitle2>
           {!isLoading && !error && (
             <span className="text-sm text-neutral-foreground-3">{visibleDrivers.length} drivers</span>

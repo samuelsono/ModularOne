@@ -37,6 +37,7 @@ export interface MfaLoginRequest {
 
 export interface RefreshTokenRequest {
   refreshToken: string;
+  rememberMe?: boolean;
 }
 
 export interface ForgotPasswordRequest {

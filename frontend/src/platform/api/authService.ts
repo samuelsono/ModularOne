@@ -17,9 +17,11 @@ import { ApiError, apiFetch } from '@platform/api/apiClient';
 import {
   clearTokens,
   getAccessToken,
+  getRememberMe,
   getRefreshToken,
   setTokens,
 } from '@platform/api/tokenStorage';
+import { dispatchSessionExpired } from '@platform/auth/sessionEvents';
 
 const AUTH_BASE = '/api/auth';
 
@@ -40,29 +42,49 @@ export async function completeMfaLogin(request: MfaLoginRequest): Promise<AuthRe
     throw new Error('MFA login did not return a session.');
   }
 
-  setTokens(response.session.accessToken, response.session.refreshToken, request.rememberMe ?? false);
+  setTokens(
+    response.session.accessToken,
+    response.session.refreshToken,
+    request.rememberMe ?? false,
+    response.session.expiresIn,
+  );
   return response.session;
 }
 
 export async function refreshSession(): Promise<AuthResponse> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
+    clearTokens();
+    dispatchSessionExpired('missing_refresh_token');
     throw new Error('No refresh token available.');
   }
 
-  const response = await apiFetch<AuthResponse>(`${AUTH_BASE}/refresh`, {
-    method: 'POST',
-    body: JSON.stringify({ refreshToken } satisfies RefreshTokenRequest),
-  });
+  const rememberMe = getRememberMe();
 
-  const rememberMe = localStorage.getItem('cartrack.rememberMe') === 'true';
-  setTokens(response.accessToken, response.refreshToken, rememberMe);
-  return response;
+  try {
+    const response = await apiFetch<AuthResponse>(`${AUTH_BASE}/refresh`, {
+      method: 'POST',
+      body: JSON.stringify({
+        refreshToken,
+        rememberMe,
+      } satisfies RefreshTokenRequest),
+    });
+
+    setTokens(response.accessToken, response.refreshToken, rememberMe, response.expiresIn);
+    return response;
+  } catch (error) {
+    clearTokens();
+    dispatchSessionExpired('refresh_failed');
+    throw error;
+  }
 }
 
 export async function logout(): Promise<void> {
   const refreshToken = getRefreshToken();
-  const payload: RefreshTokenRequest = { refreshToken: refreshToken ?? '' };
+  const payload: RefreshTokenRequest = {
+    refreshToken: refreshToken ?? '',
+    rememberMe: getRememberMe(),
+  };
 
   try {
     await authorizedFetch(`${AUTH_BASE}/logout`, {
@@ -153,14 +175,20 @@ export async function authorizedFetch<T>(
 
     if (!getRefreshToken()) {
       clearTokens();
+      dispatchSessionExpired('missing_refresh_token');
       throw error;
     }
 
-    refreshPromise ??= refreshSession().finally(() => {
-      refreshPromise = null;
-    });
+    try {
+      refreshPromise ??= refreshSession().finally(() => {
+        refreshPromise = null;
+      });
+      await refreshPromise;
+    } catch (refreshError) {
+      // refreshSession already cleared tokens and dispatched session-expired.
+      throw refreshError;
+    }
 
-    await refreshPromise;
     return attempt(getAccessToken());
   }
 }
@@ -182,6 +210,11 @@ export async function loginAndStoreSession(
     throw new Error('Login did not return a session.');
   }
 
-  setTokens(response.session.accessToken, response.session.refreshToken, request.rememberMe ?? false);
+  setTokens(
+    response.session.accessToken,
+    response.session.refreshToken,
+    request.rememberMe ?? false,
+    response.session.expiresIn,
+  );
   return { requiresTwoFactor: false, session: response.session };
 }

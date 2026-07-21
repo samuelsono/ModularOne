@@ -1,10 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Button,
-  Subtitle2,
-  Text,
-} from '@fluentui/react-components';
+import { tokens, Button, Subtitle2, Text } from '@fluentui/react-components';
 import {
   Dismiss24Regular,
   PersonRegular,
@@ -131,7 +127,8 @@ function GeneralAppearancePanel() {
     <div className="max-w-xl flex flex-col gap-3">
       <Subtitle2>Appearance</Subtitle2>
       <Text className="text-sm text-neutral-foreground-3">
-        TalisTrack uses the Fluent UI light theme. Additional theme options will be available in a future release.
+        App brand themes are configured under Installed applications. Use the sun / moon / desktop button in the
+        navbar to switch between light, dark, and system color modes for the active app theme.
       </Text>
     </div>
   );
@@ -298,8 +295,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#e3e5e7]">
+    <div className="flex flex-col h-full" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-stroke-2">
         <Subtitle2>Settings</Subtitle2>
         <Button
           appearance="subtle"
@@ -310,7 +307,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="flex flex-1 min-h-0">
-        <aside className="w-[220px] shrink-0 border-r border-[#e3e5e7] p-3 flex flex-col gap-3">
+        <aside className="w-[220px] shrink-0 border-r border-neutral-stroke-2 p-3 flex flex-col gap-3">
           <nav className="flex flex-col gap-1">
             {filteredCategories.map((category) => {
               const Icon = category.icon;
@@ -335,7 +332,7 @@ export default function SettingsPage() {
           </nav>
         </aside>
 
-        <aside className="w-[220px] shrink-0 border-r border-[#e3e5e7] py-4">
+        <aside className="w-[220px] shrink-0 border-r border-neutral-stroke-2 py-4">
           <nav className="flex flex-col">
             {activeCategory.sections.map((section) => {
               const isActive = section.id === activeSection?.id;

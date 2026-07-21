@@ -104,4 +104,11 @@ public record SetUserRolesRequest(IReadOnlyList<string> Roles);
 
 public record SetUserActiveRequest(bool IsActive);
 
+public record AdminSetPasswordRequest(
+    string NewPassword,
+    bool MustChangePassword = true,
+    bool ClearInvitePending = true);
+
+public record SetInvitePendingRequest(bool InvitePending);
+
 public record UserListResponse(IReadOnlyList<UserListItemDto> Items);

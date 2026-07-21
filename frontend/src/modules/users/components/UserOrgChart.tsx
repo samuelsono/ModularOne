@@ -1,11 +1,11 @@
-import { Text } from '@fluentui/react-components';
+import { tokens, Text } from '@fluentui/react-components';
 import type { OrgChartNode } from '@modules/users/types/user';
 
 function OrgChartBranch({ node, depth = 0 }: { node: OrgChartNode; depth?: number }) {
   return (
     <li className="list-none">
       <div
-        className="rounded border border-[#e3e5e7] px-3 py-2 bg-white"
+        className="rounded border border-neutral-stroke-2 px-3 py-2" style={{ backgroundColor: tokens.colorNeutralBackground1 }}
         style={{ marginLeft: depth * 16 }}
       >
         <Text weight="semibold" block>{node.displayName}</Text>

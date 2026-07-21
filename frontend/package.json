@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:server": "npm run build && shx rm -rf ../CarTrack.Host/wwwroot && shx cp -r dist/ ../CarTrack.Host/wwwroot",
     "lint": "eslint .",
     "lint:boundaries": "eslint -c eslint.boundaries.config.js \"src/**/*.{ts,tsx}\"",
     "preview": "vite preview"
@@ -25,6 +26,7 @@
     "react-dom": "^19.2.1",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.18.1",
+    "shx": "^0.4.0",
     "tailwindcss": "^4.3.2"
   },
   "devDependencies": {

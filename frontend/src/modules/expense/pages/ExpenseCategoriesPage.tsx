@@ -177,6 +177,7 @@ export default function ExpenseCategoriesPage() {
             getRowId={(item) => item.id}
             columnSizingOptions={expenseCategoryColumnSizing}
             size="small"
+            storageKey="expense.categories"
           />
         )}
       </div>

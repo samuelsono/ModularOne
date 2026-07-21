@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, MessageBar, MessageBarBody, Subtitle2 } from "@fluentui/react-components";
+import { tokens, Button, MessageBar, MessageBarBody, Subtitle2 } from '@fluentui/react-components';
 import { DeleteRegular, LocationRegular } from "@fluentui/react-icons";
 import { VehicleTable } from '@modules/fleet/components/VehicleTable';
 import { FlashSettingsRegular, MapPinRegular, VehicleCarRegular } from "@fluentui/react-icons";
@@ -135,8 +135,8 @@ const VehicleList = () => {
           <CreateVehicle onCreated={() => setReloadKey((value) => value + 1)} />
         </div>
       </div>
-      <div className="flex flex-col w-full min-w-0 h-full bg-white rounded shadow overflow-hidden">
-        <div className="p-3 border-b border-[#e3e5e7] flex justify-between items-center gap-3">
+      <div className="flex flex-col w-full min-w-0 h-full rounded shadow overflow-hidden" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+        <div className="p-3 border-b border-neutral-stroke-2 flex justify-between items-center gap-3">
           <Subtitle2>All Vehicles</Subtitle2>
           <div className="flex items-center gap-3">
             {selectedIds.length > 0 && (

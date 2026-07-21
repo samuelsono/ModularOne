@@ -720,6 +720,7 @@ export default function LeaveReportsPage() {
               onSelectionChange={setSelectedHistoryIds}
               getRowId={(item) => item.id}
               columnSizingOptions={leaveTableColumnSizing}
+              storageKey="leave.reports.history"
             />
             </ScrollableDiv>
 
@@ -741,6 +742,7 @@ export default function LeaveReportsPage() {
               selectedIds={selectedPendingIds}
               onSelectionChange={setSelectedPendingIds}
               getRowId={(item) => item.id}
+              storageKey="leave.reports.pending"
             />
             </ScrollableDiv>
 

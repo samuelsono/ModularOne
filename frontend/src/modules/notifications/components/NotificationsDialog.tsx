@@ -1,21 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { JSXElement, SelectTabData, SelectTabEvent, TabValue } from '@fluentui/react-components';
-import {
-  Button,
-  Menu,
-  MenuItem,
-  MenuList,
-  MenuPopover,
-  MenuTrigger,
-  OverlayDrawer,
-  DrawerBody,
-  DrawerHeader,
-  DrawerHeaderTitle,
-  Spinner,
-  Tab,
-  TabList,
-  Text,
-} from '@fluentui/react-components';
+import { tokens, Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, OverlayDrawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Spinner, Tab, TabList, Text } from '@fluentui/react-components';
 import {
   AlertRegular,
   ArchiveRegular,
@@ -63,9 +48,14 @@ function NotificationRow({
 }) {
   return (
     <div
-      className={`border-b border-[#e3e5e7] px-4 py-3 ${
-        notification.isRead ? 'bg-white' : 'border-l-4 border-l-[#0078d4] bg-[#f5f9ff]'
+      className={`border-b border-neutral-stroke-2 px-4 py-3 ${
+        notification.isRead ? '' : 'border-l-4 border-l-brand-stroke-1'
       }`}
+      style={{
+        backgroundColor: notification.isRead
+          ? tokens.colorNeutralBackground1
+          : tokens.colorBrandBackground2,
+      }}
     >
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
@@ -185,7 +175,7 @@ export const NotificationsDialog = (): JSXElement => {
         </DrawerHeader>
 
         <DrawerBody className="flex min-h-0 flex-col p-0!">
-          <div className="flex items-center justify-between border-b border-[#e3e5e7] px-4 py-2">
+          <div className="flex items-center justify-between border-b border-neutral-stroke-2 px-4 py-2">
             <TabList selectedValue={selectedTab} onTabSelect={handleTabSelect}>
               <Tab value="inbox">Inbox</Tab>
               <Tab value="archived">Archived</Tab>

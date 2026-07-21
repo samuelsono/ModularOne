@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as mapboxgl from 'mapbox-gl/esm';
-import { Button } from '@fluentui/react-components';
+import { tokens, Button } from '@fluentui/react-components';
 import {
   ArrowResetRegular,
   FullScreenMaximizeRegular,
@@ -189,7 +189,7 @@ export function TripReplayMap({
     <div className={`relative w-full overflow-hidden ${isFullscreen ? 'min-h-0 flex-1' : 'h-[49vh]'}`}>
       <div ref={mapContainerRef} className="h-full w-full" />
 
-      <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-md bg-white/95 px-2 py-1.5 shadow-sm">
+      <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-md px-2 py-1.5 shadow-sm" style={{ backgroundColor: `color-mix(in srgb, ${tokens.colorNeutralBackground1} 95%, transparent)` }}>
         <Button
           appearance="primary"
           size="small"
@@ -221,7 +221,8 @@ export function TripReplayMap({
           <Button
             appearance="subtle"
             size="small"
-            className="bg-white/95 shadow-sm"
+            className="shadow-sm"
+            style={{ backgroundColor: `color-mix(in srgb, ${tokens.colorNeutralBackground1} 95%, transparent)` }}
             aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
             icon={isFullscreen ? <FullScreenMinimizeRegular /> : <FullScreenMaximizeRegular />}
             onClick={onToggleFullscreen}

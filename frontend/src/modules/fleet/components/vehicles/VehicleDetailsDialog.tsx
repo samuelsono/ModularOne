@@ -69,7 +69,7 @@ function DetailRow({
   value: string;
 }) {
   return (
-    <div className="grid grid-cols-[20px_140px_1fr] items-center gap-3 border-b border-[#f0f0f0] py-2.5 last:border-b-0">
+    <div className="grid grid-cols-[20px_140px_1fr] items-center gap-3 border-b border-neutral-stroke-1 py-2.5 last:border-b-0">
       <span className="text-neutral-foreground-3">{icon}</span>
       <span className="text-sm text-neutral-foreground-3">{label}</span>
       <span className="text-sm text-neutral-foreground-1">{value}</span>
@@ -119,7 +119,7 @@ export function VehicleDetailsDialog({
       }}
     >
       <DialogSurface className="flex! max-h-[90vh]! w-[640px]! max-w-[95vw]! flex-col! p-0!">
-        <div className="border-b border-[#e3e5e7] px-6 pb-4 pt-6">
+        <div className="border-b border-neutral-stroke-2 px-6 pb-4 pt-6">
           <div className="flex items-start gap-4">
             <Avatar
               icon={<VehicleCarRegular />}
@@ -238,7 +238,7 @@ export function VehicleDetailsDialog({
           )}
         </div>
 
-        <div className="border-t border-[#e3e5e7] px-6 py-4">
+        <div className="border-t border-neutral-stroke-2 px-6 py-4">
           <Button
             appearance="secondary"
             className="w-full"

@@ -20,6 +20,7 @@ import {
   detailPanelBodyClassName,
   detailPanelHeaderClassName,
   detailPanelShellClassName,
+  detailPanelShellStyle,
 } from '@platform/ui/DetailLayout';
 
 export function AccountProfilePanel() {
@@ -33,7 +34,7 @@ export function AccountProfilePanel() {
   const displayName = user.displayName ?? user.username;
 
   return (
-    <div className={detailPanelShellClassName}>
+    <div className={detailPanelShellClassName} style={detailPanelShellStyle}>
       
       <div className={detailPanelHeaderClassName}>
         <div className="flex items-start gap-4">

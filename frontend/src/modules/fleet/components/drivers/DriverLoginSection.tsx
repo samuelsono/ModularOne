@@ -182,7 +182,7 @@ export function DriverLoginSection({ driver, onChanged }: DriverLoginSectionProp
   const linkedUser = driver.linkedUser;
 
   return (
-    <div className="col-span-2 rounded border border-[#e3e5e7] p-4 flex flex-col gap-3 bg-neutral-background-2">
+    <div className="col-span-2 rounded border border-neutral-stroke-2 p-4 flex flex-col gap-3 bg-neutral-background-2">
       <div className="flex items-center justify-between gap-3">
         <Subtitle2>Platform login</Subtitle2>
         {canEditUsers && !linkedUser && (

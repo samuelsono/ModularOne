@@ -391,6 +391,7 @@ export default function ExpenseClaimsPage() {
             columns={columns}
             getRowId={(item) => item.id}
             size="small"
+            storageKey="expense.claims"
           />
         )}
       </div>

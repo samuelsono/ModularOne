@@ -50,3 +50,7 @@ Module migrations apply on host startup (`MigrateModuleAsync` per module). Ensur
 ```bash
 sudo -u postgres pg_dump -Fc cartrack > "/var/backups/cartrack-$(date +%F).dump"
 ```
+
+## Migration failures (`AspNetRoles already exists`)
+
+See [migration-recovery.md](./migration-recovery.md). A “new empty database” that still has Identity tables (or an empty history table) will fail Host migrate until `public` is wiped cleanly.

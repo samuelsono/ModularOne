@@ -192,6 +192,7 @@ export const DriversTable = ({
         columnSizingOptions={trackingTableColumnSizing}
         selectionMode="multiselect"
         getRowId={(item) => item.id}
+        storageKey="fleet.drivers"
       />
     </div>
   );

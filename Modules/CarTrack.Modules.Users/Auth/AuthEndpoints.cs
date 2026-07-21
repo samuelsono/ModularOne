@@ -272,7 +272,10 @@ public static class AuthEndpoints
             });
         }
 
-        var response = await tokenService.RefreshAsync(request.RefreshToken, cancellationToken);
+        var response = await tokenService.RefreshAsync(
+            request.RefreshToken,
+            request.RememberMe,
+            cancellationToken);
         if (response is null)
         {
             return Results.Problem(
