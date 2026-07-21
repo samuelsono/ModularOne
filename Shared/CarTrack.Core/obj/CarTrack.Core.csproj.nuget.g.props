@@ -4,12 +4,12 @@
     <RestoreSuccess Condition=" '$(RestoreSuccess)' == '' ">True</RestoreSuccess>
     <RestoreTool Condition=" '$(RestoreTool)' == '' ">NuGet</RestoreTool>
     <ProjectAssetsFile Condition=" '$(ProjectAssetsFile)' == '' ">$(MSBuildThisFileDirectory)project.assets.json</ProjectAssetsFile>
-    <NuGetPackageRoot Condition=" '$(NuGetPackageRoot)' == '' ">/Users/datsu/.nuget/packages/</NuGetPackageRoot>
-    <NuGetPackageFolders Condition=" '$(NuGetPackageFolders)' == '' ">/Users/datsu/.nuget/packages/</NuGetPackageFolders>
+    <NuGetPackageRoot Condition=" '$(NuGetPackageRoot)' == '' ">/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e247d4ec9b3a186ff07518ca0f3b5ffc/nuget</NuGetPackageRoot>
+    <NuGetPackageFolders Condition=" '$(NuGetPackageFolders)' == '' ">/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e247d4ec9b3a186ff07518ca0f3b5ffc/nuget</NuGetPackageFolders>
     <NuGetProjectStyle Condition=" '$(NuGetProjectStyle)' == '' ">PackageReference</NuGetProjectStyle>
     <NuGetToolVersion Condition=" '$(NuGetToolVersion)' == '' ">7.0.0</NuGetToolVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <SourceRoot Include="/Users/datsu/.nuget/packages/" />
+    <SourceRoot Include="/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e247d4ec9b3a186ff07518ca0f3b5ffc/nuget/" />
   </ItemGroup>
 </Project>

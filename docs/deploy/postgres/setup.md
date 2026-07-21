@@ -53,4 +53,7 @@ sudo -u postgres pg_dump -Fc cartrack > "/var/backups/cartrack-$(date +%F).dump"
 
 ## Migration failures (`AspNetRoles already exists`)
 
-See [migration-recovery.md](./migration-recovery.md). A “new empty database” that still has Identity tables (or an empty history table) will fail Host migrate until `public` is wiped cleanly.
+See [migration-recovery.md](./migration-recovery.md).
+
+- **Live DB with user data:** baseline `__EFMigrationsHistory` (do not wipe `public`). Prefer a build with auto-baseline when `AspNetRoles` / `AspNetUsers` already exist.
+- **Empty / disposable DB:** wipe `public` cleanly, then restart once.

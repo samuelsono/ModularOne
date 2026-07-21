@@ -1155,7 +1155,7 @@
     ]
   },
   "packageFolders": {
-    "/Users/datsu/.nuget/packages/": {}
+    "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e247d4ec9b3a186ff07518ca0f3b5ffc/nuget": {}
   },
   "project": {
     "version": "1.0.0",
@@ -1163,7 +1163,7 @@
       "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/CarTrack.Infrastructure.csproj",
       "projectName": "CarTrack.Infrastructure",
       "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/CarTrack.Infrastructure.csproj",
-      "packagesPath": "/Users/datsu/.nuget/packages/",
+      "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e247d4ec9b3a186ff07518ca0f3b5ffc/nuget",
       "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
@@ -1676,5 +1676,13 @@
         }
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Error occurred while getting package vulnerability data: Access to the path '/Users/datsu/.local/share/NuGet/http-cache/670c1461c29885f9aa22c281d8b7da90845b38e4$ps:_api.nuget.org_v3_index.json/vuln_index.dat-new' is denied."
+    }
+  ]
 }

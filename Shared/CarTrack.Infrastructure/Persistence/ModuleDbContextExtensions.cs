@@ -31,11 +31,11 @@ public static partial class ModuleDbContextExtensions
     /// Applies pending migrations for a module.
     /// </summary>
     /// <remarks>
-    /// When the history table is empty and every probe table already exists, pending
-    /// migrations are baselined (recorded without executing) for legacy databases.
-    /// If only some probe tables exist, startup fails with a partial-schema error so a
-    /// dirty Identity/module schema is not half-applied again.
-    /// A PostgreSQL advisory lock serializes concurrent app instances during migrate.
+    /// When probe tables already exist but history is empty or missing early migrations
+    /// (common on live DBs after modularization / history rewrites), pending migrations
+    /// that precede the first applied assembly migration are baselined (recorded without
+    /// executing) so CREATE TABLE is not re-run. A PostgreSQL advisory lock serializes
+    /// concurrent app instances during migrate.
     /// </remarks>
     public static Task MigrateModuleAsync(
         this DbContext dbContext,
@@ -78,6 +78,7 @@ public static partial class ModuleDbContextExtensions
         }
 
         var applied = (await dbContext.Database.GetAppliedMigrationsAsync(cancellationToken)).ToList();
+        var allMigrations = dbContext.Database.GetMigrations().ToList();
         var existingProbes = new List<string>(probeTables.Count);
         foreach (var probeTable in probeTables)
         {
@@ -87,38 +88,86 @@ public static partial class ModuleDbContextExtensions
             }
         }
 
-        if (applied.Count == 0 && existingProbes.Count > 0)
+        if (existingProbes.Count > 0 && existingProbes.Count != probeTables.Count && applied.Count == 0)
         {
-            if (existingProbes.Count != probeTables.Count)
+            var missing = probeTables.Except(existingProbes, StringComparer.Ordinal).ToList();
+            throw new InvalidOperationException(
+                $"Database is partially migrated for '{historyTable}'. " +
+                $"Found existing table(s): {string.Join(", ", existingProbes)}. " +
+                $"Missing: {string.Join(", ", missing)}. " +
+                "For an empty environment wipe public (see docs/deploy/postgres/migration-recovery.md). " +
+                "For a live database with user data, baseline history instead of re-running CREATE.");
+        }
+
+        // Schema already present for this module: baseline history gaps so EF does not
+        // re-execute CREATE for tables like AspNetRoles (42P07).
+        if (existingProbes.Count == probeTables.Count)
+        {
+            var pendingSet = pending.ToHashSet(StringComparer.Ordinal);
+            var appliedSet = applied.ToHashSet(StringComparer.Ordinal);
+            var firstMigration = allMigrations.FirstOrDefault();
+            var initialStillPending = firstMigration is not null && pendingSet.Contains(firstMigration);
+
+            // Empty history, or history missing the initial migration while tables exist.
+            if (applied.Count == 0 || initialStillPending)
             {
-                var missing = probeTables.Except(existingProbes, StringComparer.Ordinal).ToList();
-                throw new InvalidOperationException(
-                    $"Database is partially migrated for '{historyTable}'. " +
-                    $"Found existing table(s): {string.Join(", ", existingProbes)}. " +
-                    $"Missing: {string.Join(", ", missing)}. " +
-                    "Clear the schema before a fresh deploy, e.g. " +
-                    "DROP SCHEMA public CASCADE; CREATE SCHEMA public; " +
-                    "GRANT ALL ON SCHEMA public TO CURRENT_USER; GRANT ALL ON SCHEMA public TO public;");
+                IReadOnlyList<string> toBaseline;
+                if (applied.Count == 0)
+                {
+                    toBaseline = pending;
+                }
+                else
+                {
+                    // Baseline contiguous pending migrations that appear before the first
+                    // applied assembly migration. Forward migrations after that still run.
+                    var firstAppliedIndex = allMigrations.FindIndex(appliedSet.Contains);
+                    toBaseline = firstAppliedIndex < 0
+                        ? pending
+                        : allMigrations
+                            .Take(firstAppliedIndex)
+                            .Where(pendingSet.Contains)
+                            .ToList();
+                }
+
+                if (toBaseline.Count > 0)
+                {
+                    await BaselineMigrationsAsync(
+                        dbContext,
+                        historyTable,
+                        toBaseline,
+                        cancellationToken);
+                }
+
+                pending = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
+                if (pending.Count == 0)
+                {
+                    return;
+                }
             }
-
-            await EnsureHistoryTableAsync(dbContext, historyTable, cancellationToken);
-            var productVersion = ResolveProductVersion();
-
-            var insertSql =
-                "INSERT INTO \"" + historyTable + "\" (\"MigrationId\", \"ProductVersion\") VALUES ({0}, {1})";
-
-            foreach (var migrationId in pending)
-            {
-                await dbContext.Database.ExecuteSqlRawAsync(
-                    insertSql,
-                    new object[] { migrationId, productVersion },
-                    cancellationToken);
-            }
-
-            return;
         }
 
         await dbContext.Database.MigrateAsync(cancellationToken);
+    }
+
+    private static async Task BaselineMigrationsAsync(
+        DbContext dbContext,
+        string historyTable,
+        IReadOnlyList<string> migrationIds,
+        CancellationToken cancellationToken)
+    {
+        await EnsureHistoryTableAsync(dbContext, historyTable, cancellationToken);
+        var productVersion = ResolveProductVersion();
+        var insertSql =
+            "INSERT INTO \"" + historyTable + "\" (\"MigrationId\", \"ProductVersion\") " +
+            "VALUES ({0}, {1}) ON CONFLICT (\"MigrationId\") DO NOTHING";
+
+        foreach (var migrationId in migrationIds)
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(
+                insertSql,
+                [migrationId, productVersion],
+                cancellationToken);
+        }
     }
 
     private static string ResolveProductVersion()
@@ -160,24 +209,18 @@ public static partial class ModuleDbContextExtensions
 
         try
         {
+            // Prefer to_regclass with a quoted identifier so PascalCase EF tables
+            // (e.g. "AspNetRoles") are found reliably on PostgreSQL.
             await using var command = connection.CreateCommand();
-            command.CommandText =
-                """
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM information_schema.tables
-                    WHERE table_schema = 'public'
-                      AND table_name = @tableName
-                )
-                """;
+            command.CommandText = """SELECT to_regclass(@qualified) IS NOT NULL""";
 
             var parameter = command.CreateParameter();
-            parameter.ParameterName = "tableName";
-            parameter.Value = tableName;
+            parameter.ParameterName = "qualified";
+            parameter.Value = "public.\"" + tableName + "\"";
             command.Parameters.Add(parameter);
 
             var result = await command.ExecuteScalarAsync(cancellationToken);
-            return result is true;
+            return IsTruthyDbScalar(result);
         }
         finally
         {
@@ -187,6 +230,17 @@ public static partial class ModuleDbContextExtensions
             }
         }
     }
+
+    private static bool IsTruthyDbScalar(object? result) =>
+        result switch
+        {
+            null => false,
+            bool value => value,
+            int value => value != 0,
+            long value => value != 0,
+            _ when result == DBNull.Value => false,
+            _ => Convert.ToBoolean(result),
+        };
 
     private static void EnsureSafeSqlIdentifier(string identifier)
     {
