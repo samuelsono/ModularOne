@@ -31,7 +31,9 @@ public record CreateLeaveRequest(
     string EndDate,
     string? Notes,
     string? StartDayPortion = null,
-    string? EndDayPortion = null);
+    string? EndDayPortion = null,
+    /// <summary>When set by HR/Admin, create the request for this employee instead of the caller.</summary>
+    string? OnBehalfOfUserId = null);
 
 public record CancelLeaveRequest(string Notes);
 

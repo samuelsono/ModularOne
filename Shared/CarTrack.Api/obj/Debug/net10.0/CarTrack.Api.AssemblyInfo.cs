@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarTrack.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97af7605d16aad070c2350a16c537bb4aa003ca5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+623124533da22d93e3947965f67d0eef07c136a8")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarTrack.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarTrack.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

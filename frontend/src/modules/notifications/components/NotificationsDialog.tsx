@@ -48,10 +48,11 @@ function NotificationRow({
 }) {
   return (
     <div
-      className={`border-b border-neutral-stroke-2 px-4 py-3 ${
+      className={`border-b px-4 py-3 ${
         notification.isRead ? '' : 'border-l-4 border-l-brand-stroke-1'
       }`}
       style={{
+        borderBottomColor: tokens.colorNeutralStroke3,
         backgroundColor: notification.isRead
           ? tokens.colorNeutralBackground1
           : tokens.colorBrandBackground2,
@@ -175,7 +176,10 @@ export const NotificationsDialog = (): JSXElement => {
         </DrawerHeader>
 
         <DrawerBody className="flex min-h-0 flex-col p-0!">
-          <div className="flex items-center justify-between border-b border-neutral-stroke-2 px-4 py-2">
+          <div
+            className="flex items-center justify-between border-b px-4 py-2"
+            style={{ borderBottomColor: tokens.colorNeutralStroke3 }}
+          >
             <TabList selectedValue={selectedTab} onTabSelect={handleTabSelect}>
               <Tab value="inbox">Inbox</Tab>
               <Tab value="archived">Archived</Tab>

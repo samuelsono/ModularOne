@@ -144,6 +144,8 @@ export interface CreateLeaveRequest {
   notes?: string | null;
   startDayPortion?: string | null;
   endDayPortion?: string | null;
+  /** When set by HR/Admin, create the request for this employee. */
+  onBehalfOfUserId?: string | null;
 }
 
 export interface ApprovalDecisionRequest {

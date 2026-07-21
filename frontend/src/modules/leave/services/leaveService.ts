@@ -23,8 +23,11 @@ export async function runLeaveAccrual(): Promise<{ applied: number }> {
   });
 }
 
-export function getLeaveTypes(): Promise<LeaveType[]> {
-  return authorizedFetch<LeaveType[]>('/api/leave/types');
+export function getLeaveTypes(forUserId?: string | null): Promise<LeaveType[]> {
+  const query = forUserId
+    ? `?forUserId=${encodeURIComponent(forUserId)}`
+    : '';
+  return authorizedFetch<LeaveType[]>(`/api/leave/types${query}`);
 }
 
 export function getAdminLeaveTypes(): Promise<LeaveType[]> {

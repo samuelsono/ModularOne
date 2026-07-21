@@ -7,6 +7,8 @@ import type { LeaveCalendarEntry, LeaveCalendarResponse, PublicHoliday } from '@
 import AppTitle from '@platform/ui/AppTitle';
 import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
 import { filterLeaveCalendarEntries } from '@modules/leave/search/filters';
+import { LeaveRequestForm } from '@modules/leave/components/LeaveRequestForm';
+import { usePermissions } from '@platform/permissions/usePermissions';
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -74,10 +76,14 @@ function LeaveDayCell({
   day,
   entries,
   holidays,
+  canCreate,
+  onCreateLeave,
 }: {
   day: Date;
   entries: LeaveCalendarEntry[];
   holidays: PublicHoliday[];
+  canCreate: boolean;
+  onCreateLeave: (date: Date) => void;
 }) {
   const isWeekend = day.getDay() === 0 || day.getDay() === 6;
   const isToday = toDateString(day) === toDateString(new Date());
@@ -88,12 +94,18 @@ function LeaveDayCell({
     <td
       className={`align-top border p-2 min-w-[120px] h-[120px] vertical-align-top ${
         isToday ? 'ring-2 ring-inset ring-blue-500' : ''
-      }`}
+      } ${canCreate ? 'cursor-pointer' : ''}`}
       style={{
         borderColor: tokens.colorNeutralStroke3,
         backgroundColor: isWeekend
           ? tokens.colorNeutralBackground2
           : tokens.colorNeutralBackground1,
+      }}
+      title={canCreate ? 'Double-click to create a leave application' : undefined}
+      onDoubleClick={() => {
+        if (canCreate) {
+          onCreateLeave(day);
+        }
       }}
     >
       <div className="flex items-start justify-between gap-1 mb-1">
@@ -151,6 +163,8 @@ function LeaveDayCell({
 
 export default function LeaveCalendarPage() {
   const searchQuery = usePageSearchQuery();
+  const { hasPermission } = usePermissions();
+  const canCreateLeave = hasPermission('leave.requests.write');
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -160,6 +174,8 @@ export default function LeaveCalendarPage() {
   const [calendar, setCalendar] = useState<LeaveCalendarResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formStartDate, setFormStartDate] = useState<string | null>(null);
 
   const loadCalendar = useCallback(async () => {
     setIsLoading(true);
@@ -242,6 +258,16 @@ export default function LeaveCalendarPage() {
     }
     return [...types.values()];
   }, [filteredEntries]);
+
+  function handleCreateLeaveForDay(day: Date) {
+    if (!canCreateLeave) {
+      return;
+    }
+
+    const dateKey = toDateString(day);
+    setFormStartDate(dateKey);
+    setFormOpen(true);
+  }
 
   return (
     <div className="flex flex-col gap-4 h-full overflow-auto px-3 pb-6">
@@ -377,6 +403,8 @@ export default function LeaveCalendarPage() {
                         day={day}
                         entries={entriesByDate.get(dayKey) ?? []}
                         holidays={holidaysByDate.get(dayKey) ?? []}
+                        canCreate={canCreateLeave}
+                        onCreateLeave={handleCreateLeaveForDay}
                       />
                     );
                   })}
@@ -386,6 +414,21 @@ export default function LeaveCalendarPage() {
           </table>
         </div>
       )}
+
+      {canCreateLeave ? (
+        <LeaveRequestForm
+          open={formOpen}
+          initialStartDate={formStartDate}
+          initialEndDate={formStartDate}
+          onClose={() => {
+            setFormOpen(false);
+            setFormStartDate(null);
+          }}
+          onSubmitted={() => {
+            void loadCalendar();
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using CarTrack.Api;
 using CarTrack.Identity.Contracts;
+using CarTrack.Server.Data;
 using CarTrack.Server.Users;
 using CarTrack.Server.Users.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace CarTrack.Modules.Leave;
@@ -71,6 +73,7 @@ public static class LeaveEndpoints
     }
 
     private static async Task<IResult> GetActiveTypesAsync(
+        string? forUserId,
         ILeaveConfigurationService leaveConfigurationService,
         ClaimsPrincipal principal,
         CancellationToken cancellationToken)
@@ -81,7 +84,22 @@ public static class LeaveEndpoints
             return Results.Unauthorized();
         }
 
-        var items = await leaveConfigurationService.GetActiveTypesAsync(userId, cancellationToken);
+        var targetUserId = userId;
+        if (!string.IsNullOrWhiteSpace(forUserId)
+            && !string.Equals(forUserId, userId, StringComparison.Ordinal))
+        {
+            if (!IsLeaveBalanceAdministrator(principal))
+            {
+                return Results.Problem(
+                    title: "Forbidden",
+                    detail: "Only administrators and HR can load leave types for another employee.",
+                    statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            targetUserId = forUserId;
+        }
+
+        var items = await leaveConfigurationService.GetActiveTypesAsync(targetUserId, cancellationToken);
         return Results.Ok(items);
     }
 
@@ -130,6 +148,7 @@ public static class LeaveEndpoints
         ILeaveApprovalService leaveApprovalService,
         ILeaveLifecycleNotifier leaveLifecycleNotifier,
         ISecurityAuditService auditService,
+        UserManager<ApplicationUser> userManager,
         ILoggerFactory loggerFactory,
         ClaimsPrincipal principal,
         CancellationToken cancellationToken)
@@ -167,7 +186,8 @@ public static class LeaveEndpoints
                 endDate,
                 string.IsNullOrWhiteSpace(form["notes"]) ? null : form["notes"].ToString(),
                 string.IsNullOrWhiteSpace(form["startDayPortion"]) ? null : form["startDayPortion"].ToString(),
-                string.IsNullOrWhiteSpace(form["endDayPortion"]) ? null : form["endDayPortion"].ToString());
+                string.IsNullOrWhiteSpace(form["endDayPortion"]) ? null : form["endDayPortion"].ToString(),
+                string.IsNullOrWhiteSpace(form["onBehalfOfUserId"]) ? null : form["onBehalfOfUserId"].ToString());
             document = form.Files.GetFile("document");
         }
         else
@@ -182,18 +202,46 @@ public static class LeaveEndpoints
             }
             createRequest = request;
         }
+
+        var requesterUserId = userId;
+        if (!string.IsNullOrWhiteSpace(createRequest.OnBehalfOfUserId)
+            && !string.Equals(createRequest.OnBehalfOfUserId, userId, StringComparison.Ordinal))
+        {
+            if (!IsLeaveBalanceAdministrator(principal))
+            {
+                return Results.Problem(
+                    title: "Forbidden",
+                    detail: "Only administrators and HR can submit leave on behalf of another employee.",
+                    statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            var targetUser = await userManager.FindByIdAsync(createRequest.OnBehalfOfUserId);
+            if (targetUser is null || !targetUser.IsActive)
+            {
+                return Results.Problem(
+                    title: "Invalid employee",
+                    detail: "The selected employee was not found or is inactive.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            requesterUserId = targetUser.Id;
+        }
+
         try
         {
             var created = await leaveApprovalService.CreateRequestAsync(
-                userId,
+                requesterUserId,
                 createRequest,
                 document,
                 cancellationToken);
+            var onBehalfSuffix = string.Equals(requesterUserId, userId, StringComparison.Ordinal)
+                ? string.Empty
+                : $" (submitted by {userId} on behalf of {requesterUserId})";
             await auditService.LogAsync(
                 "leave.request.created",
                 created.RequesterUserId,
                 created.RequesterDisplayName,
-                $"Leave request {created.Id} ({created.LeaveType}, {created.StartDate} to {created.EndDate})",
+                $"Leave request {created.Id} ({created.LeaveType}, {created.StartDate} to {created.EndDate}){onBehalfSuffix}",
                 cancellationToken);
             await TryNotifyAsync(
                 () => leaveLifecycleNotifier.NotifyLeaveSubmittedAsync(

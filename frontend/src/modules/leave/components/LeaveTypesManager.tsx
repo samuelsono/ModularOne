@@ -346,13 +346,13 @@ export function LeaveTypesManager({ canWrite }: LeaveTypesManagerProps) {
 
 
   const columnSizingOptions = useMemo(() => ({
-    name: { minWidth: 150, maxWidth: 300 },
-    accrual: { minWidth: 150, maxWidth: 250 },
-    code: { minWidth: 100, maxWidth: 150 },
-    flags: { minWidth: 100, maxWidth: 500, idealWidth: 200 },
-    sortOrder: { minWidth: 50, maxWidth: 100 },
-    isActive: { minWidth: 50, maxWidth: 100 },
-    actions: { minWidth: 100, maxWidth: 150 },
+    name: { minWidth: 160, idealWidth: 260, defaultWidth: 220 },
+    accrual: { minWidth: 150, idealWidth: 220, defaultWidth: 180 },
+    code: { minWidth: 90, idealWidth: 120, defaultWidth: 100 },
+    flags: { minWidth: 160, idealWidth: 280, defaultWidth: 220 },
+    sortOrder: { minWidth: 70, idealWidth: 90, defaultWidth: 80 },
+    isActive: { minWidth: 80, idealWidth: 100, defaultWidth: 90 },
+    actions: { minWidth: 110, idealWidth: 140, defaultWidth: 120 },
   }), []);
 
   const loadTypes = useCallback(async () => {
@@ -563,8 +563,17 @@ export function LeaveTypesManager({ canWrite }: LeaveTypesManagerProps) {
           No leave types match your search.
         </Text>
       ) : (
-        <DataGrid items={filteredTypes} columnSizingOptions={persistedSizing}
-        onColumnResize={onColumnResize} resizableColumns columns={columns} getRowId={(item) => item.id}>
+        <div className="w-full min-w-0 overflow-x-auto">
+          <DataGrid
+            items={filteredTypes}
+            columnSizingOptions={persistedSizing}
+            onColumnResize={onColumnResize}
+            resizableColumns
+            resizableColumnsOptions={{ autoFitColumns: false }}
+            columns={columns}
+            getRowId={(item) => item.id}
+            style={{ minWidth: 'fit-content', width: '100%' }}
+          >
           <DataGridHeader>
             <DataGridRow>
               {({ renderHeaderCell }) => (
@@ -581,7 +590,8 @@ export function LeaveTypesManager({ canWrite }: LeaveTypesManagerProps) {
               </DataGridRow>
             )}
           </DataGridBody>
-        </DataGrid>
+          </DataGrid>
+        </div>
       )}
 
       {canWrite ? (
