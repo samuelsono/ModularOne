@@ -540,7 +540,7 @@ export default function LeaveAttendancePage() {
         row.hasActual ? 'yes' : 'no',
         collaborators,
       ]
-        .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+        .map((value) => `"${String(value).split('"').join('""')}"`)
         .join(',');
     });
 
@@ -654,7 +654,7 @@ export default function LeaveAttendancePage() {
                     color: point.color,
                   })),
                 }}
-                innerRadius={55}
+                innerRadius={45}
                 valueInsideDonut={
                   health.workDays === 0 ? '—' : `${Math.round(health.matchRate * 100)}%`
                 }

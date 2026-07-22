@@ -333,7 +333,7 @@ export default function LeaveSchedulePage() {
                   <DatePicker
                     style={{ minWidth: 200 }}
                     value={effectiveFrom}
-                    onSelectDate={setEffectiveFrom}
+                    onSelectDate={(date) => setEffectiveFrom(date ?? undefined)}
                     disabled={isSaving}
                   />
                 </Field>
