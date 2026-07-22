@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tokens, Badge, Button, Dropdown, Field, MessageBar, MessageBarBody, Option, Spinner, Text, Tooltip } from '@fluentui/react-components';
 import { ChevronLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
-import { getLeaveCalendar } from '@modules/leave/services/leaveService';
-import type { LeaveCalendarEntry, LeaveCalendarResponse, PublicHoliday } from '@modules/leave/types/leave';
+import { getLeaveCalendar, getResolvedSchedule } from '@modules/leave/services/leaveService';
+import type { LeaveCalendarEntry, LeaveCalendarResponse, PublicHoliday, ResolvedScheduleDay } from '@modules/leave/types/leave';
 import AppTitle from '@platform/ui/AppTitle';
 import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
 import { filterLeaveCalendarEntries } from '@modules/leave/search/filters';
@@ -76,12 +76,14 @@ function LeaveDayCell({
   day,
   entries,
   holidays,
+  scheduleDays,
   canCreate,
   onCreateLeave,
 }: {
   day: Date;
   entries: LeaveCalendarEntry[];
   holidays: PublicHoliday[];
+  scheduleDays: ResolvedScheduleDay[];
   canCreate: boolean;
   onCreateLeave: (date: Date) => void;
 }) {
@@ -89,6 +91,10 @@ function LeaveDayCell({
   const isToday = toDateString(day) === toDateString(new Date());
   const visibleEntries = entries.slice(0, 3);
   const hiddenCount = entries.length - visibleEntries.length;
+  const workLocations = scheduleDays
+    .filter((item) => item.kind === 'Work' && item.locationTypeName)
+    .slice(0, 2);
+  const hiddenLocations = Math.max(0, scheduleDays.filter((item) => item.kind === 'Work').length - workLocations.length);
 
   return (
     <td
@@ -123,6 +129,30 @@ function LeaveDayCell({
       </div>
 
       <div className="flex flex-col gap-1">
+        {workLocations.map((item) => (
+          <Tooltip
+            key={`${item.userId}-${item.date}-schedule`}
+            content={`${item.userDisplayName} · ${item.locationTypeName}${item.fromOverride ? ' (override)' : ''}`}
+            relationship="description"
+          >
+            <div
+              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs truncate"
+              style={{ backgroundColor: `${item.locationTypeColor ?? '#605E5C'}22` }}
+            >
+              <span
+                className="inline-block w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: item.locationTypeColor ?? '#605E5C' }}
+              />
+              <span className="truncate">{item.locationTypeName}</span>
+            </div>
+          </Tooltip>
+        ))}
+        {hiddenLocations > 0 ? (
+          <Text size={100} className="text-neutral-foreground-3 px-1">
+            +{hiddenLocations} locations
+          </Text>
+        ) : null}
+
         {visibleEntries.map((entry) => (
           <Tooltip
             key={`${entry.requestId}-${toDateString(day)}`}
@@ -153,7 +183,7 @@ function LeaveDayCell({
           </Text>
         ) : null}
 
-        {entries.length === 0 && holidays.length === 0 ? (
+        {entries.length === 0 && holidays.length === 0 && workLocations.length === 0 ? (
           <Text size={100} className="text-neutral-foreground-3">—</Text>
         ) : null}
       </div>
@@ -165,6 +195,7 @@ export default function LeaveCalendarPage() {
   const searchQuery = usePageSearchQuery();
   const { hasPermission } = usePermissions();
   const canCreateLeave = hasPermission('leave.requests.write');
+  const canReadSchedule = hasPermission('leave.schedule.read');
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -172,6 +203,7 @@ export default function LeaveCalendarPage() {
   const [branchFilter, setBranchFilter] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [calendar, setCalendar] = useState<LeaveCalendarResponse | null>(null);
+  const [scheduleDays, setScheduleDays] = useState<ResolvedScheduleDay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -191,13 +223,25 @@ export default function LeaveCalendarPage() {
         department: departmentFilter || undefined,
       });
       setCalendar(data);
+
+      if (canReadSchedule) {
+        try {
+          const resolved = await getResolvedSchedule(range.start, range.end);
+          setScheduleDays(resolved.filter((item) => item.kind === 'Work'));
+        } catch {
+          setScheduleDays([]);
+        }
+      } else {
+        setScheduleDays([]);
+      }
     } catch (loadError) {
       setError(loadError instanceof ApiError ? loadError.message : 'Failed to load leave calendar.');
       setCalendar(null);
+      setScheduleDays([]);
     } finally {
       setIsLoading(false);
     }
-  }, [month, branchFilter, departmentFilter]);
+  }, [branchFilter, canReadSchedule, departmentFilter, month]);
 
   useEffect(() => {
     void loadCalendar();
@@ -247,6 +291,16 @@ export default function LeaveCalendarPage() {
 
     return map;
   }, [filteredEntries]);
+
+  const scheduleByDate = useMemo(() => {
+    const map = new Map<string, ResolvedScheduleDay[]>();
+    for (const day of scheduleDays) {
+      const items = map.get(day.date) ?? [];
+      items.push(day);
+      map.set(day.date, items);
+    }
+    return map;
+  }, [scheduleDays]);
 
   const leaveTypes = useMemo(() => {
     const types = new Map<string, { name: string; color: string }>();
@@ -403,6 +457,7 @@ export default function LeaveCalendarPage() {
                         day={day}
                         entries={entriesByDate.get(dayKey) ?? []}
                         holidays={holidaysByDate.get(dayKey) ?? []}
+                        scheduleDays={scheduleByDate.get(dayKey) ?? []}
                         canCreate={canCreateLeave}
                         onCreateLeave={handleCreateLeaveForDay}
                       />

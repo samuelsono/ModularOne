@@ -37,7 +37,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
       <Text className="text-neutral-foreground-3 font-bold!">{label}</Text>
-      <Text className=''>{value}</Text>
+      <Text className='max-w-[300px]'>{value}</Text>
     </div>
   );
 }
@@ -93,7 +93,7 @@ export function LeaveRequestDetailPopover({
             {item.decidedAt ? (
               <DetailRow label="Decided" value={formatLeaveDateTime(item.decidedAt)} />
             ) : null}
-            <DetailRow label="Notes" value={item.notes ?? '—'} />
+            <DetailRow label="Notes"  value={item.notes ?? '—'} />
             <div className="grid grid-cols-[120px_1fr] gap-2 text-sm items-center">
               <Text className="text-neutral-foreground-3 font-bold!">Document</Text>
               <div className="flex flex-wrap items-center gap-2 min-w-0">

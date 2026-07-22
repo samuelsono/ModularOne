@@ -36,6 +36,8 @@ const NAV_ICONS: Record<string, typeof HomeRegular> = {
   Calendar: CalendarRegular,
   Policy: DocumentRegular,
   Balance: CalendarRegular,
+  Schedule: CalendarRegular,
+  Attend: PeopleTeamRegular,
   Claims: MoneyRegular,
   Category: DocumentRegular,
   Runs: MoneyRegular,

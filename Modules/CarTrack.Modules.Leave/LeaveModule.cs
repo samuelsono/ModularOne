@@ -35,6 +35,7 @@ public sealed class LeaveModule : IModule
         builder.Services.AddScoped<ILeaveAccrualService, LeaveAccrualService>();
         builder.Services.AddScoped<ILeaveLifecycleNotifier, LeaveLifecycleNotifier>();
         builder.Services.AddScoped<IPublicHolidaySyncService, PublicHolidaySyncService>();
+        builder.Services.AddScoped<IAttendanceScheduleService, AttendanceScheduleService>();
         builder.Services.AddHttpClient<IOpenHolidaysApiClient, OpenHolidaysApiClient>(client =>
         {
             client.BaseAddress = new Uri("https://openholidaysapi.org/");

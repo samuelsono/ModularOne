@@ -15,6 +15,18 @@ public sealed class LeaveDbContext(DbContextOptions<LeaveDbContext> options) : M
 
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
 
+    public DbSet<WorkLocationType> WorkLocationTypes => Set<WorkLocationType>();
+
+    public DbSet<ScheduleTemplate> ScheduleTemplates => Set<ScheduleTemplate>();
+
+    public DbSet<ScheduleTemplateDay> ScheduleTemplateDays => Set<ScheduleTemplateDay>();
+
+    public DbSet<ScheduleDayOverride> ScheduleDayOverrides => Set<ScheduleDayOverride>();
+
+    public DbSet<AttendanceDay> AttendanceDays => Set<AttendanceDay>();
+
+    public DbSet<AttendanceCollaborator> AttendanceCollaborators => Set<AttendanceCollaborator>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -34,7 +46,6 @@ public sealed class LeaveDbContext(DbContextOptions<LeaveDbContext> options) : M
                 .HasDefaultValue(LeaveTypeGenderEligibility.Any)
                 .IsRequired();
             entity.Property(type => type.AnnualEntitlement).HasPrecision(6, 2);
-            // CreatedByUserId / UpdatedByUserId are opaque user ids; no cross-module FK.
             ConfigureAuditable(entity);
         });
 
@@ -62,7 +73,6 @@ public sealed class LeaveDbContext(DbContextOptions<LeaveDbContext> options) : M
                 .WithMany()
                 .HasForeignKey(balance => balance.LeaveTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
-            // UserId is opaque; no cross-module FK to AspNetUsers.
         });
 
         builder.Entity<LeaveRequest>(entity =>
@@ -89,9 +99,92 @@ public sealed class LeaveDbContext(DbContextOptions<LeaveDbContext> options) : M
                 .WithMany(type => type.Requests)
                 .HasForeignKey(request => request.LeaveTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
-            // RequesterUserId / ManagerUserId are opaque; no cross-module FK.
 
             ConfigureAuditable(entity);
+        });
+
+        builder.Entity<WorkLocationType>(entity =>
+        {
+            entity.ToTable("WorkLocationTypes");
+            entity.HasKey(type => type.Id);
+            entity.HasIndex(type => type.Code).IsUnique();
+            entity.Property(type => type.Code).HasMaxLength(32).IsRequired();
+            entity.Property(type => type.Name).HasMaxLength(128).IsRequired();
+            entity.Property(type => type.Color).HasMaxLength(16).IsRequired();
+        });
+
+        builder.Entity<ScheduleTemplate>(entity =>
+        {
+            entity.ToTable("ScheduleTemplates");
+            entity.HasKey(template => template.Id);
+            entity.HasIndex(template => new { template.UserId, template.EffectiveFrom });
+            entity.Property(template => template.UserId).HasMaxLength(450).IsRequired();
+            entity.Property(template => template.Notes).HasMaxLength(1024);
+
+            entity.HasMany(template => template.Days)
+                .WithOne(day => day.Template)
+                .HasForeignKey(day => day.TemplateId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ScheduleTemplateDay>(entity =>
+        {
+            entity.ToTable("ScheduleTemplateDays");
+            entity.HasKey(day => day.Id);
+            entity.HasIndex(day => new { day.TemplateId, day.DayOfWeek }).IsUnique();
+
+            entity.HasOne(day => day.LocationType)
+                .WithMany()
+                .HasForeignKey(day => day.LocationTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<ScheduleDayOverride>(entity =>
+        {
+            entity.ToTable("ScheduleDayOverrides");
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => new { item.UserId, item.Date }).IsUnique();
+            entity.Property(item => item.UserId).HasMaxLength(450).IsRequired();
+            entity.Property(item => item.Notes).HasMaxLength(1024);
+
+            entity.HasOne(item => item.LocationType)
+                .WithMany()
+                .HasForeignKey(item => item.LocationTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<AttendanceDay>(entity =>
+        {
+            entity.ToTable("AttendanceDays");
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => new { item.UserId, item.Date }).IsUnique();
+            entity.Property(item => item.UserId).HasMaxLength(450).IsRequired();
+            entity.Property(item => item.Source).HasMaxLength(16).IsRequired();
+            entity.Property(item => item.Notes).HasMaxLength(1024);
+            entity.Property(item => item.RecordedByUserId).HasMaxLength(450).IsRequired();
+
+            entity.HasOne(item => item.PlannedLocationType)
+                .WithMany()
+                .HasForeignKey(item => item.PlannedLocationTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(item => item.ActualLocationType)
+                .WithMany()
+                .HasForeignKey(item => item.ActualLocationTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(item => item.Collaborators)
+                .WithOne(collaborator => collaborator.AttendanceDay)
+                .HasForeignKey(collaborator => collaborator.AttendanceDayId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<AttendanceCollaborator>(entity =>
+        {
+            entity.ToTable("AttendanceCollaborators");
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.CollaboratorUserId).HasMaxLength(450);
+            entity.Property(item => item.ExternalName).HasMaxLength(256);
         });
     }
 

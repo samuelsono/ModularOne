@@ -7,6 +7,8 @@ import LeaveApprovalsPage from './pages/LeaveApprovalsPage';
 import LeaveCalendarPage from './pages/LeaveCalendarPage';
 import LeavePoliciesPage from './pages/LeavePoliciesPage';
 import LeaveBalancesPage from './pages/LeaveBalancesPage';
+import LeaveSchedulePage from './pages/LeaveSchedulePage';
+import LeaveAttendancePage from './pages/LeaveAttendancePage';
 
 export const leaveModule: ModuleDefinition = {
   id: 'leave',
@@ -25,6 +27,8 @@ export const leaveModule: ModuleDefinition = {
         { path: 'requests', element: withPermission('leave.requests.read', <LeaveRequestsPage />) },
         { path: 'approvals', element: withPermission('leave.approvals.read', <LeaveApprovalsPage />) },
         { path: 'calendar', element: withPermission('leave.calendar.read', <LeaveCalendarPage />) },
+        { path: 'schedule', element: withPermission('leave.schedule.read', <LeaveSchedulePage />) },
+        { path: 'attendance', element: withPermission('leave.attendance.read', <LeaveAttendancePage />) },
         { path: 'policies', element: withPermission('leave.policies.read', <LeavePoliciesPage />) },
         { path: 'balances', element: withPermission('leave.balances.read', <LeaveBalancesPage />) },
       ],
@@ -40,6 +44,8 @@ export const leaveModule: ModuleDefinition = {
     { path: '/leave/requests', label: 'Requests', shortLabel: 'Requests', permission: 'leave.requests.read' },
     { path: '/leave/approvals', label: 'Approvals', shortLabel: 'Approve', permission: 'leave.approvals.read' },
     { path: '/leave/calendar', label: 'Calendar', shortLabel: 'Calendar', permission: 'leave.calendar.read' },
+    { path: '/leave/schedule', label: 'Schedule', shortLabel: 'Schedule', permission: 'leave.schedule.read' },
+    { path: '/leave/attendance', label: 'Attendance', shortLabel: 'Attend', permission: 'leave.attendance.read' },
     { path: '/leave/policies', label: 'Policies', shortLabel: 'Policy', permission: 'leave.policies.read' },
     { path: '/leave/balances', label: 'Balances', shortLabel: 'Balance', permission: 'leave.balances.read' },
   ],
@@ -85,6 +91,18 @@ export const leaveModule: ModuleDefinition = {
       id: 'leave-calendar',
       matchesPath: (p) => p.startsWith('/leave/calendar'),
       placeholder: 'Search by employee, department, or leave type',
+      enabled: true,
+    },
+    {
+      id: 'leave-schedule',
+      matchesPath: (p) => p.startsWith('/leave/schedule'),
+      placeholder: 'Search schedule by employee or location',
+      enabled: true,
+    },
+    {
+      id: 'leave-attendance',
+      matchesPath: (p) => p.startsWith('/leave/attendance'),
+      placeholder: 'Search attendance by employee or location',
       enabled: true,
     },
     {

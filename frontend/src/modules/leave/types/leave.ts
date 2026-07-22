@@ -218,3 +218,121 @@ export interface LeaveHistoryFilters {
   userId?: string;
   year?: number;
 }
+
+export interface WorkLocationType {
+  id: string;
+  code: string;
+  name: string;
+  color: string;
+  tracksCollaborators: boolean;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface ScheduleTemplateDay {
+  dayOfWeek: number;
+  locationTypeId: string;
+  locationTypeName: string;
+  locationTypeColor: string;
+}
+
+export interface ScheduleTemplate {
+  id: string;
+  userId: string;
+  userDisplayName: string;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  notes: string | null;
+  days: ScheduleTemplateDay[];
+}
+
+export interface UpsertScheduleTemplateRequest {
+  userId?: string | null;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+  notes?: string | null;
+  days: Array<{ dayOfWeek: number; locationTypeId: string }>;
+}
+
+export interface ScheduleDayOverride {
+  id: string;
+  userId: string;
+  date: string;
+  locationTypeId: string;
+  locationTypeName: string;
+  locationTypeColor: string;
+  notes: string | null;
+}
+
+export interface UpsertScheduleDayOverrideRequest {
+  userId?: string | null;
+  date: string;
+  locationTypeId: string;
+  notes?: string | null;
+}
+
+export interface ResolvedScheduleDay {
+  userId: string;
+  userDisplayName: string;
+  date: string;
+  kind: 'Work' | 'OnLeave' | 'Unscheduled';
+  locationTypeId: string | null;
+  locationTypeCode: string | null;
+  locationTypeName: string | null;
+  locationTypeColor: string | null;
+  tracksCollaborators: boolean;
+  leaveRequestId: string | null;
+  leaveTypeName: string | null;
+  fromOverride: boolean;
+}
+
+export interface AttendanceCollaborator {
+  collaboratorUserId: string | null;
+  collaboratorDisplayName: string | null;
+  externalName: string | null;
+}
+
+export interface AttendanceDay {
+  id: string;
+  userId: string;
+  userDisplayName: string;
+  date: string;
+  plannedLocationTypeId: string | null;
+  plannedLocationTypeName: string | null;
+  plannedLocationTypeColor: string | null;
+  actualLocationTypeId: string;
+  actualLocationTypeName: string;
+  actualLocationTypeColor: string;
+  tracksCollaborators: boolean;
+  source: string;
+  notes: string | null;
+  recordedByUserId: string;
+  recordedByDisplayName: string;
+  recordedAt: string;
+  collaborators: AttendanceCollaborator[];
+}
+
+export interface UpsertAttendanceDayRequest {
+  userId?: string | null;
+  actualLocationTypeId: string;
+  notes?: string | null;
+  collaborators?: Array<{ collaboratorUserId?: string | null; externalName?: string | null }>;
+}
+
+export interface AttendanceCompareRow {
+  userId: string;
+  userDisplayName: string;
+  date: string;
+  plannedKind: string;
+  plannedLocationTypeId: string | null;
+  plannedLocationTypeName: string | null;
+  plannedLocationTypeColor: string | null;
+  actualLocationTypeId: string | null;
+  actualLocationTypeName: string | null;
+  actualLocationTypeColor: string | null;
+  hasActual: boolean;
+  isMatch: boolean;
+  isMismatch: boolean;
+  collaborators: AttendanceCollaborator[];
+}
+

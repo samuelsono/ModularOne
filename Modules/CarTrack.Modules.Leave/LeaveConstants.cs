@@ -32,6 +32,30 @@ public static class LeaveTypeCodes
     public const string Sick = "SICK";
 }
 
+public static class WorkLocationCodes
+{
+    public const string Office = "OFFICE";
+    public const string WorkFromHome = "WFH";
+    public const string ClientSite = "CLIENT";
+    public const string BusinessTravel = "TRAVEL";
+    public const string Other = "OTHER";
+}
+
+public static class AttendanceSources
+{
+    public const string Self = "Self";
+    public const string Manager = "Manager";
+    public const string Hr = "Hr";
+    public const string Admin = "Admin";
+}
+
+public static class PlannedAttendanceKinds
+{
+    public const string Work = "Work";
+    public const string OnLeave = "OnLeave";
+    public const string Unscheduled = "Unscheduled";
+}
+
 public enum LeaveRemainingCategory
 {
     Annual,

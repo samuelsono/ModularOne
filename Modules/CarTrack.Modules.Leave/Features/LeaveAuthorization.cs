@@ -58,4 +58,26 @@ public static class LeaveAuthorization
         return scope.BypassRowLevelSecurity
             || scope.Roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase));
     }
+
+    /// <summary>
+    /// Self, Admin/SystemAdmin (bypass), HR, or managers for their reports may manage schedule/attendance.
+    /// </summary>
+    public static bool CanManageUserAttendance(
+        this UserDataScope scope,
+        string actingUserId,
+        string targetUserId)
+    {
+        if (string.Equals(actingUserId, targetUserId, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (scope.BypassRowLevelSecurity
+            || scope.Roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return scope.ReportUserIds.Contains(targetUserId);
+    }
 }

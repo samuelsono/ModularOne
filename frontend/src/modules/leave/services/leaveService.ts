@@ -1,6 +1,8 @@
 import type {
   AdjustLeaveBalanceRequest,
   ApprovalDecisionRequest,
+  AttendanceCompareRow,
+  AttendanceDay,
   CreateLeaveRequest,
   LeaveBalance,
   LeaveCalendarResponse,
@@ -11,8 +13,15 @@ import type {
   LeaveRequest,
   LeaveType,
   PublicHoliday,
+  ResolvedScheduleDay,
   SaveLeaveTypeRequest,
   SavePublicHolidayRequest,
+  ScheduleDayOverride,
+  ScheduleTemplate,
+  UpsertAttendanceDayRequest,
+  UpsertScheduleDayOverrideRequest,
+  UpsertScheduleTemplateRequest,
+  WorkLocationType,
   WorkingDaysResult,
 } from '@modules/leave/types/leave';
 import { authorizedFetch } from '@platform/api/authService';
@@ -336,3 +345,86 @@ export function decideLeaveApproval(id: string, request: ApprovalDecisionRequest
     body: JSON.stringify(request),
   });
 }
+
+export function getWorkLocationTypes(activeOnly = true): Promise<WorkLocationType[]> {
+  return authorizedFetch<WorkLocationType[]>(`/api/leave/locations?activeOnly=${activeOnly ? 'true' : 'false'}`);
+}
+
+export function getScheduleTemplates(userId?: string | null): Promise<ScheduleTemplate[]> {
+  const query = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+  return authorizedFetch<ScheduleTemplate[]>(`/api/leave/schedule/templates${query}`);
+}
+
+export function upsertScheduleTemplate(request: UpsertScheduleTemplateRequest): Promise<ScheduleTemplate> {
+  return authorizedFetch<ScheduleTemplate>('/api/leave/schedule/templates', {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  });
+}
+
+export function getScheduleOverrides(
+  userId?: string | null,
+  from?: string | null,
+  to?: string | null,
+): Promise<ScheduleDayOverride[]> {
+  const params = new URLSearchParams();
+  if (userId) params.set('userId', userId);
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  const query = params.toString() ? `?${params}` : '';
+  return authorizedFetch<ScheduleDayOverride[]>(`/api/leave/schedule/overrides${query}`);
+}
+
+export function upsertScheduleOverride(request: UpsertScheduleDayOverrideRequest): Promise<ScheduleDayOverride> {
+  return authorizedFetch<ScheduleDayOverride>('/api/leave/schedule/overrides', {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  });
+}
+
+export function deleteScheduleOverride(id: string): Promise<void> {
+  return authorizedFetch<void>(`/api/leave/schedule/overrides/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function getResolvedSchedule(
+  from: string,
+  to: string,
+  userId?: string | null,
+): Promise<ResolvedScheduleDay[]> {
+  const params = new URLSearchParams({ from, to });
+  if (userId) params.set('userId', userId);
+  return authorizedFetch<ResolvedScheduleDay[]>(`/api/leave/schedule/resolved?${params}`);
+}
+
+export function getAttendanceDays(
+  from: string,
+  to: string,
+  userId?: string | null,
+): Promise<AttendanceDay[]> {
+  const params = new URLSearchParams({ from, to });
+  if (userId) params.set('userId', userId);
+  return authorizedFetch<AttendanceDay[]>(`/api/leave/attendance?${params}`);
+}
+
+export function upsertAttendanceDay(
+  date: string,
+  request: UpsertAttendanceDayRequest,
+): Promise<AttendanceDay> {
+  return authorizedFetch<AttendanceDay>(`/api/leave/attendance/${encodeURIComponent(date)}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  });
+}
+
+export function getAttendanceCompare(
+  from: string,
+  to: string,
+  userId?: string | null,
+): Promise<AttendanceCompareRow[]> {
+  const params = new URLSearchParams({ from, to });
+  if (userId) params.set('userId', userId);
+  return authorizedFetch<AttendanceCompareRow[]>(`/api/leave/attendance/compare?${params}`);
+}
+

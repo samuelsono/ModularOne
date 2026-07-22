@@ -70,6 +70,7 @@ public static class LeaveEndpoints
         group.MapGet("/calendar", GetCalendarAsync)
             .RequirePermission("leave.calendar.read");
         group.MapLeaveReportEndpoints();
+        group.MapAttendanceScheduleEndpoints();
         return group;
     }
 

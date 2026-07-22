@@ -70,6 +70,8 @@ public static class PermissionCatalog
             ("policies", "Leave policies"),
             ("balances", "Leave balances"),
             ("reports", "Leave reports"),
+            ("schedule", "Work schedules"),
+            ("attendance", "Attendance"),
         ]));
         permissions.AddRange(Module("core", [
             ("companies", "Companies"),
@@ -142,13 +144,16 @@ public static class PermissionCatalog
             .Where(key => !key.StartsWith("platform.settings.users.", StringComparison.OrdinalIgnoreCase))
             .ToList();
         var platformSettingsCore = KeysMatching("platform.settings.read", "platform.settings.write");
-        // Staff/Driver get dashboard (reports.read) for self-only home pages; managers also get approvals.
+        // Staff/Driver: self-service leave + view own schedule/attendance (no schedule/attendance write).
         var leaveStaff = KeysMatching("leave.requests", "leave.calendar", "leave.balances.read")
             .Concat(KeysMatching("leave.reports.read"))
+            .Concat(KeysMatching("leave.schedule.read", "leave.attendance.read"))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
+        // Managers: staff set + approvals/reports + create schedules / mark attendance for their team.
         var leaveManager = leaveStaff
             .Concat(KeysMatching("leave.approvals", "leave.reports"))
+            .Concat(KeysMatching("leave.schedule.write", "leave.attendance.write"))
             .Distinct()
             .ToList();
         var expenseStaff = KeysMatching("expense.claims")
@@ -183,6 +188,8 @@ public static class PermissionCatalog
                 "leave.reports.read",
                 "leave.calendar.read",
                 "leave.balances.read",
+                "leave.schedule.read",
+                "leave.attendance.read",
                 "expense.claims.read",
                 "expense.claims.write",
                 "expense.reports.read",

@@ -280,6 +280,201 @@ namespace CarTrack.Modules.Leave.Persistence.Migrations
                     b.ToTable("PublicHolidays", (string)null);
                 });
 
+            modelBuilder.Entity("CarTrack.Modules.Leave.WorkLocationType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("TracksCollaborators")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("WorkLocationTypes", (string)null);
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.ScheduleTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("EffectiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("EffectiveTo")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "EffectiveFrom");
+
+                    b.ToTable("ScheduleTemplates", (string)null);
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.ScheduleTemplateDay", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("LocationTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TemplateId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationTypeId");
+
+                    b.HasIndex("TemplateId", "DayOfWeek")
+                        .IsUnique();
+
+                    b.ToTable("ScheduleTemplateDays", (string)null);
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.ScheduleDayOverride", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("LocationTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationTypeId");
+
+                    b.HasIndex("UserId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("ScheduleDayOverrides", (string)null);
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.AttendanceDay", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ActualLocationTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<Guid?>("PlannedLocationTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RecordedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActualLocationTypeId");
+
+                    b.HasIndex("PlannedLocationTypeId");
+
+                    b.HasIndex("UserId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("AttendanceDays", (string)null);
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.AttendanceCollaborator", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AttendanceDayId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CollaboratorUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("ExternalName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttendanceDayId");
+
+                    b.ToTable("AttendanceCollaborators", (string)null);
+                });
+
             modelBuilder.Entity("CarTrack.Modules.Leave.LeaveBalance", b =>
                 {
                     b.HasOne("CarTrack.Modules.Leave.LeaveType", "LeaveType")
@@ -302,9 +497,78 @@ namespace CarTrack.Modules.Leave.Persistence.Migrations
                     b.Navigation("LeaveType");
                 });
 
+            modelBuilder.Entity("CarTrack.Modules.Leave.ScheduleTemplateDay", b =>
+                {
+                    b.HasOne("CarTrack.Modules.Leave.WorkLocationType", "LocationType")
+                        .WithMany()
+                        .HasForeignKey("LocationTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CarTrack.Modules.Leave.ScheduleTemplate", "Template")
+                        .WithMany("Days")
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LocationType");
+
+                    b.Navigation("Template");
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.ScheduleDayOverride", b =>
+                {
+                    b.HasOne("CarTrack.Modules.Leave.WorkLocationType", "LocationType")
+                        .WithMany()
+                        .HasForeignKey("LocationTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LocationType");
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.AttendanceDay", b =>
+                {
+                    b.HasOne("CarTrack.Modules.Leave.WorkLocationType", "ActualLocationType")
+                        .WithMany()
+                        .HasForeignKey("ActualLocationTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CarTrack.Modules.Leave.WorkLocationType", "PlannedLocationType")
+                        .WithMany()
+                        .HasForeignKey("PlannedLocationTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ActualLocationType");
+
+                    b.Navigation("PlannedLocationType");
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.AttendanceCollaborator", b =>
+                {
+                    b.HasOne("CarTrack.Modules.Leave.AttendanceDay", "AttendanceDay")
+                        .WithMany("Collaborators")
+                        .HasForeignKey("AttendanceDayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AttendanceDay");
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.AttendanceDay", b =>
+                {
+                    b.Navigation("Collaborators");
+                });
+
             modelBuilder.Entity("CarTrack.Modules.Leave.LeaveType", b =>
                 {
                     b.Navigation("Requests");
+                });
+
+            modelBuilder.Entity("CarTrack.Modules.Leave.ScheduleTemplate", b =>
+                {
+                    b.Navigation("Days");
                 });
 #pragma warning restore 612, 618
         }

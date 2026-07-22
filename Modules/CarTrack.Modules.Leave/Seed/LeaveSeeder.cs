@@ -46,6 +46,58 @@ public static class LeaveSeeder
         }
 
         await BackfillDefaultTypeValuesAsync(dbContext, cancellationToken);
+        await SeedWorkLocationTypesAsync(dbContext, cancellationToken);
+    }
+
+    public static readonly Guid OfficeLocationId = Guid.Parse("22222222-2222-2222-2222-222222222201");
+    public static readonly Guid WfhLocationId = Guid.Parse("22222222-2222-2222-2222-222222222202");
+    public static readonly Guid ClientLocationId = Guid.Parse("22222222-2222-2222-2222-222222222203");
+    public static readonly Guid TravelLocationId = Guid.Parse("22222222-2222-2222-2222-222222222204");
+    public static readonly Guid OtherLocationId = Guid.Parse("22222222-2222-2222-2222-222222222205");
+
+    private static readonly (Guid Id, string Code, string Name, string Color, bool TracksCollaborators, int SortOrder)[] DefaultLocations =
+    [
+        (OfficeLocationId, WorkLocationCodes.Office, "Office", "#0078D4", false, 1),
+        (WfhLocationId, WorkLocationCodes.WorkFromHome, "Work from home", "#107C10", true, 2),
+        (ClientLocationId, WorkLocationCodes.ClientSite, "Client site", "#8764B8", false, 3),
+        (TravelLocationId, WorkLocationCodes.BusinessTravel, "Business travel", "#D83B01", false, 4),
+        (OtherLocationId, WorkLocationCodes.Other, "Other", "#605E5C", false, 5),
+    ];
+
+    private static async Task SeedWorkLocationTypesAsync(
+        LeaveDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var existingCodes = await dbContext.WorkLocationTypes
+            .Select(type => type.Code)
+            .ToListAsync(cancellationToken);
+        var existing = new HashSet<string>(existingCodes, StringComparer.OrdinalIgnoreCase);
+        var changed = false;
+
+        foreach (var location in DefaultLocations)
+        {
+            if (existing.Contains(location.Code))
+            {
+                continue;
+            }
+
+            dbContext.WorkLocationTypes.Add(new WorkLocationType
+            {
+                Id = location.Id,
+                Code = location.Code,
+                Name = location.Name,
+                Color = location.Color,
+                TracksCollaborators = location.TracksCollaborators,
+                IsActive = true,
+                SortOrder = location.SortOrder,
+            });
+            changed = true;
+        }
+
+        if (changed)
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public static async Task BackfillWorkingDaysAsync(

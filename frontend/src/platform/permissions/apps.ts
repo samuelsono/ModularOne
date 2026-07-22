@@ -138,13 +138,15 @@ export function filterModuleNavItems(
 ): ModuleNavItem[] {
   const items = navBySlug[moduleSlug] ?? [];
   return items.filter((item) => {
+    // Hide any nav entry the user cannot open — require an explicit permission grant.
     if (item.anyPermissions?.length) {
       return item.anyPermissions.some((p) => hasPermission(user, p));
     }
     if (item.permission) {
       return hasPermission(user, item.permission);
     }
-    return true;
+    // Items without a permission gate are treated as inaccessible (avoid leaking menus).
+    return false;
   });
 }
 

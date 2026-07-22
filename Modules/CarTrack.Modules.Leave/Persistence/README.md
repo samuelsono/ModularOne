@@ -1,7 +1,9 @@
 # Leave persistence ownership
 
-`LeaveDbContext` owns `LeaveTypes`, `PublicHolidays`, `LeaveBalances`, and
-`LeaveRequests`, and uses migrations history table `__EFMigrationsHistory_Leave`
+`LeaveDbContext` owns `LeaveTypes`, `PublicHolidays`, `LeaveBalances`,
+`LeaveRequests`, `WorkLocationTypes`, `ScheduleTemplates`, `ScheduleTemplateDays`,
+`ScheduleDayOverrides`, `AttendanceDays`, and `AttendanceCollaborators`, and uses
+migrations history table `__EFMigrationsHistory_Leave`
 (same physical PostgreSQL database as the host).
 
 ## Baseline (existing databases)

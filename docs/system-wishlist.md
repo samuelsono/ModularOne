@@ -20,7 +20,7 @@ Related capability wishlists / older plans: [payroll-management.md](./payroll-ma
 
 - Core HR (Companies, Employees, Departments, Positions)
 - Leave Management
-- Attendance & Time Tracking
+- Attendance & Time Tracking — hybrid schedule + planned vs actual attendance started in Leave; see [`leave-attendance-schedule-implementation-plan.md`](./leave-attendance-schedule-implementation-plan.md) (clock-in/biometrics still deferred)
 - Payroll Management
 - Recruitment & Applicant Tracking
 - Performance Management

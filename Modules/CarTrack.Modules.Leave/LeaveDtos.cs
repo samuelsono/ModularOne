@@ -202,3 +202,118 @@ public record WorkingDaysResult(
     string EndDayPortion);
 
 public record LeaveDocumentMetadata(string StoredPath, string FileName, string ContentType);
+
+public record WorkLocationTypeDto(
+    Guid Id,
+    string Code,
+    string Name,
+    string Color,
+    bool TracksCollaborators,
+    bool IsActive,
+    int SortOrder);
+
+public record SaveWorkLocationTypeRequest(
+    string Name,
+    string Code,
+    string? Color,
+    bool TracksCollaborators,
+    bool IsActive,
+    int SortOrder);
+
+public record ScheduleTemplateDayDto(int DayOfWeek, Guid LocationTypeId, string LocationTypeName, string LocationTypeColor);
+
+public record ScheduleTemplateDto(
+    Guid Id,
+    string UserId,
+    string UserDisplayName,
+    string EffectiveFrom,
+    string? EffectiveTo,
+    string? Notes,
+    IReadOnlyList<ScheduleTemplateDayDto> Days);
+
+public record UpsertScheduleTemplateRequest(
+    string? UserId,
+    string EffectiveFrom,
+    string? EffectiveTo,
+    string? Notes,
+    IReadOnlyList<ScheduleTemplateDayInput> Days);
+
+public record ScheduleTemplateDayInput(int DayOfWeek, Guid LocationTypeId);
+
+public record ScheduleDayOverrideDto(
+    Guid Id,
+    string UserId,
+    string Date,
+    Guid LocationTypeId,
+    string LocationTypeName,
+    string LocationTypeColor,
+    string? Notes);
+
+public record UpsertScheduleDayOverrideRequest(
+    string? UserId,
+    string Date,
+    Guid LocationTypeId,
+    string? Notes);
+
+public record ResolvedScheduleDayDto(
+    string UserId,
+    string UserDisplayName,
+    string Date,
+    string Kind,
+    Guid? LocationTypeId,
+    string? LocationTypeCode,
+    string? LocationTypeName,
+    string? LocationTypeColor,
+    bool TracksCollaborators,
+    string? LeaveRequestId,
+    string? LeaveTypeName,
+    bool FromOverride);
+
+public record AttendanceCollaboratorDto(
+    string? CollaboratorUserId,
+    string? CollaboratorDisplayName,
+    string? ExternalName);
+
+public record AttendanceDayDto(
+    Guid Id,
+    string UserId,
+    string UserDisplayName,
+    string Date,
+    Guid? PlannedLocationTypeId,
+    string? PlannedLocationTypeName,
+    string? PlannedLocationTypeColor,
+    Guid ActualLocationTypeId,
+    string ActualLocationTypeName,
+    string ActualLocationTypeColor,
+    bool TracksCollaborators,
+    string Source,
+    string? Notes,
+    string RecordedByUserId,
+    string RecordedByDisplayName,
+    string RecordedAt,
+    IReadOnlyList<AttendanceCollaboratorDto> Collaborators);
+
+public record UpsertAttendanceDayRequest(
+    string? UserId,
+    Guid ActualLocationTypeId,
+    string? Notes,
+    IReadOnlyList<AttendanceCollaboratorInput>? Collaborators);
+
+public record AttendanceCollaboratorInput(string? CollaboratorUserId, string? ExternalName);
+
+public record AttendanceCompareRowDto(
+    string UserId,
+    string UserDisplayName,
+    string Date,
+    string PlannedKind,
+    Guid? PlannedLocationTypeId,
+    string? PlannedLocationTypeName,
+    string? PlannedLocationTypeColor,
+    Guid? ActualLocationTypeId,
+    string? ActualLocationTypeName,
+    string? ActualLocationTypeColor,
+    bool HasActual,
+    bool IsMatch,
+    bool IsMismatch,
+    IReadOnlyList<AttendanceCollaboratorDto> Collaborators);
+

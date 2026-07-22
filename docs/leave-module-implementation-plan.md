@@ -113,7 +113,7 @@ DocumentPath (nullable, Phase 7+)
 - `Company`, `Branch`, `Department` as separate leave tables (use `StaffProfile`)
 - `LeaveApproval` multi-step table (single decision on request for now)
 - `Workflow` / `WorkflowStep`
-- `WorkSchedule` (Phase 3 uses Sat/Sun + holidays as default)
+- ~~`WorkSchedule`~~ — hybrid schedule + attendance now live in Leave; see [`leave-attendance-schedule-implementation-plan.md`](./leave-attendance-schedule-implementation-plan.md). Leave working-day accrual remains Mon–Fri + holidays unless revised later.
 
 ---
 
