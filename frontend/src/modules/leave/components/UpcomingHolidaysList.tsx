@@ -88,11 +88,16 @@ export function UpcomingHolidaysList() {
       ) : holidays.length === 0 ? (
         <Text className="text-sm text-neutral-foreground-3">No upcoming holidays in this range.</Text>
       ) : (
-        <ul className="flex flex-col divide-y divide-neutral-stroke-3 overflow-y-scroll mt-36! 3xl:mt-22!">
-          {holidays.map((holiday) => (
+        <ul className="flex flex-col overflow-y-scroll mt-36! 3xl:mt-22!">
+          {holidays.map((holiday, index) => (
             <li
               key={`${holiday.id}-${holiday.date}`}
               className="flex flex-wrap items-center justify-between gap-2 py-2 first:pt-0 last:pb-0"
+              style={
+                index < holidays.length - 1
+                  ? { borderBottom: 'var(--strokeWidthThin) solid var(--colorNeutralStroke3)' }
+                  : undefined
+              }
             >
               <div className="flex flex-col gap-0.5 min-w-0">
                 <Text weight="semibold">{holiday.name}</Text>
