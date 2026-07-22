@@ -27,6 +27,8 @@ public sealed class LeaveDbContext(DbContextOptions<LeaveDbContext> options) : M
 
     public DbSet<AttendanceCollaborator> AttendanceCollaborators => Set<AttendanceCollaborator>();
 
+    public DbSet<AttendancePolicySettings> AttendancePolicySettings => Set<AttendancePolicySettings>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -111,6 +113,16 @@ public sealed class LeaveDbContext(DbContextOptions<LeaveDbContext> options) : M
             entity.Property(type => type.Code).HasMaxLength(32).IsRequired();
             entity.Property(type => type.Name).HasMaxLength(128).IsRequired();
             entity.Property(type => type.Color).HasMaxLength(16).IsRequired();
+        });
+
+        builder.Entity<AttendancePolicySettings>(entity =>
+        {
+            entity.ToTable("AttendancePolicySettings");
+            entity.HasKey(settings => settings.Id);
+            entity.Property(settings => settings.Id).ValueGeneratedNever();
+            entity.Property(settings => settings.DefaultAssumption)
+                .HasMaxLength(16)
+                .IsRequired();
         });
 
         builder.Entity<ScheduleTemplate>(entity =>

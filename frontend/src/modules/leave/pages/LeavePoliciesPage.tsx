@@ -1,4 +1,5 @@
 import { Divider } from '@fluentui/react-components';
+import { AttendancePolicyManager } from '@modules/leave/components/AttendancePolicyManager';
 import { LeaveTypesManager } from '@modules/leave/components/LeaveTypesManager';
 import { PublicHolidaysManager } from '@modules/leave/components/PublicHolidaysManager';
 import { usePermissions } from '@platform/permissions/usePermissions';
@@ -21,6 +22,8 @@ export default function LeavePoliciesPage() {
   return (
     <div className="flex flex-col gap-8 h-full overflow-auto pb-20">
       <LeaveTypesManager canWrite={canWrite} />
+      <Divider />
+      <AttendancePolicyManager canWrite={canWrite} />
       <Divider />
       <PublicHolidaysManager canWrite={canWrite} />
     </div>

@@ -317,3 +317,9 @@ public record AttendanceCompareRowDto(
     bool IsMismatch,
     IReadOnlyList<AttendanceCollaboratorDto> Collaborators);
 
+public record AttendancePolicySettingsDto(
+    string DefaultAssumption,
+    string? UpdatedAt);
+
+public record UpdateAttendancePolicySettingsRequest(string DefaultAssumption);
+

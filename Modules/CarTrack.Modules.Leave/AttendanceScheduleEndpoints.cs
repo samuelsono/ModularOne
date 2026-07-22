@@ -35,6 +35,10 @@ public static class AttendanceScheduleEndpoints
             .RequirePermission("leave.attendance.write");
         group.MapGet("/attendance/compare", GetCompareAsync)
             .RequireAnyPermission("leave.attendance.read", "leave.schedule.read");
+        group.MapGet("/attendance/policy", GetAttendancePolicyAsync)
+            .RequireAnyPermission("leave.attendance.read", "leave.policies.read");
+        group.MapPut("/attendance/policy", UpdateAttendancePolicyAsync)
+            .RequirePermission("leave.policies.write");
 
         return group;
     }
@@ -411,6 +415,38 @@ public static class AttendanceScheduleEndpoints
         catch (InvalidOperationException ex)
         {
             return Results.Problem(title: "Unable to compare attendance", detail: ex.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<IResult> GetAttendancePolicyAsync(
+        IAttendanceScheduleService service,
+        CancellationToken cancellationToken)
+    {
+        var settings = await service.GetAttendancePolicyAsync(cancellationToken);
+        return Results.Ok(settings);
+    }
+
+    private static async Task<IResult> UpdateAttendancePolicyAsync(
+        UpdateAttendancePolicySettingsRequest request,
+        IAttendanceScheduleService service,
+        ISecurityAuditService auditService,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var settings = await service.UpdateAttendancePolicyAsync(request, cancellationToken);
+            await auditService.LogAsync(
+                "leave.attendance.policy.updated",
+                details: $"Attendance default assumption set to {settings.DefaultAssumption}",
+                cancellationToken: cancellationToken);
+            return Results.Ok(settings);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Problem(
+                title: "Unable to update attendance policy",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest);
         }
     }
 

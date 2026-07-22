@@ -8,6 +8,7 @@ import {
   Spinner,
   Subtitle2,
   Text,
+  tokens,
 } from '@fluentui/react-components';
 import { ApiError } from '@platform/api/apiClient';
 import * as authService from '@platform/api/authService';
@@ -183,7 +184,7 @@ export function AccountSecurityPanel() {
         </Button>
       </form>
 
-      <div className="flex flex-col gap-3 border-t border-neutral-stroke-3 pt-4">
+      <div className="flex flex-col gap-3 border-t pt-4" style={{ borderTopColor: tokens.colorNeutralStroke3 }}>
         <Subtitle2>Two-factor authentication</Subtitle2>
         <Text className="text-sm text-neutral-foreground-3">
           {user?.twoFactorEnabled

@@ -19,6 +19,7 @@ import {
   DetailSection,
   detailPanelBodyClassName,
   detailPanelHeaderClassName,
+  detailPanelHeaderStyle,
   detailPanelShellClassName,
   detailPanelShellStyle,
 } from '@platform/ui/DetailLayout';
@@ -36,7 +37,7 @@ export function AccountProfilePanel() {
   return (
     <div className={detailPanelShellClassName} style={detailPanelShellStyle}>
       
-      <div className={detailPanelHeaderClassName}>
+      <div className={detailPanelHeaderClassName} style={detailPanelHeaderStyle}>
         <div className="flex items-start gap-4">
           <Avatar name={displayName} color="brand" size={72} />
           <div className="min-w-0 flex-1">

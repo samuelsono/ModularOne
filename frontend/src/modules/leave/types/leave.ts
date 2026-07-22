@@ -336,3 +336,14 @@ export interface AttendanceCompareRow {
   collaborators: AttendanceCollaborator[];
 }
 
+export type AttendanceDefaultAssumption = 'Present' | 'Absent';
+
+export interface AttendancePolicySettings {
+  defaultAssumption: AttendanceDefaultAssumption;
+  updatedAt: string | null;
+}
+
+export interface UpdateAttendancePolicySettingsRequest {
+  defaultAssumption: AttendanceDefaultAssumption;
+}
+

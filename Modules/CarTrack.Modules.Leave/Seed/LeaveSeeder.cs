@@ -54,6 +54,7 @@ public static class LeaveSeeder
     public static readonly Guid ClientLocationId = Guid.Parse("22222222-2222-2222-2222-222222222203");
     public static readonly Guid TravelLocationId = Guid.Parse("22222222-2222-2222-2222-222222222204");
     public static readonly Guid OtherLocationId = Guid.Parse("22222222-2222-2222-2222-222222222205");
+    public static readonly Guid AbsentLocationId = Guid.Parse("22222222-2222-2222-2222-222222222206");
 
     private static readonly (Guid Id, string Code, string Name, string Color, bool TracksCollaborators, int SortOrder)[] DefaultLocations =
     [
@@ -62,6 +63,7 @@ public static class LeaveSeeder
         (ClientLocationId, WorkLocationCodes.ClientSite, "Client site", "#8764B8", false, 3),
         (TravelLocationId, WorkLocationCodes.BusinessTravel, "Business travel", "#D83B01", false, 4),
         (OtherLocationId, WorkLocationCodes.Other, "Other", "#605E5C", false, 5),
+        (AbsentLocationId, WorkLocationCodes.Absent, "Absent", "#A4262C", false, 6),
     ];
 
     private static async Task SeedWorkLocationTypesAsync(

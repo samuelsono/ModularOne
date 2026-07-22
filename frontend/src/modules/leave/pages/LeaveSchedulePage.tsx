@@ -122,7 +122,7 @@ export default function LeaveSchedulePage() {
         templateUserId && canWrite ? getScheduleTemplates(templateUserId) : Promise.resolve([]),
         getResolvedSchedule(from, to, targetUserId),
       ]);
-      setLocations(locationItems);
+      setLocations(locationItems.filter((item) => item.code.toUpperCase() !== 'ABSENT'));
       setResolved(resolvedDays);
 
       const active = templates[0];

@@ -3,6 +3,7 @@ import type {
   ApprovalDecisionRequest,
   AttendanceCompareRow,
   AttendanceDay,
+  AttendancePolicySettings,
   CreateLeaveRequest,
   LeaveBalance,
   LeaveCalendarResponse,
@@ -18,6 +19,7 @@ import type {
   SavePublicHolidayRequest,
   ScheduleDayOverride,
   ScheduleTemplate,
+  UpdateAttendancePolicySettingsRequest,
   UpsertAttendanceDayRequest,
   UpsertScheduleDayOverrideRequest,
   UpsertScheduleTemplateRequest,
@@ -426,5 +428,18 @@ export function getAttendanceCompare(
   const params = new URLSearchParams({ from, to });
   if (userId) params.set('userId', userId);
   return authorizedFetch<AttendanceCompareRow[]>(`/api/leave/attendance/compare?${params}`);
+}
+
+export function getAttendancePolicy(): Promise<AttendancePolicySettings> {
+  return authorizedFetch<AttendancePolicySettings>('/api/leave/attendance/policy');
+}
+
+export function updateAttendancePolicy(
+  request: UpdateAttendancePolicySettingsRequest,
+): Promise<AttendancePolicySettings> {
+  return authorizedFetch<AttendancePolicySettings>('/api/leave/attendance/policy', {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  });
 }
 

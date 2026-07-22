@@ -1,5 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { tokens, Badge, Button, Dropdown, Field, MessageBar, MessageBarBody, Option, Spinner, Text, Tooltip } from '@fluentui/react-components';
+import {
+  tokens,
+  Badge,
+  Button,
+  Combobox,
+  Dropdown,
+  Field,
+  MessageBar,
+  MessageBarBody,
+  Option,
+  Spinner,
+  Tab,
+  TabList,
+  Text,
+  Tooltip,
+} from '@fluentui/react-components';
 import { ChevronLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
 import { getLeaveCalendar, getResolvedSchedule } from '@modules/leave/services/leaveService';
@@ -9,8 +24,21 @@ import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
 import { filterLeaveCalendarEntries } from '@modules/leave/search/filters';
 import { LeaveRequestForm } from '@modules/leave/components/LeaveRequestForm';
 import { usePermissions } from '@platform/permissions/usePermissions';
+import { getUsers } from '@modules/users/services/userService';
+import type { UserListItem } from '@modules/users/types/user';
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WFH_LOCATION_CODE = 'WFH';
+const EMPLOYEE_SEARCH_LIMIT = 10;
+
+type CalendarContentFilter = 'all' | 'leave' | 'holidays' | 'wfh';
+
+const CONTENT_FILTER_OPTIONS: Array<{ value: CalendarContentFilter; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'leave', label: 'Leave' },
+  { value: 'holidays', label: 'Holidays' },
+  { value: 'wfh', label: 'WFH schedule' },
+];
 
 function toDateString(date: Date): string {
   const year = date.getFullYear();
@@ -95,6 +123,7 @@ function LeaveDayCell({
     .filter((item) => item.kind === 'Work' && item.locationTypeName)
     .slice(0, 2);
   const hiddenLocations = Math.max(0, scheduleDays.filter((item) => item.kind === 'Work').length - workLocations.length);
+  const showEmptyPlaceholder = entries.length === 0 && holidays.length === 0 && workLocations.length === 0;
 
   return (
     <td
@@ -115,7 +144,18 @@ function LeaveDayCell({
       }}
     >
       <div className="flex items-start justify-between gap-1 mb-1">
-        <Text weight="semibold" size={200}>{day.getDate()}</Text>
+        <Text
+          weight="semibold"
+          size={200}
+          className="rounded-full"
+          style={{
+            padding: '0.125rem 0.125rem',
+            backgroundColor: isToday ? tokens.colorBrandBackground : '',
+            color: isToday ? tokens.colorNeutralForegroundInverted : '',
+          }}
+        >
+          {day.getDate()}
+        </Text>
         {holidays.length > 0 ? (
           <Tooltip
             content={holidays.map((holiday) => holiday.name).join(', ')}
@@ -183,7 +223,7 @@ function LeaveDayCell({
           </Text>
         ) : null}
 
-        {entries.length === 0 && holidays.length === 0 && workLocations.length === 0 ? (
+        {showEmptyPlaceholder ? (
           <Text size={100} className="text-neutral-foreground-3">—</Text>
         ) : null}
       </div>
@@ -202,6 +242,11 @@ export default function LeaveCalendarPage() {
   });
   const [branchFilter, setBranchFilter] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
+  const [contentFilter, setContentFilter] = useState<CalendarContentFilter>('all');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [employeeQuery, setEmployeeQuery] = useState('');
+  const [employeeSearchActive, setEmployeeSearchActive] = useState(false);
+  const [employees, setEmployees] = useState<UserListItem[]>([]);
   const [calendar, setCalendar] = useState<LeaveCalendarResponse | null>(null);
   const [scheduleDays, setScheduleDays] = useState<ResolvedScheduleDay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -247,22 +292,65 @@ export default function LeaveCalendarPage() {
     void loadCalendar();
   }, [loadCalendar]);
 
+  useEffect(() => {
+    void getUsers()
+      .then((response) => setEmployees((response.items ?? []).filter((item) => item.isActive)))
+      .catch(() => setEmployees([]));
+  }, []);
+
   const weeks = useMemo(() => buildMonthWeeks(month), [month]);
+
+  const selectedEmployee = useMemo(
+    () => employees.find((item) => item.id === selectedEmployeeId) ?? null,
+    [employees, selectedEmployeeId],
+  );
+
+  const selectedEmployeeLabel = selectedEmployee?.displayName
+    ?? selectedEmployee?.email
+    ?? selectedEmployee?.username
+    ?? '';
+
+  const employeeComboboxValue = employeeSearchActive
+    ? employeeQuery
+    : selectedEmployeeLabel;
+
+  const employeeOptions = useMemo(() => {
+    const query = employeeQuery.trim().toLowerCase();
+    const matched = !query
+      ? employees
+      : employees.filter((item) => {
+          const label = `${item.displayName ?? ''} ${item.email ?? ''} ${item.username ?? ''}`.toLowerCase();
+          return label.includes(query);
+        });
+
+    return matched.slice(0, EMPLOYEE_SEARCH_LIMIT);
+  }, [employeeQuery, employees]);
 
   const holidaysByDate = useMemo(() => {
     const map = new Map<string, PublicHoliday[]>();
+    if (contentFilter === 'leave' || contentFilter === 'wfh') {
+      return map;
+    }
+
     for (const holiday of calendar?.holidays ?? []) {
       const items = map.get(holiday.date) ?? [];
       items.push(holiday);
       map.set(holiday.date, items);
     }
     return map;
-  }, [calendar?.holidays]);
+  }, [calendar?.holidays, contentFilter]);
 
-  const filteredEntries = useMemo(
-    () => filterLeaveCalendarEntries(calendar?.entries ?? [], searchQuery),
-    [calendar?.entries, searchQuery],
-  );
+  const filteredEntries = useMemo(() => {
+    if (contentFilter === 'holidays' || contentFilter === 'wfh') {
+      return [];
+    }
+
+    let entries = filterLeaveCalendarEntries(calendar?.entries ?? [], searchQuery);
+    if (selectedEmployeeId) {
+      entries = entries.filter((entry) => entry.userId === selectedEmployeeId);
+    }
+    return entries;
+  }, [calendar?.entries, contentFilter, searchQuery, selectedEmployeeId]);
 
   const entriesByDate = useMemo(() => {
     const map = new Map<string, LeaveCalendarEntry[]>();
@@ -294,13 +382,26 @@ export default function LeaveCalendarPage() {
 
   const scheduleByDate = useMemo(() => {
     const map = new Map<string, ResolvedScheduleDay[]>();
+    if (contentFilter === 'leave' || contentFilter === 'holidays' || !canReadSchedule) {
+      return map;
+    }
+
     for (const day of scheduleDays) {
+      if (contentFilter === 'wfh'
+        && day.locationTypeCode?.toUpperCase() !== WFH_LOCATION_CODE) {
+        continue;
+      }
+
+      if (selectedEmployeeId && day.userId !== selectedEmployeeId) {
+        continue;
+      }
+
       const items = map.get(day.date) ?? [];
       items.push(day);
       map.set(day.date, items);
     }
     return map;
-  }, [scheduleDays]);
+  }, [canReadSchedule, contentFilter, scheduleDays, selectedEmployeeId]);
 
   const leaveTypes = useMemo(() => {
     const types = new Map<string, { name: string; color: string }>();
@@ -343,37 +444,101 @@ export default function LeaveCalendarPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Field label="Branch">
-          <Dropdown
-            placeholder="All branches"
-            value={branchFilter || 'All branches'}
-            selectedOptions={branchFilter ? [branchFilter] : ['']}
-            onOptionSelect={(_, data) => setBranchFilter(data.optionValue === '' ? '' : data.optionValue ?? '')}
-          >
-            <Option value="">All branches</Option>
-            {(calendar?.branches ?? []).map((branch) => (
-              <Option key={branch} value={branch}>{branch}</Option>
-            ))}
-          </Dropdown>
-        </Field>
+      <div
+        className="sticky top-0 z-10 flex flex-col gap-3 py-2"
+        style={{ backgroundColor: tokens.colorNeutralBackground1 }}
+      >
+        <TabList
+          selectedValue={contentFilter}
+          onTabSelect={(_, data) => {
+            const next = String(data.value) as CalendarContentFilter;
+            setContentFilter(CONTENT_FILTER_OPTIONS.some((item) => item.value === next) ? next : 'all');
+          }}
+        >
+          {CONTENT_FILTER_OPTIONS.map((option) => (
+            <Tab key={option.value} value={option.value}>
+              {option.label}
+            </Tab>
+          ))}
+        </TabList>
 
-        <Field label="Department">
-          <Dropdown
-            placeholder="All departments"
-            value={departmentFilter || 'All departments'}
-            selectedOptions={departmentFilter ? [departmentFilter] : ['']}
-            onOptionSelect={(_, data) => setDepartmentFilter(data.optionValue === '' ? '' : data.optionValue ?? '')}
-          >
-            <Option value="">All departments</Option>
-            {(calendar?.departments ?? []).map((department) => (
-              <Option key={department} value={department}>{department}</Option>
-            ))}
-          </Dropdown>
-        </Field>
+        <div className="flex flex-wrap gap-2 items-end">
+          <Field label="Employee" style={{ minWidth: 220 }}>
+            <Combobox
+              placeholder="All employees"
+              freeform
+              value={employeeComboboxValue}
+              selectedOptions={selectedEmployeeId ? [selectedEmployeeId] : []}
+              onFocus={() => {
+                setEmployeeSearchActive(true);
+                setEmployeeQuery('');
+              }}
+              onBlur={() => {
+                // Defer so option click can commit before we leave search mode.
+                window.setTimeout(() => {
+                  setEmployeeSearchActive(false);
+                  setEmployeeQuery('');
+                }, 120);
+              }}
+              onChange={(event) => {
+                setEmployeeSearchActive(true);
+                setEmployeeQuery(event.target.value);
+              }}
+              onOptionSelect={(_, data) => {
+                const value = data.optionValue;
+                if (!value || value === '__all__') {
+                  setSelectedEmployeeId(null);
+                } else {
+                  setSelectedEmployeeId(value);
+                }
+                setEmployeeQuery('');
+                setEmployeeSearchActive(false);
+              }}
+            >
+              <Option value="__all__" text="All employees">All employees</Option>
+              {employeeOptions.map((employee) => (
+                <Option
+                  key={employee.id}
+                  value={employee.id}
+                  text={employee.displayName ?? employee.email ?? employee.username}
+                >
+                  {employee.displayName ?? employee.email ?? employee.username}
+                </Option>
+              ))}
+            </Combobox>
+          </Field>
+
+          <Field label="Branch" style={{ minWidth: 160 }}>
+            <Dropdown
+              placeholder="All branches"
+              value={branchFilter || 'All branches'}
+              selectedOptions={branchFilter ? [branchFilter] : ['']}
+              onOptionSelect={(_, data) => setBranchFilter(data.optionValue === '' ? '' : data.optionValue ?? '')}
+            >
+              <Option value="">All branches</Option>
+              {(calendar?.branches ?? []).map((branch) => (
+                <Option key={branch} value={branch}>{branch}</Option>
+              ))}
+            </Dropdown>
+          </Field>
+
+          <Field label="Department" style={{ minWidth: 160 }}>
+            <Dropdown
+              placeholder="All departments"
+              value={departmentFilter || 'All departments'}
+              selectedOptions={departmentFilter ? [departmentFilter] : ['']}
+              onOptionSelect={(_, data) => setDepartmentFilter(data.optionValue === '' ? '' : data.optionValue ?? '')}
+            >
+              <Option value="">All departments</Option>
+              {(calendar?.departments ?? []).map((department) => (
+                <Option key={department} value={department}>{department}</Option>
+              ))}
+            </Dropdown>
+          </Field>
+        </div>
       </div>
 
-      {leaveTypes.length > 0 ? (
+      {leaveTypes.length > 0 || contentFilter === 'all' || contentFilter === 'holidays' || contentFilter === 'wfh' ? (
         <div className="flex flex-wrap gap-3">
           {leaveTypes.map((type) => (
             <span key={type.name} className="inline-flex items-center gap-2 text-sm">
@@ -384,13 +549,22 @@ export default function LeaveCalendarPage() {
               {type.name}
             </span>
           ))}
-          <span className="inline-flex items-center gap-2 text-sm">
-            <span className="inline-block w-3 h-3 rounded-full bg-neutral-300 shrink-0" />
-            Public holiday
-          </span>
-          <span className="inline-flex items-center gap-2 text-sm text-neutral-foreground-3">
-            P = Pending · A = Approved
-          </span>
+          {(contentFilter === 'all' || contentFilter === 'holidays') ? (
+            <span className="inline-flex items-center gap-2 text-sm">
+              <span className="inline-block w-3 h-3 rounded-full bg-neutral-300 shrink-0" />
+              Public holiday
+            </span>
+          ) : null}
+          {(contentFilter === 'all' || contentFilter === 'wfh') && canReadSchedule ? (
+            <span className="inline-flex items-center gap-2 text-sm">
+              Schedule locations
+            </span>
+          ) : null}
+          {contentFilter === 'all' || contentFilter === 'leave' ? (
+            <span className="inline-flex items-center gap-2 text-sm text-neutral-foreground-3">
+              P = Pending · A = Approved
+            </span>
+          ) : null}
         </div>
       ) : null}
 
@@ -400,7 +574,8 @@ export default function LeaveCalendarPage() {
         </MessageBar>
       ) : null}
 
-      {!isLoading && searchQuery.trim() && (calendar?.entries?.length ?? 0) > 0 && filteredEntries.length === 0 ? (
+      {!isLoading && searchQuery.trim() && (calendar?.entries?.length ?? 0) > 0 && filteredEntries.length === 0
+        && (contentFilter === 'all' || contentFilter === 'leave') ? (
         <Text className="text-sm text-neutral-foreground-3">
           No calendar entries match your search.
         </Text>

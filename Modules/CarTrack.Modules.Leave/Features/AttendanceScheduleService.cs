@@ -74,6 +74,13 @@ public interface IAttendanceScheduleService
         DateOnly to,
         string? targetUserId,
         CancellationToken cancellationToken = default);
+
+    Task<AttendancePolicySettingsDto> GetAttendancePolicyAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<AttendancePolicySettingsDto> UpdateAttendancePolicyAsync(
+        UpdateAttendancePolicySettingsRequest request,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed class AttendanceScheduleService(
@@ -210,6 +217,12 @@ public sealed class AttendanceScheduleService(
             throw new InvalidOperationException("One or more location types are invalid or inactive.");
         }
 
+        if (locations.Values.Any(type =>
+                type.Code.Equals(WorkLocationCodes.Absent, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException("Absent cannot be used as a planned schedule location.");
+        }
+
         var scope = await currentUserScope.GetAsync(cancellationToken);
         var userId = await ResolveTargetUserIdAsync(scope, actingUserId, request.UserId, forWrite: true, cancellationToken);
 
@@ -302,6 +315,11 @@ public sealed class AttendanceScheduleService(
         var location = await dbContext.WorkLocationTypes
             .SingleOrDefaultAsync(type => type.Id == request.LocationTypeId && type.IsActive, cancellationToken)
             ?? throw new InvalidOperationException("Location type is invalid or inactive.");
+
+        if (location.Code.Equals(WorkLocationCodes.Absent, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Absent cannot be used as a planned schedule location.");
+        }
 
         var scope = await currentUserScope.GetAsync(cancellationToken);
         var userId = await ResolveTargetUserIdAsync(scope, actingUserId, request.UserId, forWrite: true, cancellationToken);
@@ -606,6 +624,56 @@ public sealed class AttendanceScheduleService(
                 attendance?.Collaborators ?? []);
         }).ToList();
     }
+
+    public async Task<AttendancePolicySettingsDto> GetAttendancePolicyAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var settings = await GetOrCreateAttendancePolicyAsync(cancellationToken);
+        return MapAttendancePolicy(settings);
+    }
+
+    public async Task<AttendancePolicySettingsDto> UpdateAttendancePolicyAsync(
+        UpdateAttendancePolicySettingsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!AttendanceDefaultAssumptions.IsValid(request.DefaultAssumption))
+        {
+            throw new InvalidOperationException("Default assumption must be Present or Absent.");
+        }
+
+        var settings = await GetOrCreateAttendancePolicyAsync(cancellationToken);
+        settings.DefaultAssumption = AttendanceDefaultAssumptions.Normalize(request.DefaultAssumption);
+        settings.UpdatedAt = DateTimeOffset.UtcNow;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return MapAttendancePolicy(settings);
+    }
+
+    private async Task<AttendancePolicySettings> GetOrCreateAttendancePolicyAsync(
+        CancellationToken cancellationToken)
+    {
+        var settings = await dbContext.AttendancePolicySettings
+            .SingleOrDefaultAsync(item => item.Id == AttendancePolicySettings.SingletonId, cancellationToken);
+
+        if (settings is not null)
+        {
+            return settings;
+        }
+
+        settings = new AttendancePolicySettings
+        {
+            Id = AttendancePolicySettings.SingletonId,
+            DefaultAssumption = AttendanceDefaultAssumptions.Present,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        dbContext.AttendancePolicySettings.Add(settings);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return settings;
+    }
+
+    private static AttendancePolicySettingsDto MapAttendancePolicy(AttendancePolicySettings settings) =>
+        new(
+            AttendanceDefaultAssumptions.Normalize(settings.DefaultAssumption),
+            settings.UpdatedAt == default ? null : settings.UpdatedAt.ToString("O"));
 
     private async Task<ResolvedScheduleDayDto> ResolveSingleDayAsync(
         string userId,

@@ -2,14 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { tokens, Button, MessageBar, MessageBarBody, Subtitle2 } from '@fluentui/react-components';
 import {
   MailRegular,
-  MapPinRegular,
   PersonAccountsRegular,
   PersonProhibitedRegular,
   PersonRegular,
-  PersonSwapRegular,
   VehicleCarRegular,
 } from '@fluentui/react-icons';
-import AppFilters from '@platform/ui/AppFilters';
+import AppFilters, { type AppFilterOption, type AppFilterSelection } from '@platform/ui/AppFilters';
 import { ConfirmAction } from '@platform/ui/ConfirmAction';
 import { EmployeesTable } from '@modules/users/components/EmployeesTable';
 import { EmployeeDetailsDialog } from '@modules/users/components/EmployeeDetailsDialog';
@@ -20,26 +18,27 @@ import { usePermissions } from '@platform/permissions/usePermissions';
 import { ApiError } from '@platform/api/apiClient';
 import { getUsers, sendUserInvite, setUserActive, setUserInvitePending } from '@modules/users/services/userService';
 import type { UserListItem } from '@modules/users/types/user';
-import { filterEmployees } from '@modules/users/search/filters';
+import { applyEmployeeOptionFilters, filterEmployees } from '@modules/users/search/filters';
 import { AdjustUserLeaveBalancesDialog } from '@modules/leave/components/AdjustUserLeaveBalancesDialog';
 import { AdminResetPasswordDialog } from '@modules/users/components/AdminResetPasswordDialog';
-import { useActiveApp } from '@platform/shell/ActiveAppContext';
 
-const filters = [
-  { name: 'status', label: 'Status', value: 'active', icon: PersonAccountsRegular },
-  { name: 'gender', label: 'Gender', value: 'male', icon: PersonSwapRegular },
-  { name: 'vehicle', label: 'Vehicle', value: 'truck', icon: VehicleCarRegular },
-  { name: 'address', label: 'Address', value: 'city', icon: MapPinRegular },
+const filters: AppFilterOption[] = [
+  { name: 'status', label: 'Active', value: 'active', icon: PersonAccountsRegular },
+  { name: 'status', label: 'Inactive', value: 'inactive', icon: PersonProhibitedRegular },
+  { name: 'invite', label: 'Invite pending', value: 'pending', icon: MailRegular },
+  { name: 'driver', label: 'Linked driver', value: 'linked', icon: VehicleCarRegular },
+  { name: 'driver', label: 'No linked driver', value: 'unlinked', icon: VehicleCarRegular },
 ];
 
 const EmployeesList = () => {
   const searchQuery = usePageSearchQuery();
-  const { canManageUsers, canEditUsers, isAdmin, isHr } = usePermissions();
+  const { canManageUsers, canEditUsers } = usePermissions();
   const [employees, setEmployees] = useState<UserListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [optionFilters, setOptionFilters] = useState<AppFilterSelection>({});
   const [detailsEmployee, setDetailsEmployee] = useState<UserListItem | null>(null);
   const [editEmployee, setEditEmployee] = useState<UserListItem | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -75,8 +74,8 @@ const EmployeesList = () => {
   }, [loadEmployees, reloadKey]);
 
   const visibleEmployees = useMemo(
-    () => filterEmployees(employees, searchQuery),
-    [employees, searchQuery],
+    () => applyEmployeeOptionFilters(filterEmployees(employees, searchQuery), optionFilters),
+    [employees, optionFilters, searchQuery],
   );
 
   const selectedEmployees = useMemo(
@@ -152,11 +151,15 @@ const EmployeesList = () => {
     : `This will deactivate ${pendingDeactivateIds.length} employees`;
 
   return (
-    <div className="flex flex-col w-full h-full pt-3 overflow-y-hidden">
+    <div className="flex flex-col w-full h-full pt-3 px-3 overflow-y-hidden">
       <div className="flex justify-between mb-0 px-3">
         <Subtitle2 className="">Employee management</Subtitle2>
         <div className="flex justify-between mb-3 gap-2">
-          <AppFilters filters={filters} onFilterChange={() => {}} />
+          <AppFilters
+            filters={filters}
+            checkedValues={optionFilters}
+            onFilterChange={setOptionFilters}
+          />
           <CreateEmployee onCreated={handleUpdated} />
         </div>
       </div>
@@ -278,10 +281,10 @@ const EmployeesList = () => {
       />
 
       <AdjustUserLeaveBalancesDialog
-            open={leaveAdjustmentUser !== null}
-            user={leaveAdjustmentUser}
-            onClose={() => setLeaveAdjustmentUser(null)}
-          />
+        open={leaveAdjustmentUser !== null}
+        user={leaveAdjustmentUser}
+        onClose={() => setLeaveAdjustmentUser(null)}
+      />
 
       <EmployeeFormDialog
         employee={editEmployee}

@@ -22,6 +22,24 @@ namespace CarTrack.Modules.Leave.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("CarTrack.Modules.Leave.AttendancePolicySettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DefaultAssumption")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AttendancePolicySettings", (string)null);
+                });
+
             modelBuilder.Entity("CarTrack.Modules.Leave.LeaveBalance", b =>
                 {
                     b.Property<Guid>("Id")

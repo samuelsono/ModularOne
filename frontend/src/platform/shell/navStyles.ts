@@ -7,7 +7,7 @@ export const useStyles = makeStyles({
     flexDirection: 'column',
     alignItems: 'center',
     paddingTop: '10px',
-    width: '68px',
+    width: '78px',
     height: '94vh',
   },
   colLink: {
@@ -38,7 +38,7 @@ export const useStyles = makeStyles({
     },
   },
   activeLink: {
-    backgroundColor: tokens.colorNeutralBackground1,
+    backgroundColor: tokens.colorNeutralBackground1Selected,
     color: tokens.colorBrandForeground1,
     borderLeftColor: tokens.colorBrandStroke1,
     fontWeight: 600,

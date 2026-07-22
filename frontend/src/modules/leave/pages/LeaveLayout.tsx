@@ -20,7 +20,7 @@ export default function LeaveLayout() {
       </div>
       <div className='flex gap-3'>
 
-      <div className="flex-1 min-h-0 h-[90vh] overflow-hidden rounded shadow py-3" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+      <div className="flex-1 min-h-0 h-[90vh] overflow-auto rounded shadow py-3" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
         <Outlet />
       </div>
       <div className="hidden lg:inline w-[300px] max-w-4/12 mb-6 max-h-[50vh]">

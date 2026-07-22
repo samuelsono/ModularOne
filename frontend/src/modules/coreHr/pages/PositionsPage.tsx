@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, MessageBar, MessageBarBody, Spinner, createTableColumn, type TableColumnDefinition } from '@fluentui/react-components';
-import { AddRegular, EditRegular } from '@fluentui/react-icons';
+import { AddRegular, EditRegular, PersonAccountsRegular, PersonProhibitedRegular } from '@fluentui/react-icons';
 import AppTitle from '@platform/ui/AppTitle';
 import { AutoFitDataGrid } from '@platform/ui/AutoFitDataGrid';
 import { withAuditableColumns } from '@platform/ui/auditTableColumns';
@@ -12,7 +12,7 @@ import { ApiError } from '@platform/api/apiClient';
 import { getPositions } from '@modules/coreHr/services/coreHrService';
 import type { Position, SavePositionRequest } from '@modules/coreHr/types/coreHr';
 import { matchesSearchQuery } from '@platform/search/searchText';
-import AppFilters from '@platform/ui/AppFilters';
+import AppFilters, { type AppFilterOption, type AppFilterSelection } from '@platform/ui/AppFilters';
 
 function filterItems(items: Position[], query: string): Position[] {
   const normalized = query.trim();
@@ -20,18 +20,10 @@ function filterItems(items: Position[], query: string): Position[] {
   return items.filter((item) => matchesSearchQuery(normalized, [item.name, item.code, item.companyName, item.departmentName, item.description, item.isActive ? 'active' : 'inactive']));
 }
 
-const filters = [
-  {
-    id: 'status',
-    label: 'Status',
-    type: 'select',
-    options: [
-      { value: 'active', label: 'Active' },
-      { value: 'inactive', label: 'Inactive' },
-    ],
-  },
+const filters: AppFilterOption[] = [
+  { name: 'status', label: 'Active', value: 'active', icon: PersonAccountsRegular },
+  { name: 'status', label: 'Inactive', value: 'inactive', icon: PersonProhibitedRegular },
 ];
-
 
 export default function PositionsPage() {
   const searchQuery = usePageSearchQuery();
@@ -42,6 +34,7 @@ export default function PositionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<(SavePositionRequest & { id?: string }) | null>(null);
+  const [optionFilters, setOptionFilters] = useState<AppFilterSelection>({});
 
   const loadItems = useCallback(async () => {
     setIsLoading(true);
@@ -58,7 +51,18 @@ export default function PositionsPage() {
 
   useEffect(() => { void loadItems(); }, [loadItems]);
 
-  const filteredItems = useMemo(() => filterItems(items, searchQuery), [items, searchQuery]);
+  const filteredItems = useMemo(() => {
+    let next = filterItems(items, searchQuery);
+    const status = optionFilters.status ?? [];
+    if (status.length > 0) {
+      next = next.filter((item) => {
+        const matchesActive = status.includes('active') && item.isActive;
+        const matchesInactive = status.includes('inactive') && !item.isActive;
+        return matchesActive || matchesInactive;
+      });
+    }
+    return next;
+  }, [items, optionFilters, searchQuery]);
 
   const columns = useMemo<TableColumnDefinition<Position>[]>(() => withAuditableColumns([
     createTableColumn<Position>({ columnId: 'companyName', renderHeaderCell: () => 'Company', renderCell: (item) => item.companyName }),
@@ -84,10 +88,14 @@ export default function PositionsPage() {
     <div className="flex flex-col gap-4 h-full min-h-0">
       <div className="flex items-start justify-between gap-4 px-3">
         <AppTitle title="Positions" subtitle="Define job positions and tie them to departments." />
-      <div className="flex items-start justify-end gap-1">
-        <AppFilters filters={filters} onFilterChange={() => {}} />
-        {canWrite ? <Button appearance="primary" icon={<AddRegular />} onClick={() => { setEditing(null); setDialogOpen(true); }}>Add position</Button> : null}
-      </div>
+        <div className="flex items-start justify-end gap-1">
+          <AppFilters
+            filters={filters}
+            checkedValues={optionFilters}
+            onFilterChange={setOptionFilters}
+          />
+          {canWrite ? <Button appearance="primary" icon={<AddRegular />} onClick={() => { setEditing(null); setDialogOpen(true); }}>Add position</Button> : null}
+        </div>
       </div>
       {error ? <MessageBar intent="error" className="mx-3"><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
       <div className="flex-1 min-h-0 overflow-auto">

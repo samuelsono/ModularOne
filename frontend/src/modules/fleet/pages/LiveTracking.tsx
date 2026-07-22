@@ -132,7 +132,10 @@ const LiveTracking = () => {
   return (
     <div className="flex flex-col w-full h-full overflow-y-hidden">
       <div className="flex flex-col w-full h-full" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
-        <div className="absolute w-[260px] flex flex-col top-14 left-15 z-50 shadow-md rounded h-[95vh] border-b border-neutral-stroke-3" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+        <div
+          className="absolute w-[260px] flex flex-col top-14 left-21 z-50 shadow-md rounded h-[95vh] border-b"
+          style={{ backgroundColor: tokens.colorNeutralBackground1, borderBottomColor: tokens.colorNeutralStroke3 }}
+        >
           <div className="m-3 flex gap-2 items-center justify-between">
             <Text size={200} className="text-neutral-600">Use the top search bar to filter vehicles.</Text>
             <Button
@@ -175,7 +178,8 @@ const LiveTracking = () => {
             {filteredVehicles.map((vehicle) => (
               <ListItem
                 key={vehicle.id}
-                className="flex flex-col p-2! hover:bg-neutral-background-1-hover border-b border-neutral-stroke-3"
+                className="flex flex-col p-2! hover:bg-neutral-background-1-hover border-b"
+                style={{ borderBottomColor: tokens.colorNeutralStroke3 }}
               >
                 <Popover positioning={"after"} withArrow>
                   <PopoverTrigger disableButtonEnhancement>

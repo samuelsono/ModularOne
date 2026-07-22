@@ -16,3 +16,5 @@ public sealed class LeaveDbContextFactory : IDesignTimeDbContextFactory<LeaveDbC
         return new LeaveDbContext(options);
     }
 }
+
+

@@ -6,6 +6,7 @@ import {
   Spinner,
   Subtitle2,
   Text,
+  tokens,
 } from '@fluentui/react-components';
 import { ApiError } from '@platform/api/apiClient';
 import {
@@ -83,7 +84,10 @@ export function ApprovalsStubPanel() {
       {error && <Text className="text-sm text-red-600">{error}</Text>}
 
       {canRequestExpense && (
-        <section className="rounded border border-neutral-stroke-3 p-4 flex flex-col gap-3">
+        <section
+          className="rounded border p-4 flex flex-col gap-3"
+          style={{ borderColor: tokens.colorNeutralStroke3 }}
+        >
           <Subtitle2>Submit expense claim (stub)</Subtitle2>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Description">
@@ -106,7 +110,11 @@ export function ApprovalsStubPanel() {
             <Text className="text-sm text-neutral-foreground-3">No pending expense claims.</Text>
           ) : (
             expenseItems.map((item) => (
-              <div key={item.id} className="rounded border border-neutral-stroke-3 p-3 flex justify-between gap-3">
+              <div
+                key={item.id}
+                className="rounded border p-3 flex justify-between gap-3"
+                style={{ borderColor: tokens.colorNeutralStroke3 }}
+              >
                 <div>
                   <Text weight="semibold" block>{item.requesterDisplayName}</Text>
                   <Text size={200}>{item.description} · {item.currency} {item.amount.toFixed(2)}</Text>

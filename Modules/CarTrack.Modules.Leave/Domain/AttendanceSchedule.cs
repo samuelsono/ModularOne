@@ -17,6 +17,19 @@ public class WorkLocationType
     public int SortOrder { get; set; }
 }
 
+/// <summary>Singleton attendance policy (Id is always 1).</summary>
+public class AttendancePolicySettings
+{
+    public const int SingletonId = 1;
+
+    public int Id { get; set; } = SingletonId;
+
+    /// <summary>Present | Absent — drives the quick-mark default on the attendance calendar.</summary>
+    public string DefaultAssumption { get; set; } = AttendanceDefaultAssumptions.Present;
+
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
 public class ScheduleTemplate
 {
     public Guid Id { get; set; }

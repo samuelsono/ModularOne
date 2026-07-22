@@ -6,10 +6,17 @@ import {
   AccordionPanel,
   Badge,
   Button,
+  Dialog,
+  DialogActions,
+  DialogBody,
+  DialogContent,
+  DialogSurface,
+  DialogTitle,
   Dropdown,
   Field,
   Input,
   MessageBar,
+  MessageBarActions,
   MessageBarBody,
   Option,
   Spinner,
@@ -21,6 +28,7 @@ import {
   type SelectTabData,
 } from '@fluentui/react-components';
 import { DonutChart } from '@fluentui/react-charts';
+import { Checkmark12Regular, DismissRegular, Edit12Regular, PersonAvailableRegular, PersonProhibitedRegular } from '@fluentui/react-icons';
 import AppTitle from '@platform/ui/AppTitle';
 import { ApiError } from '@platform/api/apiClient';
 import { usePermissions } from '@platform/permissions/usePermissions';
@@ -28,16 +36,20 @@ import { getUsers } from '@modules/users/services/userService';
 import type { UserListItem } from '@modules/users/types/user';
 import {
   getAttendanceCompare,
+  getAttendancePolicy,
   getWorkLocationTypes,
   upsertAttendanceDay,
 } from '@modules/leave/services/leaveService';
-import type { AttendanceCompareRow, WorkLocationType } from '@modules/leave/types/leave';
+import type {
+  AttendanceCompareRow,
+  AttendanceDefaultAssumption,
+  WorkLocationType,
+} from '@modules/leave/types/leave';
 import {
   ATTENDANCE_HEALTH_COLORS,
   attendanceHealthDonutPoints,
   computeAttendanceHealth,
 } from '@modules/leave/utils/attendanceHealth';
-import { type EditRegular, type CheckmarkRegular, Edit12Regular, Checkmark12Regular, Edit12Filled, Checkmark16Regular } from '@fluentui/react-icons';
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -111,21 +123,43 @@ interface EmployeeAttendanceGroup {
   days: AttendanceCompareRow[];
 }
 
+function resolveQuickMarkLocationId(
+  row: AttendanceCompareRow,
+  locations: WorkLocationType[],
+  assumption: AttendanceDefaultAssumption,
+): string | null {
+  if (assumption === 'Absent') {
+    return locations.find((item) => item.code.toUpperCase() === 'ABSENT')?.id ?? null;
+  }
+
+  if (row.plannedKind === 'Work' && row.plannedLocationTypeId) {
+    return row.plannedLocationTypeId;
+  }
+
+  return locations.find((item) => item.code.toUpperCase() === 'OFFICE')?.id ?? null;
+}
+
 function AttendanceDayCell({
   row,
   dayNumber,
   canWrite,
+  defaultAssumption,
+  quickMarkBusyKey,
   onMark,
+  onQuickMark,
 }: {
   row: AttendanceCompareRow | undefined;
   dayNumber: number;
   canWrite: boolean;
+  defaultAssumption: AttendanceDefaultAssumption;
+  quickMarkBusyKey: string | null;
   onMark: (row: AttendanceCompareRow) => void;
+  onQuickMark: (row: AttendanceCompareRow, toggle?: boolean) => void;
 }) {
   if (!row) {
     return (
       <div
-        className="rounded border min-h-[120px]"
+        className="rounded border min-h-[120px] p-2"
         style={{
           borderColor: tokens.colorNeutralStroke3,
           backgroundColor: tokens.colorNeutralBackground3,
@@ -142,10 +176,12 @@ function AttendanceDayCell({
     row.actualLocationTypeColor
     ?? row.plannedLocationTypeColor
     ?? tokens.colorNeutralStroke3;
+  const busyKey = `${row.userId}|${row.date}`;
+  const isQuickBusy = quickMarkBusyKey === busyKey;
 
   return (
     <div
-      className="p-2 flex flex-col gap-1.5 min-h-[120px]"
+      className="group p-2 flex flex-col gap-1.5 min-h-[120px] rounded border"
       style={{
         borderColor: tokens.colorNeutralStroke3,
         borderBottom: `3px solid ${accent}`,
@@ -155,29 +191,27 @@ function AttendanceDayCell({
       <div className="flex items-center justify-between gap-1">
         <Text weight="semibold" size={200}>{dayNumber}</Text>
         <span>
-
-        {row.isMatch ? (
-          <Badge appearance="filled" color="success" size="small">Match</Badge>
-        ) : row.isMismatch ? (
-          <Badge appearance="filled" color="danger" size="small">Mismatch</Badge>
-        ) : row.plannedKind === 'Work' && !row.hasActual ? (
-          <Badge appearance="outline" color="warning" size="small">Missing</Badge>
-        ) : null}
+          {row.isMatch ? (
+            <Badge appearance="filled" color="success" size="small">Match</Badge>
+          ) : row.isMismatch ? (
+            <Badge appearance="filled" color="danger" size="small">Mismatch</Badge>
+          ) : row.plannedKind === 'Work' && !row.hasActual ? (
+            <Badge appearance="outline" color="warning" size="small">Missing</Badge>
+          ) : null}
         </span>
       </div>
       <span>
-      {row.plannedKind === 'OnLeave' ? (
-        <Badge appearance="filled" color="informative" size="small">On leave</Badge>
-      ) : row.plannedKind === 'Unscheduled' ? (
-        <Badge appearance="outline" size="small">Unscheduled</Badge>
-      ) : (
-        <Text size={100} className="truncate" title={row.plannedLocationTypeName ?? undefined}>
-          Planned: {row.plannedLocationTypeName}
-        </Text>
-      )}
+        {row.plannedKind === 'OnLeave' ? (
+          <Badge appearance="filled" color="informative" size="small">On leave</Badge>
+        ) : row.plannedKind === 'Unscheduled' ? (
+          <Badge appearance="outline" size="small">Unscheduled</Badge>
+        ) : (
+          <Text size={100} className="truncate" title={row.plannedLocationTypeName ?? undefined}>
+            Planned: {row.plannedLocationTypeName}
+          </Text>
+        )}
       </span>
 
-      
       {row.hasActual ? (
         <Text size={100} className="truncate" title={row.actualLocationTypeName ?? undefined}>
           Actual: {row.actualLocationTypeName}
@@ -187,13 +221,37 @@ function AttendanceDayCell({
       ) : null}
 
       {canWrite && row.plannedKind !== 'OnLeave' ? (
-        <Button 
-           icon={row.hasActual ? <Edit12Regular /> : <Checkmark12Regular />}
-           size="small" 
-           appearance="primary" 
-           className="mt-auto" 
-           onClick={() => onMark(row)}>
-        </Button>
+        <div className="hidden gap-1 mt-auto flex-wrap group-hover:flex group-focus-within:flex">
+          {/* Action section */}
+           <Button
+            icon={defaultAssumption === 'Absent' ? <PersonProhibitedRegular /> : <PersonAvailableRegular />}
+            size="small"
+            appearance="primary"
+            style={{ backgroundColor: defaultAssumption === 'Absent' ? tokens.colorStatusDangerBackground3 : tokens.colorStatusSuccessBackground3 }}
+            disabled={isQuickBusy}
+            title={defaultAssumption === 'Absent' ? 'Mark absent' : 'Mark present'}
+            onClick={() => onQuickMark(row)}
+          >
+          </Button>
+          <Button
+            icon={defaultAssumption === 'Absent' ? <PersonAvailableRegular /> : <PersonProhibitedRegular />}
+            size="small"
+            appearance={"primary"}
+            style={{ backgroundColor: defaultAssumption === 'Absent' ? tokens.colorStatusSuccessBackground3 : tokens.colorStatusDangerBackground3 }}
+            disabled={isQuickBusy}
+            title={defaultAssumption === 'Absent' ? 'Mark present' : 'Mark absent'}
+            onClick={() => onQuickMark(row, true)}
+          >
+          </Button>
+          <Button
+            icon={row.hasActual ? <Edit12Regular /> : <Checkmark12Regular />}
+            size="small"
+            appearance="secondary"
+            disabled={isQuickBusy}
+            title="Mark with details"
+            onClick={() => onMark(row)}
+          />
+        </div>
       ) : null}
     </div>
   );
@@ -204,13 +262,19 @@ function EmployeeAttendanceCalendar({
   rangeMode,
   anchorDate,
   canWrite,
+  defaultAssumption,
+  quickMarkBusyKey,
   onMark,
+  onQuickMark,
 }: {
   group: EmployeeAttendanceGroup;
   rangeMode: RangeMode;
   anchorDate: Date;
   canWrite: boolean;
+  defaultAssumption: AttendanceDefaultAssumption;
+  quickMarkBusyKey: string | null;
   onMark: (row: AttendanceCompareRow) => void;
+  onQuickMark: (row: AttendanceCompareRow, toggle?: boolean) => void;
 }) {
   const byDate = useMemo(() => {
     const map = new Map<string, AttendanceCompareRow>();
@@ -242,7 +306,10 @@ function EmployeeAttendanceCalendar({
                 row={byDate.get(key)}
                 dayNumber={day.getDate()}
                 canWrite={canWrite}
+                defaultAssumption={defaultAssumption}
+                quickMarkBusyKey={quickMarkBusyKey}
                 onMark={onMark}
+                onQuickMark={onQuickMark}
               />
             );
           })}
@@ -303,7 +370,10 @@ function EmployeeAttendanceCalendar({
                       row={byDate.get(key)}
                       dayNumber={day.getDate()}
                       canWrite={canWrite}
+                      defaultAssumption={defaultAssumption}
+                      quickMarkBusyKey={quickMarkBusyKey}
                       onMark={onMark}
+                      onQuickMark={onQuickMark}
                     />
                   </td>
                 );
@@ -329,12 +399,14 @@ export default function LeaveAttendancePage() {
   const [rows, setRows] = useState<AttendanceCompareRow[]>([]);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [openItems, setOpenItems] = useState<string[]>([]);
+  const [defaultAssumption, setDefaultAssumption] = useState<AttendanceDefaultAssumption>('Present');
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [actualLocationId, setActualLocationId] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [collaboratorUserIds, setCollaboratorUserIds] = useState<string[]>([]);
   const [externalName, setExternalName] = useState('');
+  const [quickMarkBusyKey, setQuickMarkBusyKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -366,21 +438,32 @@ export default function LeaveAttendancePage() {
 
   const selectedLocation = locations.find((item) => item.id === actualLocationId);
 
-  const load = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const load = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
+    if (!silent) {
+      setIsLoading(true);
+    }
     try {
-      const [locationItems, compareRows] = await Promise.all([
+      const [locationItems, compareRows, policy] = await Promise.all([
         getWorkLocationTypes(true),
         getAttendanceCompare(from, to, targetUserId),
+        getAttendancePolicy(),
       ]);
       setLocations(locationItems);
       setRows(compareRows);
+      setDefaultAssumption(policy.defaultAssumption === 'Absent' ? 'Absent' : 'Present');
+      if (!silent) {
+        setError(null);
+      }
     } catch (loadError) {
-      setError(loadError instanceof ApiError ? loadError.message : 'Failed to load attendance.');
-      setRows([]);
+      if (!silent) {
+        setError(loadError instanceof ApiError ? loadError.message : 'Failed to load attendance.');
+        setRows([]);
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   }, [from, targetUserId, to]);
 
@@ -397,6 +480,37 @@ export default function LeaveAttendancePage() {
       .then((response) => setEmployees(response.items ?? []))
       .catch(() => setEmployees([]));
   }, [canManageOthers]);
+
+  const patchCompareRow = useCallback((
+    userId: string,
+    date: string,
+    location: WorkLocationType,
+    collaborators: AttendanceCompareRow['collaborators'] = [],
+  ) => {
+    setRows((current) => current.map((row) => {
+      if (row.userId !== userId || row.date !== date) {
+        return row;
+      }
+
+      const isMatch = row.plannedKind === 'Work'
+        && Boolean(row.plannedLocationTypeId)
+        && row.plannedLocationTypeId === location.id;
+      const isMismatch = row.plannedKind === 'Work'
+        && Boolean(row.plannedLocationTypeId)
+        && row.plannedLocationTypeId !== location.id;
+
+      return {
+        ...row,
+        hasActual: true,
+        actualLocationTypeId: location.id,
+        actualLocationTypeName: location.name,
+        actualLocationTypeColor: location.color,
+        isMatch,
+        isMismatch,
+        collaborators,
+      };
+    }));
+  }, []);
 
   const health = useMemo(() => computeAttendanceHealth(rows), [rows]);
   const donutPoints = useMemo(() => attendanceHealthDonutPoints(health), [health]);
@@ -471,7 +585,7 @@ export default function LeaveAttendancePage() {
   const beginEdit = (row: AttendanceCompareRow) => {
     setEditingDate(row.date);
     setEditingUserId(row.userId);
-    setActualLocationId(row.actualLocationTypeId ?? row.plannedLocationTypeId ?? locations[0]?.id ?? '');
+    setActualLocationId(row.actualLocationTypeId ?? row.plannedLocationTypeId ?? locations.find((item) => item.code.toUpperCase() === 'OFFICE')?.id ?? locations[0]?.id ?? '');
     setNotes('');
     setCollaboratorUserIds(
       row.collaborators
@@ -482,8 +596,56 @@ export default function LeaveAttendancePage() {
     setMessage(null);
   };
 
+  const closeEdit = () => {
+    setEditingDate(null);
+    setEditingUserId(null);
+  };
+
+  const quickMark = async (row: AttendanceCompareRow, toggle?: boolean) => {
+    if (!canWrite || row.plannedKind === 'OnLeave') {
+      return;
+    }
+
+    const assumption = toggle ? (defaultAssumption === 'Present' ? 'Absent' : 'Present') : defaultAssumption;
+    const locationId = resolveQuickMarkLocationId(row, locations, assumption);
+
+    const location = locations.find((item) => item.id === locationId) ?? null;
+    if (!locationId || !location) {
+      setError(
+        assumption === 'Absent'
+          ? 'Absent location type is not configured.'
+          : 'Office location type is not configured for unscheduled days.',
+      );
+      return;
+    }
+
+    const busyKey = `${row.userId}|${row.date}`;
+    setQuickMarkBusyKey(busyKey);
+    setError(null);
+    try {
+      await upsertAttendanceDay(row.date, {
+        userId: canManageOthers ? row.userId : null,
+        actualLocationTypeId: locationId,
+        notes: null,
+        collaborators: [],
+      });
+      patchCompareRow(row.userId, row.date, location, []);
+      setMessage(`Marked ${assumption.toLowerCase()} for ${row.userDisplayName} on ${row.date}.`);
+    } catch (saveError) {
+      setError(saveError instanceof ApiError ? saveError.message : `Failed to mark ${assumption.toLowerCase()}.`);
+    } finally {
+      setQuickMarkBusyKey(null);
+    }
+  };
+
   const saveAttendance = async () => {
     if (!editingDate || !actualLocationId || !canWrite) {
+      return;
+    }
+
+    const location = locations.find((item) => item.id === actualLocationId);
+    if (!location) {
+      setError('Selected location is invalid.');
       return;
     }
 
@@ -495,16 +657,26 @@ export default function LeaveAttendancePage() {
         ...(externalName.trim() ? [{ externalName: externalName.trim() }] : []),
       ];
 
-      await upsertAttendanceDay(editingDate, {
+      const saved = await upsertAttendanceDay(editingDate, {
         userId: canManageOthers ? (editingUserId ?? selectedUserId ?? targetUserId) : null,
         actualLocationTypeId: actualLocationId,
         notes: notes.trim() || null,
         collaborators: selectedLocation?.tracksCollaborators ? collaborators : [],
       });
+
+      const targetId = editingUserId ?? selectedUserId ?? targetUserId ?? saved.userId;
+      patchCompareRow(
+        targetId,
+        editingDate,
+        location,
+        saved.collaborators.map((item) => ({
+          collaboratorUserId: item.collaboratorUserId,
+          collaboratorDisplayName: item.collaboratorDisplayName,
+          externalName: item.externalName,
+        })),
+      );
       setMessage(`Attendance saved for ${editingDate}.`);
-      setEditingDate(null);
-      setEditingUserId(null);
-      await load();
+      closeEdit();
     } catch (saveError) {
       setError(saveError instanceof ApiError ? saveError.message : 'Failed to save attendance.');
     } finally {
@@ -690,11 +862,31 @@ export default function LeaveAttendancePage() {
       {error ? (
         <MessageBar intent="error" className="mb-3">
           <MessageBarBody>{error}</MessageBarBody>
+          <MessageBarActions
+            containerAction={
+              <Button
+                appearance="transparent"
+                icon={<DismissRegular />}
+                aria-label="Dismiss error"
+                onClick={() => setError(null)}
+              />
+            }
+          />
         </MessageBar>
       ) : null}
       {message ? (
         <MessageBar intent="success" className="mb-3">
           <MessageBarBody>{message}</MessageBarBody>
+          <MessageBarActions
+            containerAction={
+              <Button
+                appearance="transparent"
+                icon={<DismissRegular />}
+                aria-label="Dismiss message"
+                onClick={() => setMessage(null)}
+              />
+            }
+          />
         </MessageBar>
       ) : null}
 
@@ -734,7 +926,10 @@ export default function LeaveAttendancePage() {
                         rangeMode={rangeMode}
                         anchorDate={anchorDate}
                         canWrite={canWrite}
+                        defaultAssumption={defaultAssumption}
+                        quickMarkBusyKey={quickMarkBusyKey}
                         onMark={beginEdit}
+                        onQuickMark={(row, toggle) => void quickMark(row, toggle)}
                       />
                     </div>
                   </AccordionPanel>
@@ -745,79 +940,79 @@ export default function LeaveAttendancePage() {
         </div>
       )}
 
-      {editingDate && canWrite ? (
-        <section
-          className="rounded border p-4 flex flex-col gap-3"
-          style={{ borderColor: tokens.colorNeutralStroke3 }}
-        >
-          <Text weight="semibold">
-            Mark attendance for {editingDate}
-            {editingEmployeeName ? ` · ${editingEmployeeName}` : ''}
-          </Text>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Field label="Actual location">
-              <Dropdown
-                value={locations.find((item) => item.id === actualLocationId)?.name ?? ''}
-                selectedOptions={actualLocationId ? [actualLocationId] : []}
-                onOptionSelect={(_, data) => setActualLocationId(data.optionValue ?? '')}
-              >
-                {locations.map((location) => (
-                  <Option key={location.id} value={location.id} text={location.name}>
-                    {location.name}
-                  </Option>
-                ))}
-              </Dropdown>
-            </Field>
-            <Field label="Notes">
-              <Input value={notes} onChange={(_, data) => setNotes(data.value)} />
-            </Field>
-          </div>
-
-          {selectedLocation?.tracksCollaborators ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <Field label="Internal collaborators">
-                <Dropdown
-                  multiselect
-                  placeholder="Select colleagues"
-                  selectedOptions={collaboratorUserIds}
-                  onOptionSelect={(_, data) => setCollaboratorUserIds(data.selectedOptions)}
-                >
-                  {employees
-                    .filter((employee) => employee.id !== (editingUserId ?? selectedUserId ?? user?.id))
-                    .map((employee) => (
-                      <Option key={employee.id} value={employee.id} text={employee.displayName ?? employee.username}>
-                        {employee.displayName ?? employee.username}
+      <Dialog
+        open={Boolean(editingDate) && canWrite}
+        onOpenChange={(_, data) => {
+          if (!data.open && !isSaving) {
+            closeEdit();
+          }
+        }}
+      >
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle>
+              Mark attendance for {editingDate}
+              {editingEmployeeName ? ` · ${editingEmployeeName}` : ''}
+            </DialogTitle>
+            <DialogContent className="flex flex-col gap-3 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Field label="Actual location">
+                  <Dropdown
+                    value={locations.find((item) => item.id === actualLocationId)?.name ?? ''}
+                    selectedOptions={actualLocationId ? [actualLocationId] : []}
+                    onOptionSelect={(_, data) => setActualLocationId(data.optionValue ?? '')}
+                  >
+                    {locations.map((location) => (
+                      <Option key={location.id} value={location.id} text={location.name}>
+                        {location.name}
                       </Option>
                     ))}
-                </Dropdown>
-              </Field>
-              <Field label="External collaborator">
-                <Input
-                  value={externalName}
-                  placeholder="Client or partner name"
-                  onChange={(_, data) => setExternalName(data.value)}
-                />
-              </Field>
-            </div>
-          ) : null}
+                  </Dropdown>
+                </Field>
+                <Field label="Notes">
+                  <Input value={notes} onChange={(_, data) => setNotes(data.value)} />
+                </Field>
+              </div>
 
-          <div className="flex gap-2">
-            <Button appearance="primary" disabled={isSaving || !actualLocationId} onClick={() => void saveAttendance()}>
-              {isSaving ? 'Saving...' : 'Save attendance'}
-            </Button>
-            <Button
-              appearance="secondary"
-              disabled={isSaving}
-              onClick={() => {
-                setEditingDate(null);
-                setEditingUserId(null);
-              }}
-            >
-              Cancel
-            </Button>
-          </div>
-        </section>
-      ) : null}
+              {selectedLocation?.tracksCollaborators ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Field label="Internal collaborators">
+                    <Dropdown
+                      multiselect
+                      placeholder="Select colleagues"
+                      selectedOptions={collaboratorUserIds}
+                      onOptionSelect={(_, data) => setCollaboratorUserIds(data.selectedOptions)}
+                    >
+                      {employees
+                        .filter((employee) => employee.id !== (editingUserId ?? selectedUserId ?? user?.id))
+                        .map((employee) => (
+                          <Option key={employee.id} value={employee.id} text={employee.displayName ?? employee.username}>
+                            {employee.displayName ?? employee.username}
+                          </Option>
+                        ))}
+                    </Dropdown>
+                  </Field>
+                  <Field label="External collaborator">
+                    <Input
+                      value={externalName}
+                      placeholder="Client or partner name"
+                      onChange={(_, data) => setExternalName(data.value)}
+                    />
+                  </Field>
+                </div>
+              ) : null}
+            </DialogContent>
+            <DialogActions>
+              <Button appearance="secondary" disabled={isSaving} onClick={closeEdit}>
+                Cancel
+              </Button>
+              <Button appearance="primary" disabled={isSaving || !actualLocationId} onClick={() => void saveAttendance()}>
+                {isSaving ? 'Saving...' : 'Save attendance'}
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
 
       </section>
 

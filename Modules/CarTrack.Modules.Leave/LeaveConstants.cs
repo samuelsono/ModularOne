@@ -39,6 +39,20 @@ public static class WorkLocationCodes
     public const string ClientSite = "CLIENT";
     public const string BusinessTravel = "TRAVEL";
     public const string Other = "OTHER";
+    public const string Absent = "ABSENT";
+}
+
+public static class AttendanceDefaultAssumptions
+{
+    public const string Present = "Present";
+    public const string Absent = "Absent";
+
+    public static bool IsValid(string? value) =>
+        string.Equals(value, Present, StringComparison.OrdinalIgnoreCase)
+        || string.Equals(value, Absent, StringComparison.OrdinalIgnoreCase);
+
+    public static string Normalize(string? value) =>
+        string.Equals(value, Absent, StringComparison.OrdinalIgnoreCase) ? Absent : Present;
 }
 
 public static class AttendanceSources
