@@ -147,7 +147,7 @@ function SectionEditorNode({ section, path, onMoveSection, onMoveLayoutItem }: S
   const rootIndex = path[0] ?? 0;
 
   return (
-    <div className="rounded border border-neutral-stroke-1 p-3" style={{ backgroundColor: tokens.colorNeutralBackground2 }}>
+    <div className="rounded border border-neutral-stroke-3 p-3" style={{ backgroundColor: tokens.colorNeutralBackground2 }}>
       {isRoot ? (
         <SortableItem
           id={section.id}

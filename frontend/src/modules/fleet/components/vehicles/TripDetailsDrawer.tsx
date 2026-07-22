@@ -79,7 +79,7 @@ function TripEventRow({ event }: { event: VehicleEvent }) {
     : 'bg-neutral-background-3 text-neutral-foreground-2';
 
   return (
-    <li className="flex gap-3 border-b border-neutral-stroke-2 px-1 py-2.5">
+    <li className="flex gap-3 border-b border-neutral-stroke-3 px-1 py-2.5">
       <Tooltip
         content={harshType ? getHarshEventLabel(harshType) : humanizeEventDescription(event.eventDescription)}
         relationship="label"
@@ -274,7 +274,7 @@ export function TripDetailsDrawer({
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
             <div className="flex flex-col gap-4">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-neutral-stroke-2 p-3">
+                <div className="rounded-lg border border-neutral-stroke-3 p-3">
                   <div className="mb-1 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-neutral-foreground-3">
                     <LocationRegular fontSize={14} />
                     Start
@@ -287,7 +287,7 @@ export function TripDetailsDrawer({
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-neutral-stroke-2 p-3">
+                <div className="rounded-lg border border-neutral-stroke-3 p-3">
                   <div className="mb-1 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-neutral-foreground-3">
                     <LocationRegular fontSize={14} />
                     End
@@ -320,7 +320,7 @@ export function TripDetailsDrawer({
                   className={
                     isReplayFullscreen
                       ? 'fixed inset-0 z-[1200] flex flex-col'
-                      : 'overflow-hidden rounded-lg border border-neutral-stroke-2'
+                      : 'overflow-hidden rounded-lg border border-neutral-stroke-3'
                   }
                   style={
                     isReplayFullscreen
@@ -369,7 +369,7 @@ export function TripDetailsDrawer({
               )}
 
               {!isLoading && !error && events.length > 0 && (
-                <ul className="max-h-[65vh] overflow-y-auto rounded-lg border border-neutral-stroke-2">
+                <ul className="max-h-[65vh] overflow-y-auto rounded-lg border border-neutral-stroke-3">
                   {events.map((event) => (
                     <TripEventRow key={event.eventId} event={event} />
                   ))}

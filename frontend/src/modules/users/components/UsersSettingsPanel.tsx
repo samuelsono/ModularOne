@@ -696,7 +696,7 @@ export function UsersSettingsPanel({
               </Field>
 
               {editingUser && userOrg && (
-                <div className="rounded border border-neutral-stroke-2 p-3 bg-neutral-background-2">
+                <div className="rounded border border-neutral-stroke-3 p-3 bg-neutral-background-2">
                   {userOrg.manager && (
                     <Text className="text-sm block mb-2">
                       Manager: <strong>{userOrg.manager.displayName}</strong>

@@ -41,19 +41,10 @@ public sealed class UsersModule : IModule
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ISecurityAuditService, SecurityAuditService>();
         builder.Services.AddScoped<IAccountEmailService, AccountEmailService>();
+        builder.Services.AddScoped<IEmailService, ConfigurableEmailService>();
         builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
         builder.Services.AddSingleton<IAuthorizationHandler, AnyPermissionAuthorizationHandler>();
         builder.Services.AddHttpClient(nameof(ExternalAuthLoginService));
-
-        var emailOptions = builder.Configuration.GetSection(EmailOptions.SectionName).Get<EmailOptions>() ?? new EmailOptions();
-        if (emailOptions.Enabled && !string.IsNullOrWhiteSpace(emailOptions.SmtpHost))
-        {
-            builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
-        }
-        else
-        {
-            builder.Services.AddSingleton<IEmailService, LoggingEmailService>();
-        }
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)

@@ -16,6 +16,7 @@ import { ApprovalsStubPanel } from '@modules/expense/components/ApprovalsStubPan
 import { AccountProfilePanel } from '@modules/settings/components/AccountProfilePanel';
 import { AccountSecurityPanel } from '@modules/settings/components/AccountSecurityPanel';
 import { CarTrackCredentialsForm } from '@modules/settings/components/CarTrackCredentialsForm';
+import { EmailSettingsForm } from '@modules/settings/components/EmailSettingsForm';
 import { GoogleAuthCredentialsForm } from '@modules/settings/components/GoogleAuthCredentialsForm';
 import { MicrosoftAuthCredentialsForm } from '@modules/settings/components/MicrosoftAuthCredentialsForm';
 import { SecurityAuditPanel } from '@modules/users/components/SecurityAuditPanel';
@@ -38,6 +39,7 @@ type SettingsSectionId =
   | 'expenseMileageRate'
   | 'notifications'
   | 'cartrack'
+  | 'email'
   | 'googleAuth'
   | 'microsoftAuth'
   | 'profile'
@@ -80,6 +82,7 @@ const SETTINGS_CATEGORIES: SettingsCategory[] = [
     icon: PlugConnectedRegular,
     sections: [
       { id: 'cartrack', label: 'CarTrack API' },
+      { id: 'email', label: 'Email' },
       { id: 'googleAuth', label: 'Google Auth' },
       { id: 'microsoftAuth', label: 'Microsoft Auth' },
     ],
@@ -172,6 +175,8 @@ function SettingsContent({
       return <GeneralNotificationsPanel />;
     case 'cartrack':
       return <CarTrackCredentialsForm />;
+    case 'email':
+      return <EmailSettingsForm />;
     case 'googleAuth':
       return <GoogleAuthCredentialsForm />;
     case 'microsoftAuth':
@@ -296,7 +301,10 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
-      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-stroke-2">
+      <div
+        className="flex items-center justify-between px-4 py-3 border-b"
+        style={{ borderBottomColor: tokens.colorNeutralStroke3 }}
+      >
         <Subtitle2>Settings</Subtitle2>
         <Button
           appearance="subtle"
@@ -307,7 +315,10 @@ export default function SettingsPage() {
       </div>
 
       <div className="flex flex-1 min-h-0">
-        <aside className="w-[220px] shrink-0 border-r border-neutral-stroke-2 p-3 flex flex-col gap-3">
+        <aside
+          className="w-[220px] shrink-0 border-r p-3 flex flex-col gap-3"
+          style={{ borderRightColor: tokens.colorNeutralStroke3 }}
+        >
           <nav className="flex flex-col gap-1">
             {filteredCategories.map((category) => {
               const Icon = category.icon;
@@ -332,8 +343,10 @@ export default function SettingsPage() {
           </nav>
         </aside>
 
-        <aside className="w-[220px] shrink-0 border-r border-neutral-stroke-2 py-4">
-          <nav className="flex flex-col">
+        <aside
+          className="w-[220px] shrink-0 border-r py-4"
+          style={{ borderRightColor: tokens.colorNeutralStroke3 }}
+        >          <nav className="flex flex-col">
             {activeCategory.sections.map((section) => {
               const isActive = section.id === activeSection?.id;
 

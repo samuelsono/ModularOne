@@ -258,7 +258,7 @@ export function HelpArticleFormDrawer({
               />
             </Field>
           ) : (
-            <div className="rounded border border-neutral-stroke-2 p-3 min-h-[280px] text-sm leading-relaxed">
+            <div className="rounded border border-neutral-stroke-3 p-3 min-h-[280px] text-sm leading-relaxed">
               <ReactMarkdown>{body || '*Nothing to preview yet.*'}</ReactMarkdown>
             </div>
           )}

@@ -149,11 +149,11 @@ export function VehicleLiveTrackDialog({
                   )}
                 </div>
                
-                <div className="flex flex-col gap-1 border-l border-neutral-stroke-1 px-5">
+                <div className="flex flex-col gap-1 border-l border-neutral-stroke-3 px-5">
                   <span className='font-bold '>Speed: </span>
                   <span>{Math.round(speed ?? 0)} km/h</span>
                 </div>
-                <div className="flex flex-col gap-1 border-l border-neutral-stroke-1 px-5">
+                <div className="flex flex-col gap-1 border-l border-neutral-stroke-3 px-5">
                   <span className='font-bold '>Bearing: </span>
                   <span>{Math.round(bearing ?? 0)}°</span>
                 </div>
@@ -196,7 +196,7 @@ export function VehicleLiveTrackDialog({
                 </MessageBar>
               )}
 
-              <div className="relative rounded border border-neutral-stroke-1 overflow-hidden" style={{ height: '420px' }}>
+              <div className="relative rounded border border-neutral-stroke-3 overflow-hidden" style={{ height: '420px' }}>
                 {isRefreshing && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ backgroundColor: `color-mix(in srgb, ${tokens.colorNeutralBackground1} 60%, transparent)` }}>
                     <Spinner size="small" label="Refreshing location..." />

@@ -201,7 +201,7 @@ export const SummaryVerticalBar = ({ rowData }:{ rowData: ExpenseCategoryBalance
     return data;
   }, [data, isAllZero]);
 
-  return (<div className='shadow rounded px-3 border pt-2' style={{ borderColor: tokens.colorNeutralStroke2 }} >
+  return (<div className='shadow rounded px-3 border pt-2' style={{ borderColor: tokens.colorNeutralStroke3 }} >
     <div className='font-bold mb-3 text-center'>{rowData.categoryName}</div>
     <div className='h-[260px] p-3'>
         <VerticalBarChart   

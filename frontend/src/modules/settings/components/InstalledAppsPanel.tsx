@@ -7,6 +7,7 @@ import {
   Option,
   Subtitle2,
   Text,
+  tokens,
 } from '@fluentui/react-components';
 import { APP_MODULES } from '@platform/permissions/apps';
 import { getPlatformSettings, updatePlatformSettings } from '@modules/settings/services/settingsService';
@@ -131,7 +132,7 @@ export function InstalledAppsPanel() {
   }
 
   return (
-    <div className="max-w-xl flex flex-col gap-4">
+    <div className="max-w-full flex flex-col gap-4">
       <div className="flex flex-col">
         <Subtitle2>Installed applications</Subtitle2>
         <Text className="text-sm text-neutral-foreground-3 block mt-1">
@@ -139,7 +140,7 @@ export function InstalledAppsPanel() {
         </Text>
       </div>
 
-      <Field label="Default theme">
+      <Field label="Default theme" className='max-w-sm'>
         <Dropdown
           value={defaultThemeName}
           selectedOptions={[defaultThemeName]}
@@ -161,16 +162,16 @@ export function InstalledAppsPanel() {
         This theme is used whenever an app has no specific theme configured.
       </Text>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 w-full">
         {APP_MODULES.map((module) => (
-          <div key={module.slug} className="rounded border border-neutral-stroke-2 p-3 flex flex-col gap-2">
-            <div className="flex flex-col items-center gap-2">
+          <div key={module.slug} className="rounded border p-3 flex justify-between gap-2" style={{ borderColor: tokens.colorNeutralStroke3}}>
+            <div className="flex flex-col items-start gap-0">
               <Checkbox
                 checked={selectedSlugs.has(module.slug)}
                 onChange={() => toggleApp(module.slug)}
                 label={module.name}
               />
-              <Text className="text-sm text-neutral-foreground-3">
+              <Text className="text-sm text-neutral-foreground-3 pl-9">
                 {module.description}
               </Text>
             </div>

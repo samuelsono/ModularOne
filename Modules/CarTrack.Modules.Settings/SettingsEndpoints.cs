@@ -38,6 +38,15 @@ public static class SettingsEndpoints
         group.MapPut("/auth/microsoft", UpdateMicrosoftAuthSettingsAsync)
             .RequirePermission(PlatformWritePermission);
 
+        group.MapGet("/email", GetEmailSettingsAsync)
+            .RequirePermission(PlatformWritePermission);
+
+        group.MapPut("/email", UpdateEmailSettingsAsync)
+            .RequirePermission(PlatformWritePermission);
+
+        group.MapPost("/email/test", TestEmailSettingsAsync)
+            .RequirePermission(PlatformWritePermission);
+
         return group;
     }
 
@@ -175,5 +184,44 @@ public static class SettingsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status400BadRequest);
         }
+    }
+
+    private static async Task<IResult> GetEmailSettingsAsync(IEmailSettingsService settingsService)
+    {
+        var settings = await settingsService.GetAsync();
+        return Results.Ok(settings);
+    }
+
+    private static async Task<IResult> UpdateEmailSettingsAsync(
+        UpdateEmailSettingsRequest request,
+        IEmailSettingsService settingsService)
+    {
+        try
+        {
+            var settings = await settingsService.UpdateAsync(request);
+            return Results.Ok(settings);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["request"] = [ex.Message],
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Problem(
+                title: "Email settings incomplete",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<IResult> TestEmailSettingsAsync(
+        TestEmailSettingsRequest request,
+        IEmailSettingsService settingsService)
+    {
+        var result = await settingsService.TestAsync(request);
+        return Results.Ok(result);
     }
 }

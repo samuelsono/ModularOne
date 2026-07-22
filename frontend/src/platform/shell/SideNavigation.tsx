@@ -78,7 +78,7 @@ const SideNavigation = () => {
             >
               <div
                 className="w-9 h-px"
-                style={{ backgroundColor: tokens.colorNeutralStroke2 }}
+                style={{ backgroundColor: tokens.colorNeutralStroke3 }}
               />
             </div>
           );

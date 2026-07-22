@@ -27,7 +27,7 @@ export const useStyles = makeStyles({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '56px',
+    width: '78px',
     height: '56px',
     textDecoration: 'none',
     color: tokens.colorNeutralForeground2,

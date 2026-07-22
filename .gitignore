@@ -3,3 +3,7 @@ mapbox.ts
 
 # ASP.NET DataProtection key ring (must not be committed)
 CarTrack.Host/App_Data/DataProtection-Keys/
+Migrations/
+bin/
+CarTrack.Host/bin/
+CarTrack.Host/bin/

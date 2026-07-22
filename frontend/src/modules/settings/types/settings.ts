@@ -66,3 +66,43 @@ export interface ExternalAuthProviderStatus {
   provider: string;
   isActivated: boolean;
 }
+
+export type EmailProvider = 'Smtp' | 'SendGrid' | 'Mailgun';
+
+export interface EmailSettings {
+  enabled: boolean;
+  provider: EmailProvider;
+  fromAddress: string;
+  fromName: string;
+  smtpHost: string | null;
+  smtpPort: number;
+  useSsl: boolean;
+  username: string | null;
+  hasPassword: boolean;
+  hasApiKey: boolean;
+  mailgunDomain: string | null;
+  updatedAt: string | null;
+}
+
+export interface UpdateEmailSettingsRequest {
+  enabled: boolean;
+  provider: EmailProvider;
+  fromAddress: string;
+  fromName: string;
+  smtpHost?: string | null;
+  smtpPort?: number;
+  useSsl?: boolean;
+  username?: string | null;
+  password?: string;
+  apiKey?: string;
+  mailgunDomain?: string | null;
+}
+
+export interface TestEmailSettingsRequest {
+  toAddress: string;
+}
+
+export interface TestEmailSettingsResponse {
+  success: boolean;
+  message: string;
+}

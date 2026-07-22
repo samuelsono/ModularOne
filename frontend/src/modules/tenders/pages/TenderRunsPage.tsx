@@ -233,7 +233,7 @@ export default function TenderRunsPage() {
           </DataGrid>
 
           {expanded && (
-            <div className="rounded border border-neutral-stroke-2 p-3 bg-neutral-background-2">
+            <div className="rounded border border-neutral-stroke-3 p-3 bg-neutral-background-2">
               <Text weight="semibold" className="mb-2 block">
                 Source logs — {expanded.trigger} run
               </Text>
@@ -244,7 +244,7 @@ export default function TenderRunsPage() {
                   {expanded.sourceLogs.map((log) => (
                     <div
                       key={log.id}
-                      className="grid grid-cols-1 md:grid-cols-6 gap-2 text-xs border-b border-neutral-stroke-2 pb-2"
+                      className="grid grid-cols-1 md:grid-cols-6 gap-2 text-xs border-b border-neutral-stroke-3 pb-2"
                     >
                       <Text weight="semibold">{log.sourceName ?? log.sourceId.slice(0, 8)}</Text>
                       <Badge size="small" appearance="outline">

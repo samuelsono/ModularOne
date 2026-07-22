@@ -38,6 +38,7 @@ import {
 } from '@fluentui/react-icons';
 import type { UserListItem } from '@modules/users/types/user';
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
+import { runAfterMenuDismiss } from '@platform/utils/runAfterMenuDismiss';
 import { usePersistedColumnSizing } from '@platform/utils/usePersistedColumnSizing';
 import { usePermissions } from '@platform/permissions/usePermissions';
 import { withAuditableColumns } from '@platform/ui/auditTableColumns';
@@ -139,11 +140,17 @@ const EmployeeActions = ({
       </MenuTrigger>
       <MenuPopover>
         <MenuList>
-          <MenuItem icon={<EyeRegular />} onClick={() => onViewDetails?.(item)}>
+          <MenuItem
+            icon={<EyeRegular />}
+            onClick={() => runAfterMenuDismiss(() => onViewDetails?.(item))}
+          >
             View details
           </MenuItem>
           {canEdit && item.isActive && (
-            <MenuItem icon={<PersonProhibitedRegular />} onClick={() => onDeactivate?.(item)}>
+            <MenuItem
+              icon={<PersonProhibitedRegular />}
+              onClick={() => runAfterMenuDismiss(() => onDeactivate?.(item))}
+            >
               Deactivate
             </MenuItem>
           )}
@@ -155,7 +162,10 @@ const EmployeeActions = ({
           {canEdit && (
             <>
               <MenuDivider />
-              <MenuItem icon={<KeyRegular />} onClick={() => onResetPassword?.(item)}>
+              <MenuItem
+                icon={<KeyRegular />}
+                onClick={() => runAfterMenuDismiss(() => onResetPassword?.(item))}
+              >
                 Reset password
               </MenuItem>
               <MenuItem icon={<MailRegular />} onClick={() => onSendInvite?.(item)}>
@@ -173,7 +183,10 @@ const EmployeeActions = ({
             </>
           )}
           {canAdjustLeaveBalances && (
-            <MenuItem icon={<CalendarCheckmarkRegular />} onClick={() => onStartLeaveAdjustment?.(item)}>
+            <MenuItem
+              icon={<CalendarCheckmarkRegular />}
+              onClick={() => runAfterMenuDismiss(() => onStartLeaveAdjustment?.(item))}
+            >
               Adjust leave balances
             </MenuItem>
           )}

@@ -46,3 +46,34 @@ public record UpdateExternalAuthSettingsRequest(
     string ClientId,
     string? ClientSecret,
     string? TenantId);
+
+public record EmailSettingsDto(
+    bool Enabled,
+    string Provider,
+    string FromAddress,
+    string FromName,
+    string? SmtpHost,
+    int SmtpPort,
+    bool UseSsl,
+    string? Username,
+    bool HasPassword,
+    bool HasApiKey,
+    string? MailgunDomain,
+    string? UpdatedAt);
+
+public record UpdateEmailSettingsRequest(
+    bool Enabled,
+    string Provider,
+    string FromAddress,
+    string FromName,
+    string? SmtpHost = null,
+    int SmtpPort = 587,
+    bool UseSsl = true,
+    string? Username = null,
+    string? Password = null,
+    string? ApiKey = null,
+    string? MailgunDomain = null);
+
+public record TestEmailSettingsRequest(string ToAddress);
+
+public record TestEmailSettingsResponse(bool Success, string Message);

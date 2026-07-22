@@ -176,7 +176,7 @@ const SectionRow = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <div className="border-t border-neutral-stroke-2 px-4 py-3">
+  <div className="border-t border-neutral-stroke-3 px-4 py-3">
     <div className="text-sm font-semibold text-neutral-foreground-1">{title}</div>
     <div className="mt-1">{children}</div>
   </div>
@@ -200,7 +200,7 @@ function VehicleDisplaySettings({
         <Subtitle2>Vehicle display options</Subtitle2>
       </div>
 
-      <div className="border-t border-neutral-stroke-2 px-4 py-2">
+      <div className="border-t border-neutral-stroke-3 px-4 py-2">
         <div className="text-xs font-semibold uppercase tracking-wide text-neutral-foreground-3">
           Quick stats
         </div>
@@ -221,7 +221,7 @@ function VehicleDisplaySettings({
         </div>
       </div>
 
-      <div className="border-t border-neutral-stroke-2 px-4 py-2">
+      <div className="border-t border-neutral-stroke-3 px-4 py-2">
         <div className="text-xs font-semibold uppercase tracking-wide text-neutral-foreground-3">
           Others
         </div>
@@ -242,7 +242,7 @@ function VehicleDisplaySettings({
         </div>
       </div>
 
-      <div className="flex justify-end border-t border-neutral-stroke-2 px-4 py-3">
+      <div className="flex justify-end border-t border-neutral-stroke-3 px-4 py-3">
         <Button appearance="primary" onClick={onClose}>
           Close
         </Button>
@@ -315,12 +315,12 @@ export function VehicleDetailPanel({ vehicle, onViewEvents, onViewTrips }: Vehic
         </button>
       </div>
 
-      <div className="flex items-center gap-2 border-t border-neutral-stroke-2 px-4 py-3">
+      <div className="flex items-center gap-2 border-t border-neutral-stroke-3 px-4 py-3">
         <PersonRegular className="text-neutral-foreground-3" fontSize={18} />
         <span className="text-sm">{formatDriverName(driver)}</span>
       </div>
 
-      <div className="flex items-start gap-2 border-t border-neutral-stroke-2 px-4 py-3">
+      <div className="flex items-start gap-2 border-t border-neutral-stroke-3 px-4 py-3">
         <LocationRegular className="mt-0.5 shrink-0 text-neutral-foreground-3" fontSize={18} />
         <span className="text-sm">{location?.positionDescription ?? 'Location unavailable'}</span>
       </div>
@@ -388,7 +388,7 @@ export function VehicleDetailPanel({ vehicle, onViewEvents, onViewTrips }: Vehic
       )}
 
       {(onViewEvents || onViewTrips) && (
-        <div className="flex gap-2 border-t border-neutral-stroke-2 px-4 py-3">
+        <div className="flex gap-2 border-t border-neutral-stroke-3 px-4 py-3">
           {onViewEvents && (
             <Button
               appearance="secondary"

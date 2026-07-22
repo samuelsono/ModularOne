@@ -274,7 +274,7 @@ export default function ExpenseReportsPage() {
               </div>
             </Card>
             
-            <div className='col-span-2 shadow-md rounded p-3 min-h-[240px] h-full flex items-center justify-center border' style={{ borderColor: tokens.colorNeutralStroke2  }}>
+            <div className='col-span-2 shadow-md rounded p-3 min-h-[240px] h-full flex items-center justify-center border' style={{ borderColor: tokens.colorNeutralStroke3  }}>
             { summary.byCategory.length > 0 && <DonutChart
                                           culture={
                                               typeof window !== "undefined" ? window.navigator.language : "en-us"
@@ -289,7 +289,7 @@ export default function ExpenseReportsPage() {
 
               <div className="p-4 flex flex-col gap-2 ">
                 {summary.byStatus.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between border-b pb-1 last:border-b-0" style={{ borderColor: tokens.colorNeutralStroke2 }}>
+                  <div key={item.label} className="flex items-center justify-between border-b pb-1 last:border-b-0" style={{ borderColor: tokens.colorNeutralStroke3 }}>
                     <ExpenseStatusBadge status={item.label} />
                     <Badge>{item.count}</Badge>
                   </div>

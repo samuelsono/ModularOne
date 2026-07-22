@@ -1,5 +1,6 @@
 using CarTrack.Api;
 using CarTrack.Infrastructure.Auth;
+using CarTrack.Infrastructure.Email;
 using CarTrack.Infrastructure.Persistence;
 using CarTrack.Server.CarTrack;
 
@@ -24,7 +25,12 @@ public sealed class SettingsModule : IModule
         builder.Services.AddScoped<IExternalAuthSettingsService, ExternalAuthSettingsService>();
         builder.Services.AddScoped<ICarTrackSettingsService, CarTrackSettingsService>();
         builder.Services.AddScoped<IPlatformSettingsService, PlatformSettingsService>();
+        builder.Services.AddScoped<EmailSettingsService>();
+        builder.Services.AddScoped<IEmailSettingsService>(sp => sp.GetRequiredService<EmailSettingsService>());
+        builder.Services.AddScoped<IEmailRuntimeSettingsProvider, EmailRuntimeSettingsProvider>();
+        builder.Services.AddScoped<IEmailDispatcher, EmailDispatcher>();
         builder.Services.AddHttpClient(nameof(CarTrackSettingsService));
+        builder.Services.AddHttpClient(nameof(EmailDispatcher));
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) =>

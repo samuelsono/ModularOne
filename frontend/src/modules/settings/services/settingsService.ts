@@ -1,11 +1,15 @@
 import type {
   AppSettingsOverview,
   CarTrackSettings,
+  EmailSettings,
   ExpenseSettings,
   ExternalAuthSettings,
   PlatformSettings,
   TestCarTrackConnectionResponse,
+  TestEmailSettingsRequest,
+  TestEmailSettingsResponse,
   UpdateCarTrackSettingsRequest,
+  UpdateEmailSettingsRequest,
   UpdateExpenseSettingsRequest,
   UpdateExternalAuthSettingsRequest,
   UpdatePlatformSettingsRequest,
@@ -83,6 +87,28 @@ export async function updateMicrosoftAuthSettings(
 ): Promise<ExternalAuthSettings> {
   return authorizedFetch<ExternalAuthSettings>('/api/settings/auth/microsoft', {
     method: 'PUT',
+    body: JSON.stringify(request),
+  });
+}
+
+export async function getEmailSettings(): Promise<EmailSettings> {
+  return authorizedFetch<EmailSettings>('/api/settings/email');
+}
+
+export async function updateEmailSettings(
+  request: UpdateEmailSettingsRequest,
+): Promise<EmailSettings> {
+  return authorizedFetch<EmailSettings>('/api/settings/email', {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  });
+}
+
+export async function testEmailSettings(
+  request: TestEmailSettingsRequest,
+): Promise<TestEmailSettingsResponse> {
+  return authorizedFetch<TestEmailSettingsResponse>('/api/settings/email/test', {
+    method: 'POST',
     body: JSON.stringify(request),
   });
 }

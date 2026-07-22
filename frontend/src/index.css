@@ -8,8 +8,9 @@
   --color-neutral-background-2: var(--colorNeutralBackground2);
   --color-neutral-background-3: var(--colorNeutralBackground3);
   --color-neutral-background-1-hover: var(--colorNeutralBackground1Hover);
-  --color-neutral-stroke-1: var(--colorNeutralStroke1);
-  --color-neutral-stroke-2: var(--colorNeutralStroke2);
+  --color-neutral-stroke-1: var(--colorNeutralStroke3);
+  /* Stroke1/2 read too harsh in light and too bright in dark; match table-row dividers. */
+  --color-neutral-stroke-2: var(--colorNeutralStroke3);
   --color-neutral-stroke-3: var(--colorNeutralStroke3);
   --color-neutral-stroke-alpha: var(--colorNeutralStrokeAlpha);
   --color-neutral-stroke-accessible: var(--colorNeutralStrokeAccessible);
@@ -81,13 +82,31 @@ button {
   }
 }
 
-/* Soften Fluent DataGrid / Table row dividers (Stroke2 is too strong in both modes). */
+/* Soften Fluent DataGrid / Table row dividers (Stroke2 is too strong in both modes).
+   Griffel applies a full border-bottom shorthand; override it with !important so Stroke3 sticks. */
 .fui-DataGridRow,
 .fui-TableRow {
-  border-bottom-color: var(--colorNeutralStroke3);
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3) !important;
 }
 
 .fui-DataGridHeader .fui-DataGridRow,
 .fui-TableHeader .fui-TableRow {
-  border-bottom-color: var(--colorNeutralStroke3);
+  border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke3) !important;
+}
+
+/* Column resize handles default to Stroke1 (harsh). */
+.fui-TableResizeHandle::after {
+  background-color: var(--colorNeutralStroke3) !important;
+}
+
+/* Soften Fluent drawer / dialog section dividers to match table rows. */
+.fui-DrawerHeader,
+.fui-DialogTitle,
+.fui-TabList {
+  border-bottom-color: var(--colorNeutralStroke3) !important;
+}
+
+.fui-DrawerFooter,
+.fui-DialogActions {
+  border-top-color: var(--colorNeutralStroke3) !important;
 }

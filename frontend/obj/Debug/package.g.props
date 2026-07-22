@@ -8,6 +8,7 @@
     <PackageJsonEnginesNode Condition="$(PackageJsonEnginesNode) == ''">^20.19.0 || &gt;=22.12.0</PackageJsonEnginesNode>
     <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">vite</PackageJsonScriptsDev>
     <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">tsc -b &amp;&amp; vite build</PackageJsonScriptsBuild>
+    <PackageJsonScriptsBuildServer Condition="$(PackageJsonScriptsBuildServer) == ''">npm run build &amp;&amp; shx rm -rf ../CarTrack.Host/wwwroot &amp;&amp; shx cp -r dist/ ../CarTrack.Host/wwwroot</PackageJsonScriptsBuildServer>
     <PackageJsonScriptsLint Condition="$(PackageJsonScriptsLint) == ''">eslint .</PackageJsonScriptsLint>
     <PackageJsonScriptsLintBoundaries Condition="$(PackageJsonScriptsLintBoundaries) == ''">eslint -c eslint.boundaries.config.js "src/**/*.{ts,tsx}"</PackageJsonScriptsLintBoundaries>
     <PackageJsonScriptsPreview Condition="$(PackageJsonScriptsPreview) == ''">vite preview</PackageJsonScriptsPreview>
@@ -22,6 +23,7 @@
     <PackageJsonDependenciesReactDom Condition="$(PackageJsonDependenciesReactDom) == ''">^19.2.1</PackageJsonDependenciesReactDom>
     <PackageJsonDependenciesReactMarkdown Condition="$(PackageJsonDependenciesReactMarkdown) == ''">^10.1.0</PackageJsonDependenciesReactMarkdown>
     <PackageJsonDependenciesReactRouterDom Condition="$(PackageJsonDependenciesReactRouterDom) == ''">^7.18.1</PackageJsonDependenciesReactRouterDom>
+    <PackageJsonDependenciesShx Condition="$(PackageJsonDependenciesShx) == ''">^0.4.0</PackageJsonDependenciesShx>
     <PackageJsonDependenciesTailwindcss Condition="$(PackageJsonDependenciesTailwindcss) == ''">^4.3.2</PackageJsonDependenciesTailwindcss>
     <PackageJsonDevdependenciesEslintJs Condition="$(PackageJsonDevdependenciesEslintJs) == ''">^9.39.1</PackageJsonDevdependenciesEslintJs>
     <PackageJsonDevdependenciesTypesNode Condition="$(PackageJsonDevdependenciesTypesNode) == ''">^24.10.1</PackageJsonDevdependenciesTypesNode>

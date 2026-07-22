@@ -11,6 +11,8 @@ public sealed class SettingsDbContext(DbContextOptions<SettingsDbContext> option
 
     public DbSet<ExternalAuthSettings> ExternalAuthSettings => Set<ExternalAuthSettings>();
 
+    public DbSet<EmailSettings> EmailSettings => Set<EmailSettings>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -54,6 +56,21 @@ public sealed class SettingsDbContext(DbContextOptions<SettingsDbContext> option
             entity.Property(settings => settings.ClientId).HasMaxLength(256).IsRequired();
             entity.Property(settings => settings.ProtectedClientSecret).HasMaxLength(4096);
             entity.Property(settings => settings.TenantId).HasMaxLength(128);
+        });
+
+        builder.Entity<EmailSettings>(entity =>
+        {
+            entity.ToTable("EmailSettings");
+            entity.HasKey(settings => settings.Id);
+            entity.Property(settings => settings.Id).ValueGeneratedNever();
+            entity.Property(settings => settings.Provider).HasMaxLength(32).IsRequired();
+            entity.Property(settings => settings.FromAddress).HasMaxLength(256).IsRequired();
+            entity.Property(settings => settings.FromName).HasMaxLength(256).IsRequired();
+            entity.Property(settings => settings.SmtpHost).HasMaxLength(256);
+            entity.Property(settings => settings.Username).HasMaxLength(256);
+            entity.Property(settings => settings.ProtectedPassword).HasMaxLength(4096);
+            entity.Property(settings => settings.ProtectedApiKey).HasMaxLength(4096);
+            entity.Property(settings => settings.MailgunDomain).HasMaxLength(256);
         });
     }
 }

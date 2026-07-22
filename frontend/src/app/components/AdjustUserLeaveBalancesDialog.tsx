@@ -145,9 +145,12 @@ export function AdjustUserLeaveBalancesDialog({
     }
   }
 
+  const allocatedValue = Number.parseFloat(allocatedDelta);
+  const adjustedValue = Number.parseFloat(adjustedDelta);
+
   return (
-    <Dialog open={open} onOpenChange={(_, data) => !data.open && onClose()}>
-      <DialogSurface>
+    <Dialog open={open} modalType="modal" onOpenChange={(_, data) => !data.open && onClose()}>
+      <DialogSurface aria-describedby={undefined}>
         <DialogBody>
           <DialogTitle>
             Adjust leave — {user?.displayName ?? user?.username ?? 'User'}
@@ -197,7 +200,7 @@ export function AdjustUserLeaveBalancesDialog({
                 </Field>
 
                 {selectedBalance ? (
-                  <div className="grid grid-cols-2 gap-3 rounded border border-neutral-stroke-2 p-3">
+                  <div className="grid grid-cols-2 gap-3 rounded border border-neutral-stroke-3 p-3">
                     <Text>Allocated: {selectedBalance.allocated.toFixed(1)}</Text>
                     <Text>Adjusted: {selectedBalance.adjusted.toFixed(1)}</Text>
                     <Text>Used: {selectedBalance.used.toFixed(1)}</Text>
@@ -214,9 +217,17 @@ export function AdjustUserLeaveBalancesDialog({
                 >
                   <SpinButton
                     step={0.5}
-                    value={Number(allocatedDelta)}
+                    value={Number.isFinite(allocatedValue) ? allocatedValue : 0}
                     disabled={isSaving}
-                    onChange={(_, data) => setAllocatedDelta(String(data.value))}
+                    onChange={(_, data) => {
+                      if (data.value != null && Number.isFinite(data.value)) {
+                        setAllocatedDelta(String(data.value));
+                        return;
+                      }
+                      if (data.displayValue != null && data.displayValue.trim() !== '') {
+                        setAllocatedDelta(data.displayValue);
+                      }
+                    }}
                   />
                 </Field>
                 <Field
@@ -225,9 +236,17 @@ export function AdjustUserLeaveBalancesDialog({
                 >
                   <SpinButton
                     step={0.5}
-                    value={Number(adjustedDelta)}
+                    value={Number.isFinite(adjustedValue) ? adjustedValue : 0}
                     disabled={isSaving}
-                    onChange={(_, data) => setAdjustedDelta(String(data.value))}
+                    onChange={(_, data) => {
+                      if (data.value != null && Number.isFinite(data.value)) {
+                        setAdjustedDelta(String(data.value));
+                        return;
+                      }
+                      if (data.displayValue != null && data.displayValue.trim() !== '') {
+                        setAdjustedDelta(data.displayValue);
+                      }
+                    }}
                   />
                 </Field>
               </>

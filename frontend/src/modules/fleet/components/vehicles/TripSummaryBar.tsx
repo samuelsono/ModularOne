@@ -19,12 +19,12 @@ export function TripSummaryBar({ trip }: TripSummaryBarProps) {
   const metrics = useMemo(() => getTripSummaryMetrics(trip), [trip]);
 
   return (
-    <div className="flex border-t border-neutral-stroke-2" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
+    <div className="flex border-t border-neutral-stroke-3" style={{ backgroundColor: tokens.colorNeutralBackground1 }}>
       {SUMMARY_ITEMS.map((item, index) => (
         <div
           key={item.key}
           className={`flex min-w-0 flex-1 flex-col items-center justify-center px-2 py-3 ${
-            index < SUMMARY_ITEMS.length - 1 ? 'border-r border-neutral-stroke-2' : ''
+            index < SUMMARY_ITEMS.length - 1 ? 'border-r border-neutral-stroke-3' : ''
           }`}
         >
           <span className="text-base font-medium tabular-nums text-neutral-foreground-1">

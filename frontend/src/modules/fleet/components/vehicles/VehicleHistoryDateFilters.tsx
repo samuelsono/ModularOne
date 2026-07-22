@@ -31,7 +31,7 @@ export function VehicleHistoryDateFilters({
   const maxSelectableDate = parseDateInputValue(today);
 
   return (
-    <div className="mt-3 flex flex-col gap-3 rounded border border-neutral-stroke-2 bg-neutral-background-2 p-3">
+    <div className="mt-3 flex flex-col gap-3 rounded border border-neutral-stroke-3 bg-neutral-background-2 p-3">
       <div className="grid grid-cols-2 gap-3">
         <Field label="Start date">
           <DatePicker
