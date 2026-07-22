@@ -5,7 +5,7 @@ import type { LeaveBalance, LeaveHistoryRow, LeaveRequest } from '@modules/leave
 import { downloadLeaveDocument } from '@modules/leave/services/leaveService';
 import { LeaveRequestDetailPopover } from './LeaveRequestDetailPopover';
 import type { AuthUser } from '@platform/auth/types';
-import type { LeaveActionKind, LeaveActionPermissions } from '@modules/leave/utils/leaveActionUtils';
+import type { LeaveConfirmActionKind, LeaveActionPermissions } from '@modules/leave/utils/leaveActionUtils';
 import { withAuditableColumns } from '@platform/ui/auditTableColumns';
 
 export const leaveTableColumnSizing: TableColumnSizingOptions = {
@@ -251,11 +251,13 @@ export function createLeaveRequestColumnsWithDetailPopover({
   user,
   permissions,
   onAction,
+  onUploadDocument,
   renderActions,
 }: {
   user: AuthUser | null | undefined;
   permissions: LeaveActionPermissions;
-  onAction?: (kind: LeaveActionKind, id: string) => void;
+  onAction?: (kind: LeaveConfirmActionKind, id: string) => void;
+  onUploadDocument?: (id: string, file: File) => void;
   renderActions?: (item: LeaveRequest) => ReactNode;
 }): TableColumnDefinition<LeaveRequest>[] {
   const columns: TableColumnDefinition<LeaveRequest>[] = [
@@ -268,6 +270,7 @@ export function createLeaveRequestColumnsWithDetailPopover({
           user={user}
           permissions={permissions}
           onAction={onAction}
+          onUploadDocument={onUploadDocument}
         />
       ),
     }),

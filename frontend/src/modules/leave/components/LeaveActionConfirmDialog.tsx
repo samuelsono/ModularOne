@@ -10,26 +10,26 @@ import {
   Field,
   Textarea,
 } from '@fluentui/react-components';
-import type { LeaveActionKind } from '@modules/leave/utils/leaveActionUtils';
+import type { LeaveConfirmActionKind } from '@modules/leave/utils/leaveActionUtils';
 
 export interface PendingLeaveAction {
-  kind: LeaveActionKind;
+  kind: LeaveConfirmActionKind;
   ids: string[];
 }
 
-const titles: Record<LeaveActionKind, string> = {
+const titles: Record<LeaveConfirmActionKind, string> = {
   approve: 'Approve leave',
   reject: 'Reject leave',
   cancel: 'Cancel leave',
 };
 
-const actionNames: Record<LeaveActionKind, string> = {
+const actionNames: Record<LeaveConfirmActionKind, string> = {
   approve: 'Approve',
   reject: 'Reject',
   cancel: 'Cancel request',
 };
 
-const messages: Record<LeaveActionKind, (count: number) => string> = {
+const messages: Record<LeaveConfirmActionKind, (count: number) => string> = {
   approve: (count) =>
     count === 1
       ? 'This will approve the selected leave request'
@@ -44,7 +44,7 @@ const messages: Record<LeaveActionKind, (count: number) => string> = {
       : `This will cancel ${count} selected leave requests`,
 };
 
-const confirmButtonClass: Record<LeaveActionKind, string> = {
+const confirmButtonClass: Record<LeaveConfirmActionKind, string> = {
   approve: '!bg-green-700 hover:!bg-green-800 !text-white !border-green-700',
   reject: '!bg-red-600 hover:!bg-red-700 !text-white !border-red-600',
   cancel: '!bg-amber-600 hover:!bg-amber-700 !text-white !border-amber-600',

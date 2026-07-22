@@ -3,7 +3,7 @@ import type { AuthUser } from '@platform/auth/types';
 import {
   rowSupportsAction,
   type LeaveActionableRow,
-  type LeaveActionKind,
+  type LeaveConfirmActionKind,
   type LeaveActionPermissions,
 } from '@modules/leave/utils/leaveActionUtils';
 
@@ -12,7 +12,7 @@ interface LeaveBulkActionBarProps {
   user: AuthUser | null | undefined;
   permissions: LeaveActionPermissions;
   disabled?: boolean;
-  onBulkAction?: (kind: LeaveActionKind, ids: string[]) => void;
+  onBulkAction?: (kind: LeaveConfirmActionKind, ids: string[]) => void;
 }
 
 export function LeaveBulkActionBar({

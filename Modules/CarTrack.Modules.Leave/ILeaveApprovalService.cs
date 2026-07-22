@@ -32,7 +32,7 @@ public interface ILeaveApprovalService
 
     Task<LeaveRequestDto?> UploadDocumentAsync(
         Guid requestId,
-        string requesterUserId,
+        string actingUserId,
         IFormFile document,
         CancellationToken cancellationToken = default);
 

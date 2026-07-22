@@ -598,6 +598,7 @@ export default function LeaveBalancesPage() {
     requestAction,
     confirmPendingAction,
     dismissPendingAction,
+    uploadDocument,
     isWorking,
   } = useLeaveActions(loadPageData);
 
@@ -634,6 +635,8 @@ export default function LeaveBalancesPage() {
 
       onAction: (kind, id) => requestAction(kind, [id]),
 
+      onUploadDocument: uploadDocument,
+
       renderActions: showLeaveActions
 
         ? (item) => (
@@ -652,6 +655,8 @@ export default function LeaveBalancesPage() {
 
             onAction={(kind, id) => requestAction(kind, [id])}
 
+            onUploadDocument={uploadDocument}
+
           />
 
         )
@@ -660,7 +665,7 @@ export default function LeaveBalancesPage() {
 
     }),
 
-    [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, user],
+    [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, uploadDocument, user],
 
   );
 

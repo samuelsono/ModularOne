@@ -212,6 +212,7 @@ export default function LeaveReportsPage() {
     requestAction,
     confirmPendingAction,
     dismissPendingAction,
+    uploadDocument,
     isWorking,
   } = useLeaveActions(async () => {
     await loadReports();
@@ -299,11 +300,12 @@ export default function LeaveReportsPage() {
           actingId={actingId}
           disabled={isWorking}
           onAction={(kind, id) => requestAction(kind, [id])}
+          onUploadDocument={uploadDocument}
         />
       )));
     }
     return columns;
-  }, [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, user]);
+  }, [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, uploadDocument, user]);
 
   const pendingColumns = useMemo(() => {
     const columns: TableColumnDefinition<LeaveRequest>[] = [...leaveApprovalColumns];
@@ -316,11 +318,12 @@ export default function LeaveReportsPage() {
           actingId={actingId}
           disabled={isWorking}
           onAction={(kind, id) => requestAction(kind, [id])}
+          onUploadDocument={uploadDocument}
         />
       )));
     }
     return columns;
-  }, [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, user]);
+  }, [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, uploadDocument, user]);
 
   const liabilityColumns: TableColumnDefinition<LeaveLiabilityRow>[] = useMemo(
     () => [

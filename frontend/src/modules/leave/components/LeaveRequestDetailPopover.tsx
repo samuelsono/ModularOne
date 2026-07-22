@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import {
   Button,
   TeachingPopover,
@@ -17,8 +18,10 @@ import {
   formatLeaveDateTime,
 } from './leaveTableUtils';
 import {
+  getAttachDocumentLabel,
   getLeaveRowActions,
-  type LeaveActionKind,
+  LEAVE_DOCUMENT_ACCEPT,
+  type LeaveConfirmActionKind,
   type LeaveActionPermissions,
 } from '@modules/leave/utils/leaveActionUtils';
 
@@ -26,7 +29,8 @@ interface LeaveRequestDetailPopoverProps {
   item: LeaveRequest;
   user: AuthUser | null | undefined;
   permissions: LeaveActionPermissions;
-  onAction?: (kind: LeaveActionKind, id: string) => void;
+  onAction?: (kind: LeaveConfirmActionKind, id: string) => void;
+  onUploadDocument?: (id: string, file: File) => void;
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -43,9 +47,12 @@ export function LeaveRequestDetailPopover({
   user,
   permissions,
   onAction,
+  onUploadDocument,
 }: LeaveRequestDetailPopoverProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const actions = getLeaveRowActions(user, item, permissions);
   const cancelAction = actions.includes('cancel') ? 'cancel' : null;
+  const canAttachDocument = actions.includes('attachDocument');
 
   return (
     <TeachingPopover>
@@ -89,7 +96,33 @@ export function LeaveRequestDetailPopover({
             <DetailRow label="Notes" value={item.notes ?? '—'} />
             <div className="grid grid-cols-[120px_1fr] gap-2 text-sm items-center">
               <Text className="text-neutral-foreground-3 font-bold!">Document</Text>
-              <LeaveDocumentLink item={item} />
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <LeaveDocumentLink item={item} />
+                {canAttachDocument ? (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="hidden"
+                      accept={LEAVE_DOCUMENT_ACCEPT}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = '';
+                        if (file) {
+                          onUploadDocument?.(item.id, file);
+                        }
+                      }}
+                    />
+                    <Button
+                      size="small"
+                      appearance="secondary"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {getAttachDocumentLabel(item)}
+                    </Button>
+                  </>
+                ) : null}
+              </div>
             </div>
           </div>
         </TeachingPopoverBody>

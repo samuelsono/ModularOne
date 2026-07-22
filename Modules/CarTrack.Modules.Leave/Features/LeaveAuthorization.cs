@@ -1,4 +1,5 @@
 using CarTrack.Identity.Contracts;
+using CarTrack.Server.Users;
 
 namespace CarTrack.Modules.Leave;
 
@@ -39,5 +40,22 @@ public static class LeaveAuthorization
         }
 
         return scope.ReportUserIds.Contains(requesterUserId);
+    }
+
+    /// <summary>
+    /// Requester can manage their own supporting document; Admin / SystemAdmin / HR can do so on behalf.
+    /// </summary>
+    public static bool CanUploadLeaveDocument(
+        this UserDataScope scope,
+        string actingUserId,
+        string requesterUserId)
+    {
+        if (string.Equals(actingUserId, requesterUserId, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return scope.BypassRowLevelSecurity
+            || scope.Roles.Any(role => role.Equals(AppRoles.Hr, StringComparison.OrdinalIgnoreCase));
     }
 }

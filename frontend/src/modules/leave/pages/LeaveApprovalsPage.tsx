@@ -64,6 +64,7 @@ export default function LeaveApprovalsPage() {
     requestAction,
     confirmPendingAction,
     dismissPendingAction,
+    uploadDocument,
     isWorking,
   } = useLeaveActions(async () => {
     await loadRequests();
@@ -97,11 +98,12 @@ export default function LeaveApprovalsPage() {
           actingId={actingId}
           disabled={isWorking}
           onAction={(kind, id) => requestAction(kind, [id])}
+          onUploadDocument={uploadDocument}
         />
       )));
     }
     return base;
-  }, [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, user]);
+  }, [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, uploadDocument, user]);
 
   return (
     <div className="flex flex-col gap-4 h-full min-h-0">

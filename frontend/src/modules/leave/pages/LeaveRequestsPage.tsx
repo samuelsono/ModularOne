@@ -87,6 +87,7 @@ export default function LeaveRequestsPage() {
     requestAction,
     confirmPendingAction,
     dismissPendingAction,
+    uploadDocument,
     isWorking,
   } = useLeaveActions(async () => {
     await loadRequests();
@@ -124,6 +125,7 @@ export default function LeaveRequestsPage() {
     user,
     permissions: leavePermissions,
     onAction: (kind, id) => requestAction(kind, [id]),
+    onUploadDocument: uploadDocument,
     renderActions: showLeaveActions
       ? (item) => (
         <LeaveRowActions
@@ -133,10 +135,11 @@ export default function LeaveRequestsPage() {
           actingId={actingId}
           disabled={isWorking}
           onAction={(kind, id) => requestAction(kind, [id])}
+          onUploadDocument={uploadDocument}
         />
       )
       : undefined,
-  }), [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, user]);
+  }), [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, uploadDocument, user]);
 
   return (
     <div className="flex flex-col gap-4 h-full min-h-0">

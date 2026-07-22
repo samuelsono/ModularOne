@@ -1,20 +1,53 @@
-import { Button } from '@fluentui/react-components';
+import { useRef } from 'react';
+import { Button, makeStyles, tokens, type JSXElement } from '@fluentui/react-components';
 import type { AuthUser } from '@platform/auth/types';
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
 import {
+  getAttachDocumentLabel,
   getLeaveRowActions,
+  LEAVE_DOCUMENT_ACCEPT,
   type LeaveActionableRow,
   type LeaveActionKind,
   type LeaveActionPermissions,
+  type LeaveConfirmActionKind,
 } from '@modules/leave/utils/leaveActionUtils';
+import { AttachRegular } from '@fluentui/react-icons';
 
-const actionButtonClass: Record<LeaveActionKind, string> = {
-  approve: '!bg-green-700 hover:!bg-green-800 !text-white !border-green-700',
-  reject: '!bg-red-600 hover:!bg-red-700 !text-white !border-red-600',
-  cancel: '!bg-amber-600 hover:!bg-amber-700 !text-white !border-amber-600',
-};
+const styles = makeStyles({
+  documentButton: {
+    backgroundColor: tokens.colorStatusSuccessBackground1,
+    ":hover": {
+      backgroundColor: tokens.colorStatusSuccessBackground2,
+    },
+    color: tokens.colorBrandBackground,
+  },
+  approveButton: {
+    backgroundColor: tokens.colorStatusSuccessBackground3,
+    ":hover": {
+      backgroundColor: tokens.colorStatusSuccessForeground2,
+    },
+    color: tokens.colorNeutralCardBackground,
+  },
+  cancelButton: {
+    backgroundColor: tokens.colorStatusWarningBackground3,
+    ":hover": {
+      backgroundColor: tokens.colorStatusWarningForeground2,
+    },
+    color: tokens.colorNeutralCardBackground,
+  },
+  rejectButton: {
+    backgroundColor: tokens.colorStatusDangerBackground3,
+    ":hover": {
+      backgroundColor: tokens.colorStatusDangerForeground2,
+    },
+    color: tokens.colorNeutralCardBackground,
+  }
 
-const actionLabels: Record<LeaveActionKind, string> = {
+});
+
+
+
+const actionLabels: Record<LeaveConfirmActionKind, string> = {
   approve: 'Approve',
   reject: 'Reject',
   cancel: 'Cancel',
@@ -26,7 +59,15 @@ interface LeaveRowActionsProps {
   permissions: LeaveActionPermissions;
   actingId?: string | null;
   disabled?: boolean;
-  onAction?: (kind: LeaveActionKind, id: string) => void;
+  onAction?: (kind: LeaveConfirmActionKind, id: string) => void;
+  onUploadDocument?: (id: string, file: File) => void;
+}
+
+const actionIcons : Record<LeaveActionKind, JSXElement | null> = {
+  attachDocument: <AttachRegular />,
+  approve: null,
+  reject: null,
+  cancel: null,
 }
 
 export function LeaveRowActions({
@@ -36,8 +77,18 @@ export function LeaveRowActions({
   actingId = null,
   disabled = false,
   onAction,
+  onUploadDocument,
 }: LeaveRowActionsProps) {
+  const classes = styles();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const actions = getLeaveRowActions(user, item, permissions);
+
+  const actionButtonClass: Record<LeaveActionKind, string> = {
+  approve: classes.approveButton,
+  reject: classes.rejectButton,
+  cancel: classes.cancelButton,
+  attachDocument: classes.documentButton,
+};
 
   if (actions.length === 0) {
     return <>—</>;
@@ -51,16 +102,41 @@ export function LeaveRowActions({
       onClick={stopDataGridRowSelection}
       onKeyDown={stopDataGridRowSelection}
     >
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept={LEAVE_DOCUMENT_ACCEPT}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (file) {
+            onUploadDocument?.(item.id, file);
+          }
+        }}
+      />
       {actions.map((action) => (
         <Button
           key={action}
           size="small"
           appearance="primary"
+          icon={actionIcons[action]}
           className={actionButtonClass[action]}
           disabled={disabled || isActing}
-          onClick={() => onAction?.(action, item.id)}
+          onClick={() => {
+            if (action === 'attachDocument') {
+              fileInputRef.current?.click();
+              return;
+            }
+
+            onAction?.(action, item.id);
+          }}
         >
-          {isActing ? 'Working...' : actionLabels[action]}
+          {isActing
+            ? 'Working...'
+            : action === 'attachDocument'
+              ? getAttachDocumentLabel(item)
+              : actionLabels[action]}
         </Button>
       ))}
     </div>

@@ -355,15 +355,16 @@ public class LeaveApprovalService(
 
     public async Task<LeaveRequestDto?> UploadDocumentAsync(
         Guid requestId,
-        string requesterUserId,
+        string actingUserId,
         IFormFile document,
         CancellationToken cancellationToken = default)
     {
+        var scope = await currentUserScope.GetAsync(cancellationToken);
         var entity = await dbContext.LeaveRequests
             .Include(item => item.LeaveType)
             .SingleOrDefaultAsync(item => item.Id == requestId, cancellationToken);
 
-        if (entity is null || !string.Equals(entity.RequesterUserId, requesterUserId, StringComparison.Ordinal))
+        if (entity is null || !scope.CanUploadLeaveDocument(actingUserId, entity.RequesterUserId))
         {
             return null;
         }
@@ -373,8 +374,9 @@ public class LeaveApprovalService(
             throw new InvalidOperationException("Documents can only be uploaded for pending leave requests.");
         }
 
+        var previousPath = entity.DocumentPath;
         var savedDocument = await leaveDocumentStorage.SaveAsync(entity.Id, document, cancellationToken);
-        await leaveDocumentStorage.DeleteIfExistsAsync(entity.DocumentPath, cancellationToken);
+        await leaveDocumentStorage.DeleteIfExistsAsync(previousPath, cancellationToken);
 
         entity.DocumentPath = savedDocument.StoredPath;
         entity.DocumentFileName = savedDocument.FileName;

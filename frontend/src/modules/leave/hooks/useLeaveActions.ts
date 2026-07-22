@@ -1,8 +1,15 @@
 import { useCallback, useState } from 'react';
 import type { PendingLeaveAction } from '@modules/leave/components/LeaveActionConfirmDialog';
 import { ApiError } from '@platform/api/apiClient';
-import { cancelLeaveRequest, decideLeaveApproval } from '@modules/leave/services/leaveService';
-import type { LeaveActionKind } from '@modules/leave/utils/leaveActionUtils';
+import {
+  cancelLeaveRequest,
+  decideLeaveApproval,
+  uploadLeaveDocument,
+} from '@modules/leave/services/leaveService';
+import {
+  validateLeaveDocumentFile,
+  type LeaveConfirmActionKind,
+} from '@modules/leave/utils/leaveActionUtils';
 
 export function useLeaveActions(onCompleted?: () => void | Promise<void>) {
   const [actingId, setActingId] = useState<string | null>(null);
@@ -16,7 +23,7 @@ export function useLeaveActions(onCompleted?: () => void | Promise<void>) {
     }
   }, [onCompleted]);
 
-  const requestAction = useCallback((kind: LeaveActionKind, ids: string[]) => {
+  const requestAction = useCallback((kind: LeaveConfirmActionKind, ids: string[]) => {
     const uniqueIds = [...new Set(ids.filter(Boolean))];
     if (uniqueIds.length === 0) {
       return;
@@ -84,6 +91,30 @@ export function useLeaveActions(onCompleted?: () => void | Promise<void>) {
     }
   }, [pendingAction, refresh]);
 
+  const uploadDocument = useCallback(async (id: string, file: File) => {
+    const validationError = validateLeaveDocumentFile(file);
+    if (validationError) {
+      setActionError(validationError);
+      return;
+    }
+
+    setActingId(id);
+    setActionError(null);
+
+    try {
+      await uploadLeaveDocument(id, file);
+      await refresh();
+    } catch (error) {
+      setActionError(
+        error instanceof ApiError
+          ? error.message
+          : 'Failed to upload supporting document.',
+      );
+    } finally {
+      setActingId(null);
+    }
+  }, [refresh]);
+
   return {
     actingId,
     bulkActing,
@@ -93,6 +124,7 @@ export function useLeaveActions(onCompleted?: () => void | Promise<void>) {
     requestAction,
     confirmPendingAction,
     dismissPendingAction,
+    uploadDocument,
     isWorking: bulkActing || actingId !== null,
   };
 }
