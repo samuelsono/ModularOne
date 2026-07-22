@@ -201,12 +201,60 @@ export function LeaveRequestForm({
       return;
     }
 
-    if (!leaveTypeId) {
+    if (!leaveTypeId || !selectedType) {
       setError('Please select a leave type.');
       return;
     }
 
-    if (selectedType?.requiresDocument && !documentFile) {
+    if (!startDate || !endDate) {
+      setError('Please select start and end dates.');
+      return;
+    }
+
+    if (endDate < startDate) {
+      setError('Leave end date must be on or after the start date.');
+      return;
+    }
+
+    if (isCalculatingDays) {
+      setError('Please wait for working days to finish calculating.');
+      return;
+    }
+
+    if (workingDays === null) {
+      setError('Unable to calculate working days for this range. Check the dates and try again.');
+      return;
+    }
+
+    if (workingDays <= 0) {
+      setError('The selected date range contains no working days (weekends and public holidays are excluded).');
+      return;
+    }
+
+    if (selectedType.minNoticeDays > 0) {
+      const earliest = new Date();
+      earliest.setHours(0, 0, 0, 0);
+      earliest.setDate(earliest.getDate() + selectedType.minNoticeDays);
+      const earliestKey = formatDateOnlyForApi(earliest);
+      if (startDate < earliestKey) {
+        setError(`This leave type requires at least ${selectedType.minNoticeDays} day(s) notice (earliest start: ${earliestKey}).`);
+        return;
+      }
+    }
+
+    if (selectedType.maxConsecutiveDays != null && workingDays > selectedType.maxConsecutiveDays) {
+      setError(`This leave type allows at most ${selectedType.maxConsecutiveDays} consecutive working day(s).`);
+      return;
+    }
+
+    if (selectedType.deductsBalance && selectedBalance && selectedBalance.remaining < workingDays) {
+      setError(
+        `Insufficient leave balance. Remaining: ${selectedBalance.remaining.toFixed(1)}, requested: ${workingDays.toFixed(1)}.`,
+      );
+      return;
+    }
+
+    if (selectedType.requiresDocument && !documentFile) {
       setError('A supporting document is required for this leave type.');
       return;
     }
@@ -342,6 +390,7 @@ export function LeaveRequestForm({
               <>
             <Field label="Leave type" required>
               <Dropdown
+                placeholder="Select leave type"
                 value={selectedType?.name ?? ''}
                 selectedOptions={leaveTypeId ? [leaveTypeId] : []}
                 onOptionSelect={(_, data) => {
@@ -356,23 +405,28 @@ export function LeaveRequestForm({
               >
                 {leaveTypes.map((type) => (
                   <Option key={type.id} value={type.id} text={type.name}>
-                    <span className="inline-flex items-center gap-2">
-                      <span
-                        className="inline-block w-3 h-3 rounded-full shrink-0"
-                        style={{ backgroundColor: type.color }}
-                      />
-                      {type.name}
-                    </span>
+                    {type.name}
                   </Option>
                 ))}
               </Dropdown>
             </Field>
 
             {selectedType?.deductsBalance && selectedBalance ? (
-              <MessageBar intent="info">
+              <MessageBar intent={selectedBalance.remaining <= 0 ? 'warning' : 'info'}>
                 <MessageBarBody>
                   Remaining balance: {selectedBalance.remaining.toFixed(1)} day(s)
                   {' '}(pending: {selectedBalance.pending.toFixed(1)}, used: {selectedBalance.used.toFixed(1)})
+                  {selectedBalance.remaining <= 0
+                    ? ' — adjust balances or run accrual before requesting this leave type.'
+                    : null}
+                </MessageBarBody>
+              </MessageBar>
+            ) : null}
+
+            {selectedType && selectedType.minNoticeDays > 0 ? (
+              <MessageBar intent="info">
+                <MessageBarBody>
+                  This leave type requires at least {selectedType.minNoticeDays} day(s) notice.
                 </MessageBarBody>
               </MessageBar>
             ) : null}

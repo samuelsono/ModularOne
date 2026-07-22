@@ -259,41 +259,34 @@ export function getLeaveRequest(id: string): Promise<LeaveRequest> {
 
 export function createLeaveRequest(request: CreateLeaveRequest, document?: File | null): Promise<LeaveRequest> {
   if (document) {
-    return createLeaveRequestWithDocument(request, document);
+    const formData = new FormData();
+    formData.append('leaveTypeId', request.leaveTypeId);
+    formData.append('startDate', request.startDate);
+    formData.append('endDate', request.endDate);
+    if (request.notes) {
+      formData.append('notes', request.notes);
+    }
+    if (request.startDayPortion) {
+      formData.append('startDayPortion', request.startDayPortion);
+    }
+    if (request.endDayPortion) {
+      formData.append('endDayPortion', request.endDayPortion);
+    }
+    if (request.onBehalfOfUserId) {
+      formData.append('onBehalfOfUserId', request.onBehalfOfUserId);
+    }
+    formData.append('document', document, document.name);
+
+    return authorizedFetch<LeaveRequest>('/api/leave/requests', {
+      method: 'POST',
+      body: formData,
+    });
   }
 
   return authorizedFetch<LeaveRequest>('/api/leave/requests', {
     method: 'POST',
     body: JSON.stringify(request),
   });
-}
-
-async function createLeaveRequestWithDocument(
-  request: CreateLeaveRequest,
-  document: File,
-): Promise<LeaveRequest> {
-  const created = await authorizedFetch<LeaveRequest>('/api/leave/requests', {
-    method: 'POST',
-    body: JSON.stringify(request),
-  });
-
-  const formData = new FormData();
-  formData.append('document', document, document.name);
-
-  try {
-    return await authorizedFetch<LeaveRequest>(
-      `/api/leave/requests/${encodeURIComponent(created.id)}/document`,
-      { method: 'POST', body: formData },
-    );
-  } catch (error) {
-    try {
-      await cancelLeaveRequest(created.id, 'Automatic cancellation: document upload failed.');
-    } catch {
-      // Best-effort cleanup; surface the original upload error.
-    }
-
-    throw error;
-  }
 }
 
 export async function downloadLeaveDocument(requestId: string, fileName?: string | null): Promise<void> {

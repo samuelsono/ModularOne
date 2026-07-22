@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using CarTrack.Api;
 using CarTrack.Identity.Contracts;
 using CarTrack.Server.Data;
@@ -255,8 +256,17 @@ public static class LeaveEndpoints
                 logger);
             return Results.Created($"/api/leave/requests/{created.Id}", created);
         }
+        catch (JsonException ex)
+        {
+            logger.LogWarning(ex, "Invalid leave request JSON body.");
+            return Results.Problem(
+                title: "Invalid request",
+                detail: "The leave request body could not be read. Check leave type and dates.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
         catch (InvalidOperationException ex)
         {
+            logger.LogInformation("Leave request rejected: {Detail}", ex.Message);
             return Results.Problem(
                 title: "Unable to create leave request",
                 detail: ex.Message,
