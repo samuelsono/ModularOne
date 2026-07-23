@@ -18,6 +18,7 @@ public sealed class TenderScrapeService(
     ITenderFetchCache fetchCache,
     TenderKnownKeyCache knownKeyCache,
     ITenderPageFetcher pageFetcher,
+    IETendersOcdsFetcher eTendersOcdsFetcher,
     ITenderSourceSecretProtector secrets,
     IOptions<TenderScrapeOptions> options,
     ILogger<TenderScrapeService> logger) : ITenderScrapeService
@@ -341,12 +342,24 @@ public sealed class TenderScrapeService(
             int? httpStatus;
 
             var cached = await fetchCache.TryGetAsync(source.Url, cancellationToken);
-            if (cached is not null && source.ParserKind is not TenderParserKind.BrowserRendered)
+            var useOcds = IETendersOcdsFetcher.IsETendersSource(source);
+            if (cached is not null
+                && source.ParserKind is not TenderParserKind.BrowserRendered
+                && !useOcds)
             {
                 body = cached;
                 contentType = "text/html";
                 httpStatus = 200;
                 log.Message = "Served from short-TTL fetch cache";
+            }
+            else if (useOcds)
+            {
+                var page = await eTendersOcdsFetcher.FetchAsync(source, cancellationToken);
+                httpStatus = page.StatusCode;
+                body = page.Body;
+                contentType = page.ContentType;
+                source.LastFetchedAt = DateTimeOffset.UtcNow;
+                log.Message = "Fetched from eTenders OCDS API";
             }
             else
             {
@@ -465,7 +478,9 @@ public sealed class TenderScrapeService(
                 log.ItemsMatched++;
                 var documentUrls = candidate.DocumentUrls.ToList();
 
-                if (documentUrls.Count == 0 && detailBudget > 0
+                if (!useOcds
+                    && documentUrls.Count == 0
+                    && detailBudget > 0
                     && !string.Equals(candidate.CanonicalUrl, source.Url, StringComparison.OrdinalIgnoreCase))
                 {
                     detailBudget--;
@@ -482,7 +497,10 @@ public sealed class TenderScrapeService(
 
                 var distinctDocs = documentUrls.Distinct(StringComparer.OrdinalIgnoreCase).Take(30).ToArray();
                 string? docMetaJson = null;
-                if (options.Value.FetchDocumentMetadata && distinctDocs.Length > 0)
+                // OCDS payloads already include document title/format/url — skip slow HEAD probes.
+                if (!useOcds
+                    && options.Value.FetchDocumentMetadata
+                    && distinctDocs.Length > 0)
                 {
                     try
                     {

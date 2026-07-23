@@ -233,7 +233,7 @@ export const leaveRequestColumns: TableColumnDefinition<LeaveRequest>[] = withAu
   createTableColumn<LeaveRequest>({
     columnId: 'notes',
     renderHeaderCell: () => 'Notes',
-    renderCell: (item) =>item.notes ? `${item.notes?.slice(0,100)}${item.notes && item.notes.length > 100 ? '...' : ''}` : '—',
+    renderCell: (item) =>item.notes ? `${item.notes?.slice(0,30)}${item.notes && item.notes.length > 30 ? '...' : ''}` : '—',
   }),
   createTableColumn<LeaveRequest>({
     columnId: 'document',

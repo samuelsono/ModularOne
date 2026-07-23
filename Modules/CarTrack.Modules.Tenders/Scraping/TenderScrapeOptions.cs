@@ -41,4 +41,26 @@ public sealed class TenderScrapeOptions
 
     /// <summary>Max document URLs to probe for metadata per match.</summary>
     public int MaxDocumentMetadataPerMatch { get; set; } = 10;
+
+    /// <summary>OCDS releases endpoint for the National Treasury eTenders portal.</summary>
+    public string ETendersApiBaseUrl { get; set; } = "https://ocds-api.etenders.gov.za/api/OCDSReleases";
+
+    /// <summary>
+    /// How many days before today to set <c>dateFrom</c> (published window start).
+    /// Default 5 → API <c>dateFrom = today - 5 days</c>.
+    /// </summary>
+    public int ETendersLookbackDays { get; set; } = 5;
+
+    /// <summary>
+    /// How many days after today to set <c>dateTo</c> (closing window end).
+    /// Always applied as at least 1 so <c>dateTo</c> is later than today (open listings only).
+    /// Keep this modest — a large forward window forces many OCDS pages.
+    /// </summary>
+    public int ETendersForwardDays { get; set; } = 30;
+
+    /// <summary>Page size for OCDS pagination (API max appears to be 50).</summary>
+    public int ETendersPageSize { get; set; } = 50;
+
+    /// <summary>Safety cap on OCDS pages fetched per source scrape.</summary>
+    public int ETendersMaxPages { get; set; } = 20;
 }

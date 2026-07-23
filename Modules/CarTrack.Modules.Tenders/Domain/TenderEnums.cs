@@ -5,7 +5,7 @@ public enum TenderParserKind
     Auto = 0,
     GenericHtml = 1,
     RssAtom = 2,
-    /// <summary>South African eTenders / National Treasury style listing pages.</summary>
+    /// <summary>National Treasury eTenders via OCDS API (not the JS HTML portal).</summary>
     ETenders = 3,
     /// <summary>Fetch via headless Chromium when Playwright is enabled.</summary>
     BrowserRendered = 4,

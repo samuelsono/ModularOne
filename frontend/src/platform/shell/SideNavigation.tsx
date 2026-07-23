@@ -92,7 +92,13 @@ const SideNavigation = () => {
           <NavLink
             key={entry.path}
             to={entry.path}
-            end={entry.path === '/' || entry.path === '/leave' || entry.path === '/expense' || entry.path === '/expense/reports'}
+            end={
+              entry.path === '/'
+              || entry.path === '/leave'
+              || entry.path === '/expense'
+              || entry.path === '/expense/reports'
+              || entry.path === '/tenders'
+            }
             title={entry.label}
             className={({ isActive }) =>
               `${styles.navLink}${isActive ? ` ${styles.activeLink}` : ''}`

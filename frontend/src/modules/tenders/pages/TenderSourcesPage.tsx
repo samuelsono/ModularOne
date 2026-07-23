@@ -4,12 +4,6 @@ import {
   Badge,
   Button,
   Checkbox,
-  DataGrid,
-  DataGridBody,
-  DataGridCell,
-  DataGridHeader,
-  DataGridHeaderCell,
-  DataGridRow,
   Dialog,
   DialogActions,
   DialogBody,
@@ -26,8 +20,9 @@ import {
   Text,
   createTableColumn,
 } from '@fluentui/react-components';
-import { AddRegular, BookSearchRegular, DeleteRegular, EditRegular, SearchRegular } from '@fluentui/react-icons';
+import { AddRegular, BookSearchRegular, DeleteRegular, EditRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
+import { AutoFitDataGrid } from '@platform/ui/AutoFitDataGrid';
 import {
   createSource,
   deleteSource,
@@ -255,6 +250,15 @@ function SourceFormDialog({
                   </Field>
                 </>
               )}
+              {form.parserKind === 'ETenders' && (
+                <Text className="text-xs text-neutral-foreground-3">
+                  Uses the National Treasury OCDS API
+                  (ocds-api.etenders.gov.za). dateFrom is a published lookback;
+                  dateTo is always later than today so only listings that still
+                  expire in the future are searched. Keep the source URL as
+                  https://www.etenders.gov.za/.
+                </Text>
+              )}
               {form.parserKind === 'BrowserRendered' && (
                 <Text className="text-xs text-amber-700">
                   BrowserRendered needs Tenders:Scrape:EnablePlaywright=true and Chromium
@@ -443,22 +447,24 @@ export default function TenderSourcesPage() {
       {loading ? (
         <Spinner label="Loading sources…" />
       ) : (
-        <DataGrid items={sources} columns={columns} getRowId={(item) => item.id}>
-          <DataGridHeader>
-            <DataGridRow>
-              {({ renderHeaderCell }) => (
-                <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
-              )}
-            </DataGridRow>
-          </DataGridHeader>
-          <DataGridBody<TenderSource>>
-            {({ item, rowId }) => (
-              <DataGridRow<TenderSource> key={rowId}>
-                {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}
-              </DataGridRow>
-            )}
-          </DataGridBody>
-        </DataGrid>
+        <div className="flex-1 min-h-0 overflow-auto px-2">
+          <AutoFitDataGrid
+            items={sources}
+            columns={columns}
+            getRowId={(item) => item.id}
+            size="small"
+            storageKey="tenders.sources"
+            enableColumnSizing
+            columnSizingOptions={{
+              name: { minWidth: 140, idealWidth: 200, defaultWidth: 180 },
+              url: { minWidth: 180, idealWidth: 320, defaultWidth: 280 },
+              parser: { minWidth: 120, idealWidth: 160, defaultWidth: 140 },
+              status: { minWidth: 120, idealWidth: 150, defaultWidth: 140 },
+              last: { minWidth: 180, idealWidth: 260, defaultWidth: 220 },
+              actions: { minWidth: 100, idealWidth: 110, defaultWidth: 100 },
+            }}
+          />
+        </div>
       )}
 
       { !loading && sources.length === 0 && (

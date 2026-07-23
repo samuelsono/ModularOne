@@ -1155,7 +1155,7 @@
     ]
   },
   "packageFolders": {
-    "/Users/datsu/.nuget/packages/": {}
+    "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget": {}
   },
   "project": {
     "version": "1.0.0",
@@ -1163,7 +1163,7 @@
       "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/CarTrack.Infrastructure.csproj",
       "projectName": "CarTrack.Infrastructure",
       "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/CarTrack.Infrastructure.csproj",
-      "packagesPath": "/Users/datsu/.nuget/packages/",
+      "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget",
       "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [

@@ -22,3 +22,11 @@
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Tenders/obj/Debug/net10.0/CarTrack.Modules.Tenders.pdb
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Tenders/obj/Debug/net10.0/CarTrack.Modules.Tenders.genruntimeconfig.cache
 /Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Tenders/obj/Debug/net10.0/ref/CarTrack.Modules.Tenders.dll
+/tmp/tenders-build-out/CarTrack.Modules.Tenders.deps.json
+/tmp/tenders-build-out/CarTrack.Modules.Tenders.runtimeconfig.json
+/tmp/tenders-build-out/CarTrack.Modules.Tenders.dll
+/tmp/tenders-build-out/CarTrack.Modules.Tenders.pdb
+/tmp/tenders-build-out3/CarTrack.Modules.Tenders.deps.json
+/tmp/tenders-build-out3/CarTrack.Modules.Tenders.runtimeconfig.json
+/tmp/tenders-build-out3/CarTrack.Modules.Tenders.dll
+/tmp/tenders-build-out3/CarTrack.Modules.Tenders.pdb
