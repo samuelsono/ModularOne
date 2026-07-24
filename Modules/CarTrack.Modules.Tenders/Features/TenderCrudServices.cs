@@ -100,6 +100,31 @@ public sealed class TenderSourceService(
             ? null
             : request.AuthUsername.Trim();
 
+        if (request.ParserKind is TenderParserKind.ETenders
+            || (request.ParserKind is TenderParserKind.Auto
+                && Uri.TryCreate(request.Url, UriKind.Absolute, out var sourceUri)
+                && sourceUri.Host.Contains("etenders.gov.za", StringComparison.OrdinalIgnoreCase)))
+        {
+            source.ETendersDateFrom = request.ETendersDateFrom;
+            source.ETendersDateTo = request.ETendersDateTo;
+            source.ETendersPageSize = request.ETendersPageSize is > 0
+                ? Math.Clamp(request.ETendersPageSize.Value, 1, 1000)
+                : null;
+
+            if (source.ETendersDateFrom is not null
+                && source.ETendersDateTo is not null
+                && source.ETendersDateFrom > source.ETendersDateTo)
+            {
+                throw new InvalidOperationException("ETenders dateFrom must be on or before dateTo.");
+            }
+        }
+        else
+        {
+            source.ETendersDateFrom = null;
+            source.ETendersDateTo = null;
+            source.ETendersPageSize = null;
+        }
+
         if (request.AuthKind is TenderSourceAuthKind.None)
         {
             source.ProtectedAuthSecret = null;
@@ -640,6 +665,9 @@ internal static class TenderMapper
             source.AuthKind,
             source.AuthUsername,
             !string.IsNullOrWhiteSpace(source.ProtectedAuthSecret),
+            source.ETendersDateFrom,
+            source.ETendersDateTo,
+            source.ETendersPageSize,
             source.CreatedAt,
             source.UpdatedAt);
     }

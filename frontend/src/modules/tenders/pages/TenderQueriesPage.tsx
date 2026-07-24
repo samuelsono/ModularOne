@@ -28,6 +28,7 @@ import {
 } from '@fluentui/react-components';
 import { AddRegular, DeleteRegular, EditRegular, TagSearchRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
+import AppPagination from '@platform/ui/AppPagination';
 import {
   createQuery,
   deleteQuery,
@@ -40,7 +41,11 @@ import type {
   TenderQueryMatchMode,
 } from '@modules/tenders/types/tenders';
 
-const MATCH_MODES: TenderQueryMatchMode[] = ['Any', 'All', 'Phrase'];
+const MATCH_MODE_OPTIONS: Array<{ value: TenderQueryMatchMode; label: string }> = [
+  { value: 'Any', label: 'Any keyword (OR)' },
+  { value: 'All', label: 'All keywords (AND)' },
+  { value: 'Phrase', label: 'Exact phrase' },
+];
 
 const EMPTY_FORM: SaveTenderQueryRequest = {
   name: '',
@@ -75,13 +80,16 @@ function QueryFormDialog({
   }, [initial, open]);
 
   function addKeyword() {
-    const value = keywordInput.trim().toLowerCase();
-    if (!value) {
+    const parts = keywordInput
+      .split(/[,;|\n\r\t]+/)
+      .map((part) => part.trim().toLowerCase())
+      .filter(Boolean);
+    if (parts.length === 0) {
       return;
     }
     setForm((current) => ({
       ...current,
-      keywords: [...new Set([...current.keywords, value])],
+      keywords: [...new Set([...current.keywords, ...parts])],
     }));
     setKeywordInput('');
   }
@@ -95,10 +103,11 @@ function QueryFormDialog({
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    const keywords =
-      keywordInput.trim().length > 0
-        ? [...new Set([...form.keywords, keywordInput.trim().toLowerCase()])]
-        : form.keywords;
+    const pending = keywordInput
+      .split(/[,;|\n\r\t]+/)
+      .map((part) => part.trim().toLowerCase())
+      .filter(Boolean);
+    const keywords = [...new Set([...form.keywords, ...pending])];
     if (keywords.length === 0) {
       setError('Add at least one keyword.');
       return;
@@ -141,7 +150,7 @@ function QueryFormDialog({
                   required
                 />
               </Field>
-              <Field label="Keywords" hint="Press Enter to add">
+              <Field label="Keywords" hint="Press Enter to add. Commas also split terms (e.g. software, develop, SAP).">
                 <Input
                   value={keywordInput}
                   onChange={(_, d) => setKeywordInput(d.value)}
@@ -166,9 +175,12 @@ function QueryFormDialog({
                   </Badge>
                 ))}
               </div>
-              <Field label="Match mode">
+              <Field
+                label="Match mode"
+                hint="Use Any (OR) to collect tenders that contain software OR develop. All (AND) only matches tenders that contain every keyword together — e.g. only “software development”."
+              >
                 <Dropdown
-                  value={form.matchMode}
+                  value={MATCH_MODE_OPTIONS.find((item) => item.value === form.matchMode)?.label ?? form.matchMode}
                   selectedOptions={[form.matchMode]}
                   onOptionSelect={(_, d) =>
                     setForm((c) => ({
@@ -177,13 +189,21 @@ function QueryFormDialog({
                     }))
                   }
                 >
-                  {MATCH_MODES.map((mode) => (
-                    <Option key={mode} value={mode}>
-                      {mode}
+                  {MATCH_MODE_OPTIONS.map((mode) => (
+                    <Option key={mode.value} value={mode.value} text={mode.label}>
+                      {mode.label}
                     </Option>
                   ))}
                 </Dropdown>
               </Field>
+              {form.matchMode === 'All' && form.keywords.length > 1 && (
+                <MessageBar intent="warning">
+                  <MessageBarBody>
+                    All mode requires every keyword in the same tender. Prefer Any
+                    unless you intentionally want that narrower match.
+                  </MessageBarBody>
+                </MessageBar>
+              )}
               <Checkbox
                 label="Enabled"
                 checked={form.isEnabled}
@@ -211,6 +231,8 @@ export default function TenderQueriesPage() {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<TenderQuery | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -227,6 +249,20 @@ export default function TenderQueriesPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize, queries.length]);
+
+  const totalItems = queries.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return queries.slice(startIndex, startIndex + pageSize);
+  }, [currentPage, pageSize, queries]);
+  const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const rangeEnd = totalItems === 0 ? 0 : Math.min(currentPage * pageSize, totalItems);
 
   const columns: TableColumnDefinition<TenderQuery>[] = useMemo(
     () => [
@@ -251,7 +287,8 @@ export default function TenderQueriesPage() {
       createTableColumn({
         columnId: 'mode',
         renderHeaderCell: () => 'Mode',
-        renderCell: (item) => item.matchMode,
+        renderCell: (item) =>
+          MATCH_MODE_OPTIONS.find((mode) => mode.value === item.matchMode)?.label ?? item.matchMode,
       }),
       createTableColumn({
         columnId: 'status',
@@ -331,22 +368,40 @@ export default function TenderQueriesPage() {
       {loading ? (
         <Spinner label="Loading queries…" />
       ) : (
-        <DataGrid items={queries} columns={columns} getRowId={(item) => item.id}>
-          <DataGridHeader>
-            <DataGridRow>
-              {({ renderHeaderCell }) => (
-                <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
-              )}
-            </DataGridRow>
-          </DataGridHeader>
-          <DataGridBody<TenderQuery>>
-            {({ item, rowId }) => (
-              <DataGridRow<TenderQuery> key={rowId}>
-                {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}
+        <>
+          <DataGrid items={paginated} columns={columns} getRowId={(item) => item.id}>
+            <DataGridHeader>
+              <DataGridRow>
+                {({ renderHeaderCell }) => (
+                  <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
+                )}
               </DataGridRow>
-            )}
-          </DataGridBody>
-        </DataGrid>
+            </DataGridHeader>
+            <DataGridBody<TenderQuery>>
+              {({ item, rowId }) => (
+                <DataGridRow<TenderQuery> key={rowId}>
+                  {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}
+                </DataGridRow>
+              )}
+            </DataGridBody>
+          </DataGrid>
+          {queries.length > 0 && (
+            <AppPagination
+              className="py-3"
+              page={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              rangeStart={rangeStart}
+              rangeEnd={rangeEnd}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+            />
+          )}
+        </>
       )}
 
       { !loading && queries.length === 0 && (

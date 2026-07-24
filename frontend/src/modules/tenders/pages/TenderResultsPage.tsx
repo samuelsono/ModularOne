@@ -4,12 +4,6 @@ import {
   Badge,
   Button,
   Checkbox,
-  DataGrid,
-  DataGridBody,
-  DataGridCell,
-  DataGridHeader,
-  DataGridHeaderCell,
-  DataGridRow,
   Dropdown,
   Field,
   Input,
@@ -19,11 +13,14 @@ import {
   Option,
   Spinner,
   Text,
+  Tooltip,
   createTableColumn,
 } from '@fluentui/react-components';
-import { ArrowDownloadRegular, BookmarkSearchRegular, CopyRegular, PageFitRegular, SearchRegular } from '@fluentui/react-icons';
+import { ArrowDownloadRegular, ArrowDownRegular, BookmarkSearchRegular, CopyRegular, DrawerArrowDownloadRegular, PageFitRegular, SearchRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
 import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
+import { AutoFitDataGrid } from '@platform/ui/AutoFitDataGrid';
+import AppPagination from '@platform/ui/AppPagination';
 import {
   archiveResult,
   bulkArchiveResults,
@@ -85,6 +82,8 @@ export default function TenderResultsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [copyHint, setCopyHint] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -120,6 +119,20 @@ export default function TenderResultsPage() {
     () => results.filter((item) => matchesSearch(item, pageSearch)),
     [pageSearch, results],
   );
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSearch, statusFilter, sourceId, keyword, includeExpired, scope, pageSize]);
+
+  const totalItems = visible.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return visible.slice(startIndex, startIndex + pageSize);
+  }, [currentPage, pageSize, visible]);
+  const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const rangeEnd = totalItems === 0 ? 0 : Math.min(currentPage * pageSize, totalItems);
 
   async function toggleWatch(enabled: boolean) {
     setWatchSaving(true);
@@ -162,7 +175,7 @@ export default function TenderResultsPage() {
       setSelectedIds(new Set());
       return;
     }
-    setSelectedIds(new Set(visible.map((item) => item.id)));
+    setSelectedIds(new Set(paginated.map((item) => item.id)));
   }
 
   async function handleBulkSeen() {
@@ -235,7 +248,7 @@ export default function TenderResultsPage() {
         columnId: 'select',
         renderHeaderCell: () => (
           <Checkbox
-            checked={visible.length > 0 && selectedIds.size === visible.length}
+            checked={paginated.length > 0 && paginated.every((item) => selectedIds.has(item.id))}
             onChange={(_, d) => toggleSelectAll(Boolean(d.checked))}
             aria-label="Select all"
           />
@@ -280,9 +293,11 @@ export default function TenderResultsPage() {
         renderHeaderCell: () => 'Title',
         renderCell: (item) => (
           <div className="flex flex-col gap-1 max-w-[420px]">
-            <Link href={item.canonicalUrl} target="_blank" rel="noreferrer">
-              {item.title}
-            </Link>
+            <Tooltip content={item.title} relationship={"label"}>
+              <Link href={item.canonicalUrl} target="_blank" rel="noreferrer">
+                {item.title.slice(0, 30) + (item.title.length > 30 ? '…' : '')}
+              </Link>
+            </Tooltip>
             <div className="flex flex-wrap gap-1">
               {item.matchedKeywords.map((kw) => (
                 <Badge key={kw} size="small" appearance="outline">
@@ -308,7 +323,7 @@ export default function TenderResultsPage() {
             <div className="flex flex-col gap-1">
               {item.documentUrls.slice(0, 3).map((url) => (
                 <Link key={url} href={url} target="_blank" rel="noreferrer" className="text-xs">
-                  {url.split('/').pop() || url}
+                  Download <DrawerArrowDownloadRegular className="size-5" />
                 </Link>
               ))}
               {item.documentUrls.length > 3 && (
@@ -325,6 +340,7 @@ export default function TenderResultsPage() {
               <Button
                 size="small"
                 appearance="subtle"
+                className="px-0!"
                 icon={<CopyRegular />}
                 onClick={() => void copyDocumentUrls(item.documentUrls)}
               >
@@ -397,7 +413,7 @@ export default function TenderResultsPage() {
         ),
       }),
     ],
-    [busy, load, selectedIds, visible],
+    [busy, load, paginated, selectedIds],
   );
 
   const watching = Boolean(subscription?.notifyInApp);
@@ -559,23 +575,39 @@ export default function TenderResultsPage() {
                   No results found for the current filters.
               </div>
       ) : (
-        <div className="min-h-0 overflow-auto">
-          <DataGrid items={visible} columns={columns} getRowId={(item) => item.id}>
-            <DataGridHeader>
-              <DataGridRow>
-                {({ renderHeaderCell }) => (
-                  <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
-                )}
-              </DataGridRow>
-            </DataGridHeader>
-            <DataGridBody<TenderMatch>>
-              {({ item, rowId }) => (
-                <DataGridRow<TenderMatch> key={rowId}>
-                  {({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}
-                </DataGridRow>
-              )}
-            </DataGridBody>
-          </DataGrid>
+        <div className="min-h-0 overflow-auto pb-20">
+          <AutoFitDataGrid
+            items={paginated}
+            columns={columns}
+            getRowId={(item) => item.id}
+            size="small"
+            storageKey="tenders.results"
+            enableColumnSizing
+            columnSizingOptions={{
+              select: { minWidth: 48, idealWidth: 52, defaultWidth: 48 },
+              status: { minWidth: 90, idealWidth: 110, defaultWidth: 100 },
+              source: { minWidth: 100, idealWidth: 140, defaultWidth: 120 },
+              title: { minWidth: 200, idealWidth: 360, defaultWidth: 280 },
+              closing: { minWidth: 100, idealWidth: 120, defaultWidth: 110 },
+              docs: { minWidth: 140, idealWidth: 220, defaultWidth: 180 },
+              seen: { minWidth: 140, idealWidth: 180, defaultWidth: 160 },
+              actions: { minWidth: 180, idealWidth: 260, defaultWidth: 220 },
+            }}
+          />
+          <AppPagination
+            className="py-3 px-0!"
+            page={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+          />
         </div>
       )}
     </div>

@@ -10,7 +10,7 @@
         "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Tenders/CarTrack.Modules.Tenders.csproj",
         "projectName": "CarTrack.Modules.Tenders",
         "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Tenders/CarTrack.Modules.Tenders.csproj",
-        "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget",
+        "packagesPath": "/Users/datsu/.nuget/packages/",
         "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Modules/CarTrack.Modules.Tenders/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
@@ -513,7 +513,7 @@
         "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Api/CarTrack.Api.csproj",
         "projectName": "CarTrack.Api",
         "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Api/CarTrack.Api.csproj",
-        "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget",
+        "packagesPath": "/Users/datsu/.nuget/packages/",
         "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Api/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
@@ -998,7 +998,7 @@
         "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/CarTrack.Core.csproj",
         "projectName": "CarTrack.Core",
         "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/CarTrack.Core.csproj",
-        "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget",
+        "packagesPath": "/Users/datsu/.nuget/packages/",
         "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
@@ -1333,7 +1333,7 @@
         "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Identity/CarTrack.Identity.csproj",
         "projectName": "CarTrack.Identity",
         "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Identity/CarTrack.Identity.csproj",
-        "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget",
+        "packagesPath": "/Users/datsu/.nuget/packages/",
         "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Identity/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
@@ -1824,7 +1824,7 @@
         "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/CarTrack.Infrastructure.csproj",
         "projectName": "CarTrack.Infrastructure",
         "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/CarTrack.Infrastructure.csproj",
-        "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget",
+        "packagesPath": "/Users/datsu/.nuget/packages/",
         "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Infrastructure/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [

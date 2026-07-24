@@ -27,7 +27,7 @@ import { usePermissions } from '@platform/permissions/usePermissions';
 import { getUsers } from '@modules/users/services/userService';
 import type { UserListItem } from '@modules/users/types/user';
 
-const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WFH_LOCATION_CODE = 'WFH';
 const EMPLOYEE_SEARCH_LIMIT = 10;
 
@@ -57,8 +57,8 @@ function getMonthRange(month: Date): { start: string; end: string } {
   return { start: toDateString(start), end: toDateString(end) };
 }
 
-function getMondayBasedDayIndex(date: Date): number {
-  return (date.getDay() + 6) % 7;
+function getSundayBasedDayIndex(date: Date): number {
+  return date.getDay();
 }
 
 function statusBadgeColor(status: string): 'success' | 'informative' | 'warning' {
@@ -81,7 +81,7 @@ function buildMonthWeeks(month: Date): CalendarWeek[] {
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const leadingEmpty = getMondayBasedDayIndex(new Date(year, monthIndex, 1));
+  const leadingEmpty = getSundayBasedDayIndex(new Date(year, monthIndex, 1));
 
   const cells: Array<Date | null> = [
     ...Array.from({ length: leadingEmpty }, () => null),

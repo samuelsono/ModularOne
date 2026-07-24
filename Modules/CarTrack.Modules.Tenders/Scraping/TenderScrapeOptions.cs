@@ -47,9 +47,9 @@ public sealed class TenderScrapeOptions
 
     /// <summary>
     /// How many days before today to set <c>dateFrom</c> (published window start).
-    /// Default 5 → API <c>dateFrom = today - 5 days</c>.
+    /// Default 14 → API <c>dateFrom = today - 14 days</c> when source has no override.
     /// </summary>
-    public int ETendersLookbackDays { get; set; } = 5;
+    public int ETendersLookbackDays { get; set; } = 14;
 
     /// <summary>
     /// How many days after today to set <c>dateTo</c> (closing window end).
@@ -58,9 +58,9 @@ public sealed class TenderScrapeOptions
     /// </summary>
     public int ETendersForwardDays { get; set; } = 30;
 
-    /// <summary>Page size for OCDS pagination (API max appears to be 50).</summary>
-    public int ETendersPageSize { get; set; } = 50;
+    /// <summary>Page size for OCDS pagination (API accepts up to 1000).</summary>
+    public int ETendersPageSize { get; set; } = 250;
 
     /// <summary>Safety cap on OCDS pages fetched per source scrape.</summary>
-    public int ETendersMaxPages { get; set; } = 20;
+    public int ETendersMaxPages { get; set; } = 50;
 }

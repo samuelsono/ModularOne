@@ -33,18 +33,21 @@ import type { ResolvedScheduleDay, WorkLocationType } from '@modules/leave/types
 import { DatePicker } from '@fluentui/react-datepicker-compat';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const EDIT_DAYS = [1, 2, 3, 4, 5, 6, 0];
+const EDIT_DAYS = [0, 1, 2, 3, 4, 5, 6];
 
 type RangeMode = 'week' | 'month';
 
 function toDateInputValue(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function startOfWeek(date: Date): Date {
   const copy = new Date(date);
   const day = copy.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
+  const diff = -day;
   copy.setDate(copy.getDate() + diff);
   copy.setHours(0, 0, 0, 0);
   return copy;
@@ -386,7 +389,7 @@ export default function LeaveSchedulePage() {
                     <div className="flex flex-col gap-2">
                       {rangeMode === 'week' ? (
                         <div className="hidden md:grid md:grid-cols-7 gap-2">
-                          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label) => (
+                          {WEEKDAY_LABELS.map((label) => (
                             <Text key={label} weight="semibold" size={200} className="px-1">
                               {label}
                             </Text>

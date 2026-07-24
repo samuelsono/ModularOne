@@ -1210,7 +1210,7 @@
     ]
   },
   "packageFolders": {
-    "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget": {}
+    "/Users/datsu/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
@@ -1218,7 +1218,7 @@
       "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Identity/CarTrack.Identity.csproj",
       "projectName": "CarTrack.Identity",
       "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Identity/CarTrack.Identity.csproj",
-      "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget",
+      "packagesPath": "/Users/datsu/.nuget/packages/",
       "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Identity/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [

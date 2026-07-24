@@ -13,6 +13,14 @@ export interface AttendanceHealthBreakdown {
   matchRate: number;
 }
 
+export interface AttendanceHealthScore {
+  percentage: number;
+  presentDays: number;
+  countedDays: number;
+  label: string;
+  color: string;
+}
+
 const HEALTH_COLORS = {
   healthy: '#107C10',
   watch: '#FDE300',
@@ -67,4 +75,51 @@ export function attendanceHealthDonutPoints(breakdown: AttendanceHealthBreakdown
     { legend: 'Mismatch', data: breakdown.mismatch, color: HEALTH_COLORS.risk },
     { legend: 'Other', data: breakdown.other, color: HEALTH_COLORS.unknown },
   ].filter((point) => point.data > 0);
+}
+
+function getAttendanceHealthColor(percentage: number): string {
+  if (percentage < 0.25) {
+    return HEALTH_COLORS.risk;
+  }
+
+  if (percentage < 0.5) {
+    return '#D83B01';
+  }
+
+  if (percentage < 0.75) {
+    return HEALTH_COLORS.watch;
+  }
+
+  if (percentage < 0.9) {
+    return '#0099BC';
+  }
+
+  return HEALTH_COLORS.healthy;
+}
+
+export function computeAttendanceHealthScore(
+  rows: AttendanceCompareRow[],
+  absentLocationTypeId: string | null,
+): AttendanceHealthScore {
+  const countedRows = rows.filter((row) => row.plannedKind === 'Work');
+  const presentDays = countedRows.filter((row) => {
+    if (!row.hasActual) {
+      return true;
+    }
+
+    return row.actualLocationTypeId !== absentLocationTypeId;
+  }).length;
+
+  const countedDays = countedRows.length;
+  const percentage = countedDays === 0 ? 0 : presentDays / countedDays;
+
+  return {
+    percentage,
+    presentDays,
+    countedDays,
+    label: countedDays === 0
+      ? 'No scheduled work days'
+      : `${Math.round(percentage * 100)}% over the last 30 days`,
+    color: countedDays === 0 ? HEALTH_COLORS.unknown : getAttendanceHealthColor(percentage),
+  };
 }

@@ -45,6 +45,15 @@ public class TenderSource
     /// <summary>Data-protected password, bearer token, or cookie header value (Base64).</summary>
     public string? ProtectedAuthSecret { get; set; }
 
+    /// <summary>OCDS <c>dateFrom</c> override. Null = use global lookback days.</summary>
+    public DateOnly? ETendersDateFrom { get; set; }
+
+    /// <summary>OCDS <c>dateTo</c> override. Null = use global forward days.</summary>
+    public DateOnly? ETendersDateTo { get; set; }
+
+    /// <summary>OCDS page size override (1–1000). Null = use global default.</summary>
+    public int? ETendersPageSize { get; set; }
+
     public string CreatedByUserId { get; set; } = string.Empty;
 
     public DateTimeOffset CreatedAt { get; set; }

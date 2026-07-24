@@ -82,7 +82,9 @@ internal static partial class KeywordMatcher
     {
         return keywords
             .Where(keyword => !string.IsNullOrWhiteSpace(keyword))
-            .Select(keyword => Regex.Replace(keyword!.Trim().ToLowerInvariant(), @"\s+", " "))
+            // Split pasted "software, develop, SAP" into separate terms.
+            .SelectMany(keyword => keyword!.Split([',', ';', '|', '\n', '\r', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Select(keyword => Regex.Replace(keyword.Trim().ToLowerInvariant(), @"\s+", " "))
             .Where(keyword => keyword.Length > 0)
             .Distinct(StringComparer.Ordinal)
             .ToArray();
@@ -96,8 +98,14 @@ internal static partial class KeywordMatcher
         var allGroups = new List<string[]>();
         var phrases = new List<string>();
 
-        foreach (var (keywords, mode) in queries)
+        foreach (var (rawKeywords, mode) in queries)
         {
+            var keywords = NormalizeKeywords(rawKeywords);
+            if (keywords.Length == 0)
+            {
+                continue;
+            }
+
             switch (mode)
             {
                 case TenderQueryMatchMode.All:

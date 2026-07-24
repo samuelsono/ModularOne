@@ -31,6 +31,12 @@ export interface TenderSource {
   authKind: TenderSourceAuthKind;
   authUsername: string | null;
   hasAuthSecret: boolean;
+  /** OCDS dateFrom (yyyy-MM-dd), null = app default lookback. */
+  eTendersDateFrom: string | null;
+  /** OCDS dateTo (yyyy-MM-dd), null = app default forward window. */
+  eTendersDateTo: string | null;
+  /** OCDS page size 1–1000, null = app default. */
+  eTendersPageSize: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -47,6 +53,9 @@ export interface SaveTenderSourceRequest {
   authUsername: string | null;
   /** Omit to leave unchanged; empty string clears when clearing auth. */
   authSecret?: string | null;
+  eTendersDateFrom?: string | null;
+  eTendersDateTo?: string | null;
+  eTendersPageSize?: number | null;
 }
 
 export interface TenderQuery {

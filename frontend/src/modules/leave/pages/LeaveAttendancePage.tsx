@@ -47,11 +47,11 @@ import type {
 } from '@modules/leave/types/leave';
 import {
   ATTENDANCE_HEALTH_COLORS,
-  attendanceHealthDonutPoints,
   computeAttendanceHealth,
+  computeAttendanceHealthScore,
 } from '@modules/leave/utils/attendanceHealth';
 
-const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function toDateInputValue(date: Date): string {
   const year = date.getFullYear();
@@ -63,7 +63,7 @@ function toDateInputValue(date: Date): string {
 function startOfWeek(date: Date): Date {
   const copy = new Date(date);
   const day = copy.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
+  const diff = -day;
   copy.setDate(copy.getDate() + diff);
   copy.setHours(0, 0, 0, 0);
   return copy;
@@ -87,15 +87,15 @@ function formatMonthLabel(date: Date): string {
   return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 }
 
-function getMondayBasedDayIndex(date: Date): number {
-  return (date.getDay() + 6) % 7;
+function getSundayBasedDayIndex(date: Date): number {
+  return date.getDay();
 }
 
 function buildMonthWeeks(month: Date): Array<Array<Date | null>> {
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const leadingEmpty = getMondayBasedDayIndex(new Date(year, monthIndex, 1));
+  const leadingEmpty = getSundayBasedDayIndex(new Date(year, monthIndex, 1));
 
   const cells: Array<Date | null> = [
     ...Array.from({ length: leadingEmpty }, () => null),
@@ -397,6 +397,7 @@ export default function LeaveAttendancePage() {
   const [employees, setEmployees] = useState<UserListItem[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [rows, setRows] = useState<AttendanceCompareRow[]>([]);
+  const [healthRows, setHealthRows] = useState<AttendanceCompareRow[]>([]);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [openItems, setOpenItems] = useState<string[]>([]);
   const [defaultAssumption, setDefaultAssumption] = useState<AttendanceDefaultAssumption>('Present');
@@ -436,6 +437,15 @@ export default function LeaveAttendancePage() {
     };
   }, [anchorDate, rangeMode]);
 
+  const { from: healthFrom, to: healthTo } = useMemo(() => {
+    const end = new Date();
+    const start = addDays(end, -29);
+    return {
+      from: toDateInputValue(start),
+      to: toDateInputValue(end),
+    };
+  }, []);
+
   const selectedLocation = locations.find((item) => item.id === actualLocationId);
 
   const load = useCallback(async (options?: { silent?: boolean }) => {
@@ -444,13 +454,15 @@ export default function LeaveAttendancePage() {
       setIsLoading(true);
     }
     try {
-      const [locationItems, compareRows, policy] = await Promise.all([
+      const [locationItems, compareRows, monthlyRows, policy] = await Promise.all([
         getWorkLocationTypes(true),
         getAttendanceCompare(from, to, targetUserId),
+        getAttendanceCompare(healthFrom, healthTo, targetUserId),
         getAttendancePolicy(),
       ]);
       setLocations(locationItems);
       setRows(compareRows);
+      setHealthRows(monthlyRows);
       setDefaultAssumption(policy.defaultAssumption === 'Absent' ? 'Absent' : 'Present');
       if (!silent) {
         setError(null);
@@ -465,7 +477,7 @@ export default function LeaveAttendancePage() {
         setIsLoading(false);
       }
     }
-  }, [from, targetUserId, to]);
+  }, [from, healthFrom, healthTo, targetUserId, to]);
 
   useEffect(() => {
     void load();
@@ -513,7 +525,13 @@ export default function LeaveAttendancePage() {
   }, []);
 
   const health = useMemo(() => computeAttendanceHealth(rows), [rows]);
-  const donutPoints = useMemo(() => attendanceHealthDonutPoints(health), [health]);
+  const absentLocationTypeId = useMemo(() => (
+    locations.find((item) => item.code.toUpperCase() === 'ABSENT')?.id ?? null
+  ), [locations]);
+  const attendanceHealthScore = useMemo(
+    () => computeAttendanceHealthScore(healthRows, absentLocationTypeId),
+    [absentLocationTypeId, healthRows],
+  );
 
   const filteredRows = useMemo(() => {
     switch (filterMode) {
@@ -801,10 +819,10 @@ export default function LeaveAttendancePage() {
           {/* Health Title */}
           <Text weight="semibold">Attendance health · {rangeLabel}</Text>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <Text>Match: {health.match}</Text>
-            <Text>Missing: {health.missing}</Text>
-            <Text>Mismatch: {health.mismatch}</Text>
-            <Text>Match rate: {health.workDays === 0 ? '—' : `${Math.round(health.matchRate * 100)}%`}</Text>
+            <Text><span className="font-semibold w-[80px] inline-block">Match</span>: {health.match}</Text>
+            <Text><span className="font-semibold w-[80px] inline-block">Missing</span>: {health.missing}</Text>
+            <Text><span className="font-semibold w-[80px] inline-block">Mismatch</span>: {health.mismatch}</Text>
+            <Text><span className="font-semibold w-[80px] inline-block">Match rate</span>: {health.workDays === 0 ? '—' : `${Math.round(health.matchRate * 100)}%`}</Text>
           </div>
           <div className="flex flex-wrap gap-2 pt-1">
             <Badge appearance="filled" style={{ backgroundColor: ATTENDANCE_HEALTH_COLORS.healthy, color: '#fff' }}>Match</Badge>
@@ -814,36 +832,34 @@ export default function LeaveAttendancePage() {
           </div>
         </div>
         <div className="flex flex-col items-center gap-2 shrink-0">
-          <div className="flex w-[180px] h-[180px] items-center justify-center">
-            {donutPoints.length > 0 ? (
+          {attendanceHealthScore.countedDays > 0 ? (
+            <div className="flex w-[150px] h-[150px] items-center justify-center">
               <DonutChart
                 culture={typeof window !== 'undefined' ? window.navigator.language : 'en-us'}
                 data={{
                   chartTitle: 'Attendance health',
-                  chartData: donutPoints.map((point) => ({
-                    legend: point.legend,
-                    data: point.data,
-                    color: point.color,
-                  })),
+                  chartData: [
+                    {
+                      legend: 'Attendance health',
+                      data: 100,
+                      color: attendanceHealthScore.color,
+                    },
+                  ],
                 }}
                 innerRadius={45}
-                valueInsideDonut={
-                  health.workDays === 0 ? '—' : `${Math.round(health.matchRate * 100)}%`
-                }
+                valueInsideDonut={`${Math.round(attendanceHealthScore.percentage * 100)}%`}
                 hideLegend
               />
-            ) : (
-              <Text className="text-neutral-foreground-3 text-center">No attendance data in this range.</Text>
-            )}
-          </div>
-          {donutPoints.length > 0 ? (
-            <Text
-              size={600}
-              style={{ color: tokens.colorNeutralForeground3, fontWeight: 300 }}
-            >
-              {health.label}
-            </Text>
-          ) : null}
+            </div>
+          ) : (
+            <Text className="text-neutral-foreground-3 text-center">No attendance data in the last 30 days.</Text>
+          )}
+          <Text
+            size={500}
+            style={{ color: tokens.colorNeutralForeground3, fontWeight: 300 }}
+          >
+            {attendanceHealthScore.label}
+          </Text>
         </div>
       </section>
 

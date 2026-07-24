@@ -30,3 +30,7 @@
 /tmp/tenders-build-out3/CarTrack.Modules.Tenders.runtimeconfig.json
 /tmp/tenders-build-out3/CarTrack.Modules.Tenders.dll
 /tmp/tenders-build-out3/CarTrack.Modules.Tenders.pdb
+/tmp/tenders-build-scope/CarTrack.Modules.Tenders.deps.json
+/tmp/tenders-build-scope/CarTrack.Modules.Tenders.runtimeconfig.json
+/tmp/tenders-build-scope/CarTrack.Modules.Tenders.dll
+/tmp/tenders-build-scope/CarTrack.Modules.Tenders.pdb

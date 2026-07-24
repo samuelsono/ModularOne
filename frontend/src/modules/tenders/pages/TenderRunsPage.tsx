@@ -17,6 +17,7 @@ import {
 } from '@fluentui/react-components';
 import { ChevronDownRegular, ChevronRightRegular, DeveloperBoardSearchRegular, PlayRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
+import AppPagination from '@platform/ui/AppPagination';
 import { createRun, getRun, listRuns } from '@modules/tenders/services/tendersService';
 import type { TenderScrapeRun } from '@modules/tenders/types/tenders';
 
@@ -42,6 +43,8 @@ export default function TenderRunsPage() {
   const [starting, setStarting] = useState(false);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -58,6 +61,20 @@ export default function TenderRunsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize, runs.length]);
+
+  const totalItems = runs.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return runs.slice(startIndex, startIndex + pageSize);
+  }, [currentPage, pageSize, runs]);
+  const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const rangeEnd = totalItems === 0 ? 0 : Math.min(currentPage * pageSize, totalItems);
 
   useEffect(() => {
     if (!activeRunId) {
@@ -215,7 +232,7 @@ export default function TenderRunsPage() {
         <Spinner label="Loading runs…" />
       ) : (
         <div className="px-4 flex flex-col gap-3 min-h-0 overflow-auto">
-          <DataGrid items={runs} columns={columns} getRowId={(item) => item.id}>
+          <DataGrid items={paginated} columns={columns} getRowId={(item) => item.id}>
             <DataGridHeader>
               <DataGridRow>
                 {({ renderHeaderCell }) => (
@@ -232,8 +249,25 @@ export default function TenderRunsPage() {
             </DataGridBody>
           </DataGrid>
 
+          {runs.length > 0 && (
+            <AppPagination
+              className="py-3 px-0!"
+              page={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              rangeStart={rangeStart}
+              rangeEnd={rangeEnd}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+            />
+          )}
+
           {expanded && (
-            <div className="rounded border border-neutral-stroke-3 p-3 bg-neutral-background-2">
+            <div className="rounded flex flex-col border border-neutral-stroke-3 p-3 bg-neutral-background-2">
               <Text weight="semibold" className="mb-2 block">
                 Source logs — {expanded.trigger} run
               </Text>

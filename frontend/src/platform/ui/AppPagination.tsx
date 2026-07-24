@@ -6,7 +6,7 @@ import {
   ChevronRightRegular,
 } from "@fluentui/react-icons";
 
-const DEFAULT_PAGE_SIZES = [5, 10, 50];
+const DEFAULT_PAGE_SIZES = [10, 15, 25, 50];
 
 export interface AppPaginationProps {
   /** Current page (1-based). */
@@ -25,7 +25,7 @@ export interface AppPaginationProps {
   onPageChange: (page: number) => void;
   /** Called when the user selects a different page size. */
   onPageSizeChange: (size: number) => void;
-  /** Selectable page sizes. Defaults to [5, 10, 50]. */
+  /** Selectable page sizes. Defaults to [10, 15, 25, 50]. */
   pageSizeOptions?: readonly number[];
   className?: string;
 }

@@ -10,7 +10,7 @@
         "projectUniqueName": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/CarTrack.Core.csproj",
         "projectName": "CarTrack.Core",
         "projectPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/CarTrack.Core.csproj",
-        "packagesPath": "/var/folders/tl/xhflhlms2d3_7q63g80fl7j00000gn/T/cursor-sandbox-cache/e564ad4dd507ee9c653a6cb6d9d0ffdc/nuget",
+        "packagesPath": "/Users/datsu/.nuget/packages/",
         "outputPath": "/Users/datsu/Sites/NICE_LAYOUTS/CarTrack/Shared/CarTrack.Core/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [

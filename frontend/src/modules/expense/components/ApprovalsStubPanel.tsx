@@ -72,8 +72,8 @@ export function ApprovalsStubPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl">
-      <div>
+    <div className="flex flex-col gap-6 max-w-7xl">
+      <div className='flex flex-col'>
         <Subtitle2>Expense approval queue (preview)</Subtitle2>
         <Text className="text-sm text-neutral-foreground-3 block mt-1">
           Expense claims use the manager hierarchy from staff profiles. Leave requests are managed in the Leave app.
@@ -85,11 +85,11 @@ export function ApprovalsStubPanel() {
 
       {canRequestExpense && (
         <section
-          className="rounded border p-4 flex flex-col gap-3"
+          className="rounded border p-4 flex flex-col gap-3 max-w-md"
           style={{ borderColor: tokens.colorNeutralStroke3 }}
         >
           <Subtitle2>Submit expense claim (stub)</Subtitle2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-1">
             <Field label="Description">
               <Input value={expenseDescription} onChange={(_, data) => setExpenseDescription(data.value)} />
             </Field>
@@ -104,10 +104,10 @@ export function ApprovalsStubPanel() {
       )}
 
       {hasPermission('expense.approvals.read') && (
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-3 w-full">
           <Subtitle2>Pending expense approvals</Subtitle2>
           {expenseItems.length === 0 ? (
-            <Text className="text-sm text-neutral-foreground-3">No pending expense claims.</Text>
+            <Text className="text-sm text-neutral-foreground-3 p-2 rounded" style={{ backgroundColor: tokens.colorBrandBackground2 }}>No pending expense claims.</Text>
           ) : (
             expenseItems.map((item) => (
               <div

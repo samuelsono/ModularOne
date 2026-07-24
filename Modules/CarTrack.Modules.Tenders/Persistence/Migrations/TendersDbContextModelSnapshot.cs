@@ -299,6 +299,15 @@ namespace CarTrack.Modules.Tenders.Persistence.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
 
+                    b.Property<DateOnly?>("ETendersDateFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ETendersDateTo")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("ETendersPageSize")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("boolean");
 

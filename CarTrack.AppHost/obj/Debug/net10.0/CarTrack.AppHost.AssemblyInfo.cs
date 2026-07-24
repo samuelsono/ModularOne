@@ -23,7 +23,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarTrack.AppHost")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+61f7f46462b0ee533a596f9925a5e881a16ae1cb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2c3ca404194c0dc40e199141fff7f4d992cc01c0")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarTrack.AppHost")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarTrack.AppHost")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

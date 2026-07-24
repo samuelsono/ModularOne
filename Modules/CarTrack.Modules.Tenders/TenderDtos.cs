@@ -19,6 +19,9 @@ public record TenderSourceDto(
     TenderSourceAuthKind AuthKind,
     string? AuthUsername,
     bool HasAuthSecret,
+    DateOnly? ETendersDateFrom,
+    DateOnly? ETendersDateTo,
+    int? ETendersPageSize,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
 
@@ -33,7 +36,10 @@ public record SaveTenderSourceRequest(
     TenderSourceAuthKind AuthKind = TenderSourceAuthKind.None,
     string? AuthUsername = null,
     /// <summary>Plaintext secret; omit or null to leave existing secret unchanged. Empty string clears.</summary>
-    string? AuthSecret = null);
+    string? AuthSecret = null,
+    DateOnly? ETendersDateFrom = null,
+    DateOnly? ETendersDateTo = null,
+    int? ETendersPageSize = null);
 
 public record TenderQueryDto(
     Guid Id,

@@ -20,10 +20,11 @@ import {
   Text,
   createTableColumn,
 } from '@fluentui/react-components';
-import { AddRegular, BookSearchRegular, DeleteRegular, EditRegular } from '@fluentui/react-icons';
+import { AddRegular, BookSearchRegular, DeleteRegular, EditRegular, PlayRegular } from '@fluentui/react-icons';
 import { ApiError } from '@platform/api/apiClient';
 import { AutoFitDataGrid } from '@platform/ui/AutoFitDataGrid';
 import {
+  createRun,
   createSource,
   deleteSource,
   listSources,
@@ -57,7 +58,22 @@ const EMPTY_FORM: SaveTenderSourceRequest = {
   authKind: 'None',
   authUsername: null,
   authSecret: null,
+  eTendersDateFrom: null,
+  eTendersDateTo: null,
+  eTendersPageSize: 250,
 };
+
+function defaultETendersDateFrom(): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - 14);
+  return d.toISOString().slice(0, 10);
+}
+
+function defaultETendersDateTo(): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + 30);
+  return d.toISOString().slice(0, 10);
+}
 
 function toForm(source: TenderSource): SaveTenderSourceRequest {
   return {
@@ -71,7 +87,24 @@ function toForm(source: TenderSource): SaveTenderSourceRequest {
     authKind: source.authKind,
     authUsername: source.authUsername,
     authSecret: null,
+    eTendersDateFrom: source.eTendersDateFrom,
+    eTendersDateTo: source.eTendersDateTo,
+    eTendersPageSize: source.eTendersPageSize,
   };
+}
+
+function isETendersForm(form: SaveTenderSourceRequest): boolean {
+  if (form.parserKind === 'ETenders') {
+    return true;
+  }
+  if (form.parserKind !== 'Auto') {
+    return false;
+  }
+  try {
+    return new URL(form.url).hostname.toLowerCase().includes('etenders.gov.za');
+  } catch {
+    return false;
+  }
 }
 
 function SourceFormDialog({
@@ -154,12 +187,20 @@ function SourceFormDialog({
                 <Dropdown
                   value={form.parserKind}
                   selectedOptions={[form.parserKind]}
-                  onOptionSelect={(_, d) =>
+                  onOptionSelect={(_, d) => {
+                    const parserKind = (d.optionValue as TenderParserKind) ?? 'Auto';
                     setForm((c) => ({
                       ...c,
-                      parserKind: (d.optionValue as TenderParserKind) ?? 'Auto',
-                    }))
-                  }
+                      parserKind,
+                      ...(parserKind === 'ETenders'
+                        ? {
+                            eTendersDateFrom: c.eTendersDateFrom ?? defaultETendersDateFrom(),
+                            eTendersDateTo: c.eTendersDateTo ?? defaultETendersDateTo(),
+                            eTendersPageSize: c.eTendersPageSize ?? 250,
+                          }
+                        : {}),
+                    }));
+                  }}
                 >
                   {PARSER_KINDS.map((kind) => (
                     <Option key={kind} value={kind}>
@@ -253,11 +294,93 @@ function SourceFormDialog({
               {form.parserKind === 'ETenders' && (
                 <Text className="text-xs text-neutral-foreground-3">
                   Uses the National Treasury OCDS API
-                  (ocds-api.etenders.gov.za). dateFrom is a published lookback;
-                  dateTo is always later than today so only listings that still
-                  expire in the future are searched. Keep the source URL as
+                  (ocds-api.etenders.gov.za). Keep the source URL as
                   https://www.etenders.gov.za/.
                 </Text>
+              )}
+              {isETendersForm(form) && (
+                <>
+                  <Field
+                    label="OCDS dateFrom"
+                    hint="Published/closing window start (yyyy-MM-dd). Leave blank to use the app default lookback."
+                  >
+                    <Input
+                      type="date"
+                      value={form.eTendersDateFrom ?? ''}
+                      onChange={(_, d) =>
+                        setForm((c) => ({
+                          ...c,
+                          eTendersDateFrom: d.value || null,
+                        }))
+                      }
+                    />
+                  </Field>
+                  <Field
+                    label="OCDS dateTo"
+                    hint="Published/closing window end. Must be later than today for open listings."
+                  >
+                    <Input
+                      type="date"
+                      value={form.eTendersDateTo ?? ''}
+                      onChange={(_, d) =>
+                        setForm((c) => ({
+                          ...c,
+                          eTendersDateTo: d.value || null,
+                        }))
+                      }
+                    />
+                  </Field>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="small"
+                      appearance="secondary"
+                      onClick={() =>
+                        setForm((c) => ({
+                          ...c,
+                          eTendersDateFrom: defaultETendersDateFrom(),
+                          eTendersDateTo: defaultETendersDateTo(),
+                        }))
+                      }
+                    >
+                      Use last 14 days → +30 days
+                    </Button>
+                    <Button
+                      type="button"
+                      size="small"
+                      appearance="subtle"
+                      onClick={() =>
+                        setForm((c) => ({
+                          ...c,
+                          eTendersDateFrom: null,
+                          eTendersDateTo: null,
+                        }))
+                      }
+                    >
+                      Clear dates
+                    </Button>
+                  </div>
+                  <Field
+                    label="OCDS page size"
+                    hint="Results per API page (1–1000). Larger pages fetch the window faster."
+                  >
+                    <Input
+                      type="number"
+                      min={1}
+                      max={1000}
+                      value={String(form.eTendersPageSize ?? 250)}
+                      onChange={(_, d) => {
+                        const n = Number(d.value);
+                        setForm((c) => ({
+                          ...c,
+                          eTendersPageSize: Number.isFinite(n)
+                            ? Math.min(1000, Math.max(1, Math.trunc(n)))
+                            : 250,
+                        }));
+                      }}
+                    />
+                  </Field>
+                </>
               )}
               {form.parserKind === 'BrowserRendered' && (
                 <Text className="text-xs text-amber-700">
@@ -287,6 +410,8 @@ export default function TenderSourcesPage() {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<TenderSource | null>(null);
+  const [runningSourceId, setRunningSourceId] = useState<string | null>(null);
+  const [runHint, setRunHint] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -303,6 +428,20 @@ export default function TenderSourcesPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function handleRunSource(source: TenderSource) {
+    setRunningSourceId(source.id);
+    setError(null);
+    setRunHint(null);
+    try {
+      const run = await createRun({ sourceIds: [source.id] });
+      setRunHint(`Scrape queued for “${source.name}” (run ${run.status.toLowerCase()}).`);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Unable to start scrape for this source.');
+    } finally {
+      setRunningSourceId(null);
+    }
+  }
 
   const columns: TableColumnDefinition<TenderSource>[] = useMemo(
     () => [
@@ -384,6 +523,14 @@ export default function TenderSourcesPage() {
         renderCell: (item) => (
           <div className="flex gap-1">
             <Button
+              icon={<PlayRegular />}
+              appearance="subtle"
+              aria-label={`Run scrape for ${item.name}`}
+              title="Run scrape for this source"
+              disabled={!item.isEnabled || runningSourceId === item.id}
+              onClick={() => void handleRunSource(item)}
+            />
+            <Button
               icon={<EditRegular />}
               appearance="subtle"
               aria-label="Edit"
@@ -414,7 +561,7 @@ export default function TenderSourcesPage() {
         ),
       }),
     ],
-    [load],
+    [load, runningSourceId],
   );
 
   return (
@@ -444,6 +591,12 @@ export default function TenderSourcesPage() {
         </MessageBar>
       )}
 
+      {runHint && (
+        <MessageBar intent="success" className="mx-2">
+          <MessageBarBody>{runHint}</MessageBarBody>
+        </MessageBar>
+      )}
+
       {loading ? (
         <Spinner label="Loading sources…" />
       ) : (
@@ -461,7 +614,7 @@ export default function TenderSourcesPage() {
               parser: { minWidth: 120, idealWidth: 160, defaultWidth: 140 },
               status: { minWidth: 120, idealWidth: 150, defaultWidth: 140 },
               last: { minWidth: 180, idealWidth: 260, defaultWidth: 220 },
-              actions: { minWidth: 100, idealWidth: 110, defaultWidth: 100 },
+              actions: { minWidth: 120, idealWidth: 140, defaultWidth: 130 },
             }}
           />
         </div>

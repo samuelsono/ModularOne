@@ -48,10 +48,26 @@ public sealed class ETendersOcdsFetcher(
     {
         var scrape = options.CurrentValue;
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        // dateFrom = published lookback; dateTo must be later than today (open closings).
-        var dateFrom = today.AddDays(-Math.Max(1, scrape.ETendersLookbackDays));
-        var dateTo = today.AddDays(Math.Max(1, scrape.ETendersForwardDays));
-        var pageSize = Math.Clamp(scrape.ETendersPageSize, 1, 100);
+        var dateFrom = source.ETendersDateFrom
+            ?? today.AddDays(-Math.Max(1, scrape.ETendersLookbackDays));
+        var dateTo = source.ETendersDateTo
+            ?? today.AddDays(Math.Max(1, scrape.ETendersForwardDays));
+        // Keep dateTo later than today so open/closing-soon listings remain in scope.
+        if (dateTo <= today)
+        {
+            dateTo = today.AddDays(1);
+        }
+
+        if (dateFrom > dateTo)
+        {
+            throw new InvalidOperationException(
+                $"Invalid eTenders date window: dateFrom {dateFrom:yyyy-MM-dd} is after dateTo {dateTo:yyyy-MM-dd}.");
+        }
+
+        var pageSize = Math.Clamp(
+            source.ETendersPageSize ?? scrape.ETendersPageSize,
+            1,
+            1000);
         var maxPages = Math.Clamp(scrape.ETendersMaxPages, 1, 200);
 
         var client = httpClientFactory.CreateClient(HttpClientName);

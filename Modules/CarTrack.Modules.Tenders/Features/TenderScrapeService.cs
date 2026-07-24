@@ -228,6 +228,16 @@ public sealed class TenderScrapeService(
                 .Where(query => query.IsEnabled)
                 .ToListAsync(timeoutCts.Token);
 
+            foreach (var query in queries)
+            {
+                logger.LogInformation(
+                    "Tender scrape query {QueryId} '{Name}' mode={Mode} keywords=[{Keywords}]",
+                    query.Id,
+                    query.Name,
+                    query.MatchMode,
+                    string.Join(", ", KeywordMatcher.NormalizeKeywords(query.Keywords)));
+            }
+
             var keywordIndex = KeywordMatcher.Compile(
                 queries.Select(q => (q.Keywords, q.MatchMode)),
                 options.Value.AhoCorasickKeywordThreshold);
