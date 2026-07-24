@@ -175,7 +175,7 @@ export default function LeaveRequestsPage() {
 
           {canWrite ? (
             <Button appearance="primary" icon={<AddRegular />} onClick={() => setFormOpen(true)}>
-              {isAdmin || isHr ? 'Create leave application' : 'Apply for leave'}
+              {isAdmin || isHr ? 'New Application' : 'Apply for leave'}
             </Button>
           ) : null}
         </div>

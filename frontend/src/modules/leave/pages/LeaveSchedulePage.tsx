@@ -31,6 +31,7 @@ import {
 } from '@modules/leave/services/leaveService';
 import type { ResolvedScheduleDay, WorkLocationType } from '@modules/leave/types/leave';
 import { DatePicker } from '@fluentui/react-datepicker-compat';
+import { ArrowPreviousRegular, ArrowNextRegular } from '@fluentui/react-icons';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const EDIT_DAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -295,8 +296,7 @@ export default function LeaveSchedulePage() {
             <Tab value="week">Week</Tab>
             <Tab value="month">Month</Tab>
           </TabList>
-          <Button appearance="secondary" onClick={() => shiftRange(-1)}>
-            Previous
+          <Button appearance="secondary" onClick={() => shiftRange(-1)} icon={<ArrowPreviousRegular />}>
           </Button>
           <Button
             appearance="secondary"
@@ -304,8 +304,7 @@ export default function LeaveSchedulePage() {
           >
             Today
           </Button>
-          <Button appearance="secondary" onClick={() => shiftRange(1)}>
-            Next
+          <Button appearance="secondary" onClick={() => shiftRange(1)} iconPosition="after" icon={<ArrowNextRegular />}>
           </Button>
         </div>
       </div>
@@ -371,7 +370,7 @@ export default function LeaveSchedulePage() {
           ) : null}
 
           <section
-            className="rounded border p-4 flex flex-col gap-3 min-h-0 overflow-auto"
+            className="rounded border p-4 flex flex-col gap-3 min-h-0 overflow-auto pb-20"
             style={{ borderColor: tokens.colorNeutralStroke3 }}
           >
             <Text weight="semibold">

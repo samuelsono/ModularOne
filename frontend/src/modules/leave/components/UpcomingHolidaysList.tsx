@@ -53,7 +53,7 @@ export function UpcomingHolidaysList() {
   }, [loadHolidays]);
 
   return (
-    <Card className="relative px-4 max-h-[80vh] overflow-y-scroll w-full">
+    <Card className="relative px-4 max-h-[80vh] overflow-y-scroll w-full pb-20!">
       <div className="absolute top-0 left-0 right-0 flex flex-wrap items-end justify-between gap-3 mb-3 px-3 w-full! pt-3">
         <div className="flex flex-col gap-1">
           <Subtitle2>Upcoming holidays</Subtitle2>

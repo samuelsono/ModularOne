@@ -142,6 +142,7 @@ function LeaveDayCell({
           onCreateLeave(day);
         }
       }}
+
     >
       <div className="flex items-start justify-between gap-1 mb-1">
         <Text
@@ -425,7 +426,7 @@ export default function LeaveCalendarPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full overflow-auto px-3 pb-6">
+    <div className="flex flex-col gap-4 h-full overflow-auto px-3 pb-q0 mb-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <AppTitle title="Team Calendar" subtitle="View pending and approved leave for your team this month." />
 
@@ -463,9 +464,10 @@ export default function LeaveCalendarPage() {
         </TabList>
 
         <div className="flex flex-wrap gap-2 items-end">
-          <Field label="Employee" style={{ minWidth: 220 }}>
+          <Field label="Employee" style={{ minWidth: 200, width: 200 }}>
             <Combobox
               placeholder="All employees"
+              style={{ minWidth: 160 }}
               freeform
               value={employeeComboboxValue}
               selectedOptions={selectedEmployeeId ? [selectedEmployeeId] : []}

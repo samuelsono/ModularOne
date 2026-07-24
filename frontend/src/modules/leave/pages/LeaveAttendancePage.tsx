@@ -833,7 +833,7 @@ export default function LeaveAttendancePage() {
         </div>
         <div className="flex flex-col items-center gap-2 shrink-0 z-50">
           {attendanceHealthScore.countedDays > 0 ? (
-            <div className="flex w-[150px] h-[150px] items-center justify-center">
+            <div className="flex min-w-[150px] min-h-[150px] items-center justify-center">
               <DonutChart
                 culture={typeof window !== 'undefined' ? window.navigator.language : 'en-us'}
                 data={{
@@ -851,8 +851,9 @@ export default function LeaveAttendancePage() {
                     },
                   ],
                 }}
-                height={120}
-                innerRadius={35}
+                height={160}
+                width={160}
+                innerRadius={45}
                 valueInsideDonut={`${Math.round(attendanceHealthScore.percentage * 100)}%`}
                 hideLegend
               />

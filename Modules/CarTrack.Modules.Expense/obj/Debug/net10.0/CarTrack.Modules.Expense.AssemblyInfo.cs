@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarTrack.Modules.Expense")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2c3ca404194c0dc40e199141fff7f4d992cc01c0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ce361eeabddd2642606fa45edc5228d27f1f62d")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarTrack.Modules.Expense")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarTrack.Modules.Expense")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
