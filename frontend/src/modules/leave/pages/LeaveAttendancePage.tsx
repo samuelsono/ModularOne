@@ -831,7 +831,7 @@ export default function LeaveAttendancePage() {
             <Badge appearance="filled" style={{ backgroundColor: ATTENDANCE_HEALTH_COLORS.unknown, color: '#fff' }}>Other</Badge>
           </div>
         </div>
-        <div className="flex flex-col items-center gap-2 shrink-0">
+        <div className="flex flex-col items-center gap-2 shrink-0 z-50">
           {attendanceHealthScore.countedDays > 0 ? (
             <div className="flex w-[150px] h-[150px] items-center justify-center">
               <DonutChart
@@ -840,13 +840,19 @@ export default function LeaveAttendancePage() {
                   chartTitle: 'Attendance health',
                   chartData: [
                     {
-                      legend: 'Attendance health',
-                      data: 100,
+                      legend: 'Attendance',
+                      data: Math.round(attendanceHealthScore.percentage * 100),
                       color: attendanceHealthScore.color,
+                    },
+                    {
+                      legend: 'Absence',
+                      data: 100 - Math.round(attendanceHealthScore.percentage * 100),
+                      color: ATTENDANCE_HEALTH_COLORS.unknown,
                     },
                   ],
                 }}
-                innerRadius={45}
+                height={120}
+                innerRadius={35}
                 valueInsideDonut={`${Math.round(attendanceHealthScore.percentage * 100)}%`}
                 hideLegend
               />
