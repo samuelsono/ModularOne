@@ -137,15 +137,20 @@ function LeaveDayCell({
           : tokens.colorNeutralBackground1,
       }}
       title={canCreate ? 'Double-click to create a leave application' : undefined}
-      onDoubleClick={() => {
-        if (canCreate) {
-          onCreateLeave(day);
-        }
-      }}
+        onDoubleClick={() => {
+          if (canCreate) {
+            onCreateLeave(day);
+          }
+        }}
 
     >
       <div className="flex items-start justify-between gap-1 mb-1">
         <Text
+          onClick={() => {
+            if (canCreate) {
+              onCreateLeave(day);
+            }
+          }}
           weight="semibold"
           size={200}
           className="rounded-full"

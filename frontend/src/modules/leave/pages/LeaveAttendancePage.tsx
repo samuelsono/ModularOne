@@ -220,7 +220,8 @@ function AttendanceDayCell({
         <Text size={100} style={{ color: tokens.colorNeutralForeground3 }}>Not confirmed</Text>
       ) : null}
 
-      {canWrite && row.plannedKind !== 'OnLeave' ? (
+      {canWrite && row.plannedKind !== 'OnLeave' ? (<>
+      
         <div className="hidden gap-1 mt-auto flex-wrap group-hover:flex group-focus-within:flex">
           {/* Action section */}
            <Button
@@ -252,6 +253,19 @@ function AttendanceDayCell({
             onClick={() => onMark(row)}
           />
         </div>
+
+        <div className="flex justify-end gap-1 mt-auto flex-wrap group-focus:flex lg:hidden">
+          <Button
+            icon={row.hasActual ? <Edit12Regular /> : <Checkmark12Regular />}
+            size="small"
+            appearance="secondary"
+            disabled={isQuickBusy}
+            title="Mark with details"
+            onClick={() => onMark(row)}
+          />
+        </div>
+
+        </>
       ) : null}
     </div>
   );
