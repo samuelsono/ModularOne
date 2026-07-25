@@ -26,6 +26,8 @@ import {
   tokens,
   type SelectTabEvent,
   type SelectTabData,
+  Tooltip,
+  Textarea,
 } from '@fluentui/react-components';
 import { DonutChart } from '@fluentui/react-charts';
 import { ArrowNextRegular, ArrowPreviousRegular, Checkmark12Regular, DismissRegular, Edit12Regular, PersonAvailableRegular, PersonProhibitedRegular } from '@fluentui/react-icons';
@@ -196,6 +198,7 @@ function AttendanceDayCell({
   const busyKey = `${row.userId}|${row.date}`;
   const isQuickBusy = quickMarkBusyKey === busyKey;
   const disableActionButtons = isQuickBusy || isFutureDay;
+  const notesTooltip = row.notes?.trim() || 'No notes provided';
 
   return (
     <div
@@ -210,11 +213,17 @@ function AttendanceDayCell({
         <Text weight="semibold" size={200}>{dayNumber}</Text>
         <span>
           {row.isMatch ? (
-            <Badge appearance="filled" color="success" size="small">Match</Badge>
+            <Tooltip relationship="label" content={notesTooltip}>
+               <Badge appearance="filled" color="success" size="small">Match</Badge>
+            </Tooltip>
           ) : row.isMismatch ? (
-            <Badge appearance="filled" color="danger" size="small">Mismatch</Badge>
+            <Tooltip relationship="label" content={notesTooltip}>
+              <Badge appearance="filled" color="danger" size="small">Mismatch</Badge>
+            </Tooltip>
           ) : row.plannedKind === 'Work' && !row.hasActual ? (
-            <Badge appearance="outline" color="warning" size="small">Missing</Badge>
+            <Tooltip relationship="label" content={"Not marked. No actual attendance recorded for this day."}>
+              <Badge appearance="outline" color="warning" size="small">Missing</Badge>
+            </Tooltip>
           ) : null}
         </span>
       </div>
@@ -548,6 +557,7 @@ export default function LeaveAttendancePage() {
     date: string,
     location: WorkLocationType,
     collaborators: AttendanceCompareRow['collaborators'] = [],
+    notes?: string | null,
   ) => {
     setRows((current) => current.map((row) => {
       if (row.userId !== userId || row.date !== date) {
@@ -567,6 +577,7 @@ export default function LeaveAttendancePage() {
         actualLocationTypeId: location.id,
         actualLocationTypeName: location.name,
         actualLocationTypeColor: location.color,
+        notes: notes ?? row.notes ?? null,
         isMatch,
         isMismatch,
         collaborators,
@@ -687,7 +698,7 @@ export default function LeaveAttendancePage() {
     setEditingDate(row.date);
     setEditingUserId(row.userId);
     setActualLocationId(row.actualLocationTypeId ?? row.plannedLocationTypeId ?? locations.find((item) => item.code.toUpperCase() === 'OFFICE')?.id ?? locations[0]?.id ?? '');
-    setNotes('');
+    setNotes(row.notes ?? '');
     setCollaboratorUserIds(
       row.collaborators
         .map((item) => item.collaboratorUserId)
@@ -730,7 +741,7 @@ export default function LeaveAttendancePage() {
         notes: null,
         collaborators: [],
       });
-      patchCompareRow(row.userId, row.date, location, []);
+      patchCompareRow(row.userId, row.date, location, [], null);
       setMessage(`Marked ${assumption.toLowerCase()} for ${row.userDisplayName} on ${row.date}.`);
     } catch (saveError) {
       setError(saveError instanceof ApiError ? saveError.message : `Failed to mark ${assumption.toLowerCase()}.`);
@@ -775,6 +786,7 @@ export default function LeaveAttendancePage() {
           collaboratorDisplayName: item.collaboratorDisplayName,
           externalName: item.externalName,
         })),
+        saved.notes,
       );
       setMessage(`Attendance saved for ${editingDate}.`);
       closeEdit();
@@ -1068,12 +1080,18 @@ export default function LeaveAttendancePage() {
         <DialogSurface>
           <DialogBody>
             <DialogTitle>
-              Mark attendance for {editingDate}
-              {editingEmployeeName ? ` · ${editingEmployeeName}` : ''}
+              <div className="flex flex-col">
+              Mark attendance
+              <Text size={400} style={{ color: tokens.colorNeutralForeground3, fontWeight: 300 }} >
+                {editingDate} | 
+                {editingEmployeeName ? ` ${editingEmployeeName}` : ''}
+              </Text>
+              </div>
+              
             </DialogTitle>
             <DialogContent className="flex flex-col gap-3 pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Field label="Actual location">
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
+                <Field label="Actual location" className="max-w-[200px]">
                   <Dropdown
                     value={locations.find((item) => item.id === actualLocationId)?.name ?? ''}
                     selectedOptions={actualLocationId ? [actualLocationId] : []}
@@ -1087,7 +1105,7 @@ export default function LeaveAttendancePage() {
                   </Dropdown>
                 </Field>
                 <Field label="Notes">
-                  <Input value={notes} onChange={(_, data) => setNotes(data.value)} />
+                  <Textarea placeholder='Provide notes about this checkin...' value={notes} onChange={(_, data) => setNotes(data.value)} />
                 </Field>
               </div>
 

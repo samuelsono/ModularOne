@@ -618,6 +618,7 @@ public sealed class AttendanceScheduleService(
                 attendance?.ActualLocationTypeId,
                 attendance?.ActualLocationTypeName,
                 attendance?.ActualLocationTypeColor,
+                attendance?.Notes,
                 hasActual,
                 isMatch,
                 isMismatch,

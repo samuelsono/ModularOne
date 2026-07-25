@@ -312,6 +312,7 @@ public record AttendanceCompareRowDto(
     Guid? ActualLocationTypeId,
     string? ActualLocationTypeName,
     string? ActualLocationTypeColor,
+    string? Notes,
     bool HasActual,
     bool IsMatch,
     bool IsMismatch,

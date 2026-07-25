@@ -330,6 +330,7 @@ export interface AttendanceCompareRow {
   actualLocationTypeId: string | null;
   actualLocationTypeName: string | null;
   actualLocationTypeColor: string | null;
+  notes: string | null;
   hasActual: boolean;
   isMatch: boolean;
   isMismatch: boolean;
