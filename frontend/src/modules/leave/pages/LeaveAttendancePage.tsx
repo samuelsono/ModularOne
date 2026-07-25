@@ -877,12 +877,19 @@ export default function LeaveAttendancePage() {
           ) : (
             <Text className="text-neutral-foreground-3 text-center">No attendance data in the last 30 days.</Text>
           )}
-          <Text
-            size={500}
-            style={{ color: tokens.colorNeutralForeground3, fontWeight: 300 }}
-          >
-            {attendanceHealthScore.label}
-          </Text>
+          <div className="flex flex-col items-center gap-1">
+              <Text
+                size={300}
+                style={{ color: tokens.colorNeutralForeground3, fontWeight: 300 }}>
+                  Attendance health score
+                </Text>
+              <Text
+                size={500}
+                style={{ color: tokens.colorNeutralForeground3, fontWeight: 300 }}
+              >
+                {attendanceHealthScore.label} 
+              </Text>
+          </div>
         </div>
       </section>
 
