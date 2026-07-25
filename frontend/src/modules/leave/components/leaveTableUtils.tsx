@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Badge, Button, InfoLabel, type TableColumnDefinition, type TableColumnSizingOptions, createTableColumn } from '@fluentui/react-components';
+import { Badge, Button, InfoLabel, Persona, type TableColumnDefinition, type TableColumnSizingOptions, createTableColumn } from '@fluentui/react-components';
 import { ArrowDownloadRegular } from '@fluentui/react-icons';
 import type { LeaveBalance, LeaveHistoryRow, LeaveRequest } from '@modules/leave/types/leave';
 import { downloadLeaveDocument } from '@modules/leave/services/leaveService';
@@ -25,6 +25,8 @@ export const leaveTableColumnSizing: TableColumnSizingOptions = {
   used: { minWidth: 100, idealWidth: 120, defaultWidth: 110 },
   pending: { minWidth: 100, idealWidth: 120, defaultWidth: 110 },
 };
+
+import type { PersonaProps } from '@fluentui/react-components';
 
 function LeaveTableText({ children, nowrap = false }: { children: ReactNode; nowrap?: boolean }) {
   return (
@@ -205,7 +207,7 @@ export const leaveRequestColumns: TableColumnDefinition<LeaveRequest>[] = withAu
   createTableColumn<LeaveRequest>({
     columnId: 'employee',
     renderHeaderCell: () => 'Employee',
-    renderCell: (item) => <LeaveTableText nowrap>{item.requesterDisplayName}</LeaveTableText>,
+    renderCell: (item) => <Persona avatar={{ color: "colorful", idForColor: item.requesterDisplayName }} name={item.requesterDisplayName} secondaryText={item.status} size="small" className="max-w-[200px]" />,
   }),
   createTableColumn<LeaveRequest>({
     columnId: 'dates',
@@ -339,7 +341,7 @@ export const leaveHistoryColumns: TableColumnDefinition<LeaveHistoryRow>[] = wit
   createTableColumn<LeaveHistoryRow>({
     columnId: 'employee',
     renderHeaderCell: () => 'Employee',
-    renderCell: (item) => <LeaveTableText nowrap>{item.requesterDisplayName}</LeaveTableText>,
+    renderCell: (item) => <Persona avatar={{ color: "colorful", idForColor: item.requesterDisplayName }} name={item.requesterDisplayName} secondaryText={item.department} size="small" className="max-w-[200px]" />,
   }),
   createTableColumn<LeaveHistoryRow>({
     columnId: 'department',
@@ -384,7 +386,7 @@ export const leaveApprovalColumns: TableColumnDefinition<LeaveRequest>[] = withA
   createTableColumn<LeaveRequest>({
     columnId: 'requester',
     renderHeaderCell: () => 'Employee',
-    renderCell: (item) => <LeaveTableText nowrap>{item.requesterDisplayName}</LeaveTableText>,
+    renderCell: (item) => <Persona avatar={{ color: "colorful", idForColor: item.requesterDisplayName }} name={item.requesterDisplayName} secondaryText={item.leaveType} size="small" className="max-w-[200px]" />,
   }),
   createTableColumn<LeaveRequest>({
     columnId: 'leaveType',

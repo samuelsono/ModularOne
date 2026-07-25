@@ -9,6 +9,7 @@ import {
   MessageBar,
   MessageBarBody,
   Option,
+  Persona,
   SpinButton,
   Spinner,
   Subtitle2,
@@ -330,7 +331,7 @@ export default function LeaveReportsPage() {
       createTableColumn<LeaveLiabilityRow>({
         columnId: 'employee',
         renderHeaderCell: () => 'Employee',
-        renderCell: (item) => item.displayName,
+        renderCell: (item) => <Persona avatar={{ color: "colorful", idForColor: item.displayName }} name={item.displayName} secondaryText={item.leaveTypeName} size="small" className="max-w-[200px]" />,
       }),
       createTableColumn<LeaveLiabilityRow>({
         columnId: 'department',

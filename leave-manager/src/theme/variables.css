@@ -1,0 +1,87 @@
+/* Fluent-inspired Ionic shell for Leave & Claims mobile */
+:root {
+  --ion-color-primary: #0f6cbd;
+  --ion-color-primary-rgb: 15, 108, 189;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #0d5fa6;
+  --ion-color-primary-tint: #277bc4;
+
+  --ion-background-color: #f5f5f5;
+  --ion-toolbar-background: #ffffff;
+  --ion-tab-bar-background: #ffffff;
+  --ion-tab-bar-color: #616161;
+  --ion-tab-bar-color-selected: #0f6cbd;
+
+  --app-page-bg: #f5f5f5;
+  --app-card-radius: 8px;
+  --app-space: 16px;
+}
+
+.app-page {
+  --background: var(--app-page-bg);
+}
+
+.app-page-header {
+  margin-bottom: 24px;
+}
+
+.app-page-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-card {
+  width: 100%;
+  margin-bottom: 12px;
+  border-radius: var(--app-card-radius);
+}
+
+.app-tab-bar {
+  border-top: 1px solid #e0e0e0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-action-tile {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0 0 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-action-card {
+  margin-bottom: 0;
+}
+
+.app-action-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-action-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #e8f3fc;
+  color: #0f6cbd;
+  flex-shrink: 0;
+}
+
+.app-action-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-action-chevron {
+  color: #9e9e9e;
+  flex-shrink: 0;
+}
