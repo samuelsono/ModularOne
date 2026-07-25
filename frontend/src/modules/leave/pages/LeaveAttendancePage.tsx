@@ -28,7 +28,7 @@ import {
   type SelectTabData,
 } from '@fluentui/react-components';
 import { DonutChart } from '@fluentui/react-charts';
-import { Checkmark12Regular, DismissRegular, Edit12Regular, PersonAvailableRegular, PersonProhibitedRegular } from '@fluentui/react-icons';
+import { ArrowNextRegular, ArrowPreviousRegular, Checkmark12Regular, DismissRegular, Edit12Regular, PersonAvailableRegular, PersonProhibitedRegular } from '@fluentui/react-icons';
 import AppTitle from '@platform/ui/AppTitle';
 import { ApiError } from '@platform/api/apiClient';
 import { usePermissions } from '@platform/permissions/usePermissions';
@@ -809,14 +809,16 @@ export default function LeaveAttendancePage() {
             <Tab value="week">Week</Tab>
             <Tab value="month">Month</Tab>
           </TabList>
-          <Button appearance="secondary" onClick={() => shiftRange(-1)}>Previous</Button>
+          <Button icon={<ArrowPreviousRegular />} appearance="secondary" onClick={() => shiftRange(-1)}></Button>
           <Button
             appearance="secondary"
             onClick={() => setAnchorDate(rangeMode === 'month' ? startOfMonth(new Date()) : startOfWeek(new Date()))}
           >
             Today
           </Button>
-          <Button appearance="secondary" onClick={() => shiftRange(1)}>Next</Button>
+          <Button 
+          icon={<ArrowNextRegular />}
+          appearance="secondary" onClick={() => shiftRange(1)}></Button>
           <Button appearance="secondary" onClick={exportCsv} disabled={filteredRows.length === 0}>
             Export CSV
           </Button>
