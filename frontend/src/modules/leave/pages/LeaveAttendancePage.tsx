@@ -87,6 +87,18 @@ function formatMonthLabel(date: Date): string {
   return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 }
 
+function isSameMonth(left: Date, right: Date): boolean {
+  return left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth();
+}
+
+function isFutureDate(dateText: string): boolean {
+  const day = new Date(`${dateText}T12:00:00`);
+  day.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return day > today;
+}
+
 function getSundayBasedDayIndex(date: Date): number {
   return date.getDay();
 }
@@ -172,12 +184,18 @@ function AttendanceDayCell({
 
   const day = new Date(`${row.date}T12:00:00`);
   const weekend = day.getDay() === 0 || day.getDay() === 6;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dayOnly = new Date(day);
+  dayOnly.setHours(0, 0, 0, 0);
+  const isFutureDay = dayOnly > today;
   const accent =
     row.actualLocationTypeColor
     ?? row.plannedLocationTypeColor
     ?? tokens.colorNeutralStroke3;
   const busyKey = `${row.userId}|${row.date}`;
   const isQuickBusy = quickMarkBusyKey === busyKey;
+  const disableActionButtons = isQuickBusy || isFutureDay;
 
   return (
     <div
@@ -228,8 +246,16 @@ function AttendanceDayCell({
             icon={defaultAssumption === 'Absent' ? <PersonProhibitedRegular /> : <PersonAvailableRegular />}
             size="small"
             appearance="primary"
-            style={{ backgroundColor: defaultAssumption === 'Absent' ? tokens.colorStatusDangerBackground3 : tokens.colorStatusSuccessBackground3 }}
-            disabled={isQuickBusy}
+            style={{
+              backgroundColor: disableActionButtons
+                ? tokens.colorNeutralBackgroundDisabled
+                : defaultAssumption === 'Absent'
+                  ? tokens.colorStatusDangerBackground3
+                  : tokens.colorStatusSuccessBackground3,
+              color: disableActionButtons ? tokens.colorNeutralForegroundDisabled : undefined,
+              borderColor: disableActionButtons ? tokens.colorNeutralStrokeDisabled : undefined,
+            }}
+            disabled={disableActionButtons}
             title={defaultAssumption === 'Absent' ? 'Mark absent' : 'Mark present'}
             onClick={() => onQuickMark(row)}
           >
@@ -238,8 +264,16 @@ function AttendanceDayCell({
             icon={defaultAssumption === 'Absent' ? <PersonAvailableRegular /> : <PersonProhibitedRegular />}
             size="small"
             appearance={"primary"}
-            style={{ backgroundColor: defaultAssumption === 'Absent' ? tokens.colorStatusSuccessBackground3 : tokens.colorStatusDangerBackground3 }}
-            disabled={isQuickBusy}
+            style={{
+              backgroundColor: disableActionButtons
+                ? tokens.colorNeutralBackgroundDisabled
+                : defaultAssumption === 'Absent'
+                  ? tokens.colorStatusSuccessBackground3
+                  : tokens.colorStatusDangerBackground3,
+              color: disableActionButtons ? tokens.colorNeutralForegroundDisabled : undefined,
+              borderColor: disableActionButtons ? tokens.colorNeutralStrokeDisabled : undefined,
+            }}
+            disabled={disableActionButtons}
             title={defaultAssumption === 'Absent' ? 'Mark present' : 'Mark absent'}
             onClick={() => onQuickMark(row, true)}
           >
@@ -248,7 +282,14 @@ function AttendanceDayCell({
             icon={row.hasActual ? <Edit12Regular /> : <Checkmark12Regular />}
             size="small"
             appearance="secondary"
-            disabled={isQuickBusy}
+            style={disableActionButtons
+              ? {
+                backgroundColor: tokens.colorNeutralBackgroundDisabled,
+                color: tokens.colorNeutralForegroundDisabled,
+                borderColor: tokens.colorNeutralStrokeDisabled,
+              }
+              : undefined}
+            disabled={disableActionButtons}
             title="Mark with details"
             onClick={() => onMark(row)}
           />
@@ -259,7 +300,14 @@ function AttendanceDayCell({
             icon={row.hasActual ? <Edit12Regular /> : <Checkmark12Regular />}
             size="small"
             appearance="secondary"
-            disabled={isQuickBusy}
+            style={disableActionButtons
+              ? {
+                backgroundColor: tokens.colorNeutralBackgroundDisabled,
+                color: tokens.colorNeutralForegroundDisabled,
+                borderColor: tokens.colorNeutralStrokeDisabled,
+              }
+              : undefined}
+            disabled={disableActionButtons}
             title="Mark with details"
             onClick={() => onMark(row)}
           />
@@ -526,13 +574,42 @@ export default function LeaveAttendancePage() {
     }));
   }, []);
 
-  const health = useMemo(() => computeAttendanceHealth(rows), [rows]);
+  const healthRows = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (rangeMode === 'week') {
+      const weekStart = startOfWeek(anchorDate);
+      const weekEnd = addDays(weekStart, 6);
+      const windowEnd = weekEnd > today ? today : weekEnd;
+      const fromDate = toDateInputValue(weekStart);
+      const toDate = toDateInputValue(windowEnd);
+      return rows.filter((row) => row.date >= fromDate && row.date <= toDate);
+    }
+
+    const monthStart = startOfMonth(anchorDate);
+    const monthEnd = endOfMonth(anchorDate);
+    const boundedMonthEnd = monthEnd > today ? today : monthEnd;
+
+    if (isSameMonth(anchorDate, today)) {
+      const rollingStart = addDays(boundedMonthEnd, -30);
+      const fromDate = toDateInputValue(rollingStart);
+      const toDate = toDateInputValue(boundedMonthEnd);
+      return rows.filter((row) => row.date >= fromDate && row.date <= toDate);
+    }
+
+    const fromDate = toDateInputValue(monthStart);
+    const toDate = toDateInputValue(boundedMonthEnd);
+    return rows.filter((row) => row.date >= fromDate && row.date <= toDate);
+  }, [anchorDate, rangeMode, rows]);
+
+  const attendanceHealth = useMemo(() => computeAttendanceHealth(healthRows), [healthRows]);
   const absentLocationTypeId = useMemo(() => (
     locations.find((item) => item.code.toUpperCase() === 'ABSENT')?.id ?? null
   ), [locations]);
   const attendanceHealthScore = useMemo(
-    () => computeAttendanceHealthScore(rows, absentLocationTypeId),
-    [absentLocationTypeId, rows],
+    () => computeAttendanceHealthScore(healthRows, absentLocationTypeId),
+    [absentLocationTypeId, healthRows],
   );
 
   const filteredRows = useMemo(() => {
@@ -603,6 +680,10 @@ export default function LeaveAttendancePage() {
   };
 
   const beginEdit = (row: AttendanceCompareRow) => {
+    if (isFutureDate(row.date)) {
+      return;
+    }
+
     setEditingDate(row.date);
     setEditingUserId(row.userId);
     setActualLocationId(row.actualLocationTypeId ?? row.plannedLocationTypeId ?? locations.find((item) => item.code.toUpperCase() === 'OFFICE')?.id ?? locations[0]?.id ?? '');
@@ -622,7 +703,7 @@ export default function LeaveAttendancePage() {
   };
 
   const quickMark = async (row: AttendanceCompareRow, toggle?: boolean) => {
-    if (!canWrite || row.plannedKind === 'OnLeave') {
+    if (!canWrite || row.plannedKind === 'OnLeave' || isFutureDate(row.date)) {
       return;
     }
 
@@ -823,10 +904,10 @@ export default function LeaveAttendancePage() {
           {/* Health Title */}
           <Text weight="semibold">Attendance health · {rangeLabel}</Text>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <Text><span className="font-semibold w-[80px] inline-block">Match</span>: {health.match}</Text>
-            <Text><span className="font-semibold w-[80px] inline-block">Missing</span>: {health.missing}</Text>
-            <Text><span className="font-semibold w-[80px] inline-block">Mismatch</span>: {health.mismatch}</Text>
-            <Text><span className="font-semibold w-[80px] inline-block">Match rate</span>: {health.workDays === 0 ? '—' : `${Math.round(health.matchRate * 100)}%`}</Text>
+            <Text><span className="font-semibold w-[80px] inline-block">Match</span>: {attendanceHealth.match}</Text>
+            <Text><span className="font-semibold w-[80px] inline-block">Missing</span>: {attendanceHealth.missing}</Text>
+            <Text><span className="font-semibold w-[80px] inline-block">Mismatch</span>: {attendanceHealth.mismatch}</Text>
+            <Text><span className="font-semibold w-[80px] inline-block">Match rate</span>: {attendanceHealth.workDays === 0 ? '—' : `${Math.round(attendanceHealth.matchRate * 100)}%`}</Text>
           </div>
           <div className="flex flex-wrap gap-2 pt-1">
             <Badge appearance="filled" style={{ backgroundColor: ATTENDANCE_HEALTH_COLORS.healthy, color: '#fff' }}>Match</Badge>
@@ -937,7 +1018,9 @@ export default function LeaveAttendancePage() {
             onToggle={(_, data) => setOpenItems(data.openItems.map(String))}
           >
             {employeeGroups.map((group) => {
-              const groupHealth = computeAttendanceHealth(group.days);
+              const groupHealth = computeAttendanceHealth(
+                healthRows.filter((row) => row.userId === group.userId),
+              );
               return (
                 <AccordionItem key={group.userId} value={group.userId}>
                   <AccordionHeader>

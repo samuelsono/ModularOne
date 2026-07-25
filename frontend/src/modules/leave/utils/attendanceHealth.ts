@@ -104,7 +104,7 @@ export function computeAttendanceHealthScore(
   const countedRows = rows.filter((row) => row.plannedKind === 'Work');
   const presentDays = countedRows.filter((row) => {
     if (!row.hasActual) {
-      return true;
+      return false;
     }
 
     return row.actualLocationTypeId !== absentLocationTypeId;
@@ -119,7 +119,7 @@ export function computeAttendanceHealthScore(
     countedDays,
     label: countedDays === 0
       ? 'No scheduled work days'
-      : `${Math.round(percentage * 100)}% over the last 30 days`,
+      : `${Math.round(percentage * 100)}% in selected range`,
     color: countedDays === 0 ? HEALTH_COLORS.unknown : getAttendanceHealthColor(percentage),
   };
 }
