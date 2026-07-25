@@ -411,7 +411,6 @@ export default function LeaveAttendancePage() {
   const [employees, setEmployees] = useState<UserListItem[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [rows, setRows] = useState<AttendanceCompareRow[]>([]);
-  const [healthRows, setHealthRows] = useState<AttendanceCompareRow[]>([]);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [openItems, setOpenItems] = useState<string[]>([]);
   const [defaultAssumption, setDefaultAssumption] = useState<AttendanceDefaultAssumption>('Present');
@@ -451,15 +450,6 @@ export default function LeaveAttendancePage() {
     };
   }, [anchorDate, rangeMode]);
 
-  const { from: healthFrom, to: healthTo } = useMemo(() => {
-    const end = new Date();
-    const start = addDays(end, -29);
-    return {
-      from: toDateInputValue(start),
-      to: toDateInputValue(end),
-    };
-  }, []);
-
   const selectedLocation = locations.find((item) => item.id === actualLocationId);
 
   const load = useCallback(async (options?: { silent?: boolean }) => {
@@ -468,15 +458,13 @@ export default function LeaveAttendancePage() {
       setIsLoading(true);
     }
     try {
-      const [locationItems, compareRows, monthlyRows, policy] = await Promise.all([
+      const [locationItems, compareRows, policy] = await Promise.all([
         getWorkLocationTypes(true),
         getAttendanceCompare(from, to, targetUserId),
-        getAttendanceCompare(healthFrom, healthTo, targetUserId),
         getAttendancePolicy(),
       ]);
       setLocations(locationItems);
       setRows(compareRows);
-      setHealthRows(monthlyRows);
       setDefaultAssumption(policy.defaultAssumption === 'Absent' ? 'Absent' : 'Present');
       if (!silent) {
         setError(null);
@@ -491,7 +479,7 @@ export default function LeaveAttendancePage() {
         setIsLoading(false);
       }
     }
-  }, [from, healthFrom, healthTo, targetUserId, to]);
+  }, [from, targetUserId, to]);
 
   useEffect(() => {
     void load();
@@ -543,8 +531,8 @@ export default function LeaveAttendancePage() {
     locations.find((item) => item.code.toUpperCase() === 'ABSENT')?.id ?? null
   ), [locations]);
   const attendanceHealthScore = useMemo(
-    () => computeAttendanceHealthScore(healthRows, absentLocationTypeId),
-    [absentLocationTypeId, healthRows],
+    () => computeAttendanceHealthScore(rows, absentLocationTypeId),
+    [absentLocationTypeId, rows],
   );
 
   const filteredRows = useMemo(() => {
@@ -875,7 +863,7 @@ export default function LeaveAttendancePage() {
               />
             </div>
           ) : (
-            <Text className="text-neutral-foreground-3 text-center">No attendance data in the last 30 days.</Text>
+            <Text className="text-neutral-foreground-3 text-center">No attendance data in the selected range.</Text>
           )}
           <div className="flex flex-col items-center gap-1">
               <Text
