@@ -1,20 +1,24 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { IonContent, IonPage } from '@ionic/react';
 import { Button, Card, Text, Persona, tokens } from '@fluentui/react-components';
 import { SignOut24Regular } from '@fluentui/react-icons';
 import { useHistory } from 'react-router-dom';
-import { setAuthToken } from '../services/api';
+import { clearSession, displayNameForUser, getStoredUser } from '../services/authService';
 
 const muted = { color: tokens.colorNeutralForeground3 };
 
 const Profile: React.FC = () => {
   const history = useHistory();
+  const user = useMemo(() => getStoredUser(), []);
 
   const handleSignOut = () => {
-    localStorage.removeItem('token');
-    setAuthToken(null);
+    clearSession();
     history.replace('/login');
   };
+
+  const name = displayNameForUser(user);
+  const secondary = user?.email || user?.username || 'Remote access';
+  const roles = user?.roles?.length ? user.roles.join(', ') : null;
 
   return (
     <IonPage>
@@ -28,12 +32,18 @@ const Profile: React.FC = () => {
 
         <Card className="app-card">
           <Persona
-            name="Employee"
-            secondaryText="Remote access"
+            name={name}
+            secondaryText={secondary}
+            avatar={{ color: 'colorful', idForColor: user?.email || user?.username || 'user' }}
             size="extra-large"
             textAlignment="center"
           />
           <div style={{ marginTop: 16, textAlign: 'center' }}>
+            {roles && (
+              <Text size={200} block style={{ ...muted, marginBottom: 4 }}>
+                {roles}
+              </Text>
+            )}
             <Text size={200} block style={muted}>
               Signed in to Chronos Leave & Claims
             </Text>
@@ -42,11 +52,13 @@ const Profile: React.FC = () => {
 
         <Card className="app-card">
           <Text weight="semibold" block>
-            Preferences
+            Account
           </Text>
           <Text size={200} block style={{ ...muted, marginTop: 8 }}>
-            Notifications and contact details will appear here once connected to your
-            organisation profile.
+            Username: {user?.username || '—'}
+          </Text>
+          <Text size={200} block style={{ ...muted, marginTop: 4 }}>
+            Email: {user?.email || '—'}
           </Text>
         </Card>
 

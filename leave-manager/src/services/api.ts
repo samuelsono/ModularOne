@@ -1,8 +1,16 @@
-import axios from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { getStoredAccessToken } from './tokenStorage';
 
-// Replace with your actual deployed .NET API URL
-// NOTE: If testing on an Android Emulator, use 'http://10.0.2.2:5001' instead of localhost
-const API_BASE_URL = 'http://localhost:51705/api'; 
+// Aspire Host HTTP endpoint (see CarTrack.AppHost/AppHost.cs)
+// Android emulator: use http://10.0.2.2:51705/api
+const API_BASE_URL = 'http://localhost:51705/api';
+
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    skipAuthRefresh?: boolean;
+    _retry?: boolean;
+  }
+}
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,11 +19,44 @@ export const api = axios.create({
   },
 });
 
-// Helper to append JWT tokens to subsequent requests after logging in
 export const setAuthToken = (token: string | null) => {
   if (token) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
   } else {
-    delete api.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common.Authorization;
   }
 };
+
+api.interceptors.request.use((config) => {
+  const token = getStoredAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    delete config.headers.Authorization;
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const original = error.config as InternalAxiosRequestConfig | undefined;
+    const status = error.response?.status;
+
+    if (!original || status !== 401 || original.skipAuthRefresh || original._retry) {
+      return Promise.reject(error);
+    }
+
+    original._retry = true;
+
+    try {
+      // Lazy import avoids circular init issues between api and authService.
+      const { refreshSession } = await import('./authService');
+      const accessToken = await refreshSession();
+      original.headers.Authorization = `Bearer ${accessToken}`;
+      return api(original);
+    } catch (refreshError) {
+      return Promise.reject(refreshError);
+    }
+  },
+);

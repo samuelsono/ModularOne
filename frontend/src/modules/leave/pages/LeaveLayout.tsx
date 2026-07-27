@@ -13,10 +13,10 @@ import { MobileHolidaysDrawer } from '../components/MobileHolidaysDrawer';
 export default function LeaveLayout() {
   return (
     <div className="flex flex-col h-screen min-h-0 p-3 gap-2" style={{ backgroundColor: tokens.colorNeutralBackground3 }}>
-      <div className='flex justify-between items-center'>
+      <div className='flex justify-between items-start'>
       <div className='flex flex-col'>
         <Subtitle2>Leave management</Subtitle2>
-        <Text className="text-sm text-neutral-foreground-3">
+        <Text className="text-sm text-neutral-foreground-3 w-4/5">
           Dashboard, requests, approvals, and team leave visibility.
         </Text>
       </div>

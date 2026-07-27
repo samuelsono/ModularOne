@@ -20,7 +20,9 @@ function Layout() {
             <div className={`${styles.content} flex flex-col pt-[52px] h-[100vh] overflow-y-hidden`}>
               <Navigation />
               <div className="flex flex-row max-w-[100vw] h-full overflow-hidden">
-                <SideNavigation />
+                <div className="hidden md:flex flex-col shrink-0 h-full">
+                   <SideNavigation />
+                </div>
                 <div className="h-full w-full min-w-0 overflow-hidden">
                   <Outlet />
                 </div>

@@ -1,3 +1,43 @@
 ion-item {
   --padding-start: 0;
 }
+
+.leave-history {
+  margin-top: 8px;
+}
+
+.leave-history-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #242424;
+}
+
+.leave-history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.leave-history-copy {
+  min-width: 0;
+}
+
+.leave-history-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.balance-chip-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.balance-chip {
+  margin-bottom: 0;
+}

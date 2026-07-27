@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CarTrack.ArchitectureTests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ce361eeabddd2642606fa45edc5228d27f1f62d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b38e467c89053817eb626c4453036cc4800da143")]
 [assembly: System.Reflection.AssemblyProductAttribute("CarTrack.ArchitectureTests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CarTrack.ArchitectureTests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

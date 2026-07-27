@@ -51,7 +51,7 @@ import {
 
 } from '@fluentui/react-components';
 
-import { PeopleRegular, PersonRegular } from '@fluentui/react-icons';
+import { EditRegular, PeopleRegular, PersonRegular } from '@fluentui/react-icons';
 
 import { ApiError } from '@platform/api/apiClient';
 
@@ -447,7 +447,10 @@ function SummaryCard({ label, value, description, leaveTypeColor, onSelectTarget
               
               {label}</Text>}
             description={<Body1 className={"font-thin!"}>{description}</Body1>}
-            action={<>{ canAdjust && <Button size='small' appearance="subtle" onClick={onSelectTarget}>Adjust</Button> }</>}
+            action={<>
+            { canAdjust && <Button icon={<EditRegular />} className='md:hidden!' size='small' appearance="subtle" onClick={onSelectTarget}></Button> }
+            { canAdjust && <Button className='hidden! md:inline' size='small' appearance="subtle" onClick={onSelectTarget}>Adjust</Button> }
+            </>}
           />
           <p className={"text-4xl text-left font-thin"}>
             {value}
@@ -674,7 +677,7 @@ export default function LeaveBalancesPage() {
   return (
 
     <div className="flex flex-col gap-6 h-full overflow-auto pb-6 px-6 overflow-x-hidden">
-      <div className="flex items-start justify-between gap-4 px-2">
+      <div className="flex flex-col md:flex-row items-start justify-between gap-4 px-2">
         <AppTitle
           title="Leave Balances"
           subtitle={`Your balances, pending requests, leave history, and eligibility for ${year}.`}
@@ -817,14 +820,14 @@ export default function LeaveBalancesPage() {
           ) : (
 
             selectedCard ? (
-        <div className='grid grid-cols-4 w-full gap-3 mx-auto max-w-7xl py-6'>
+        <div className='grid grid-cols-2 md:grid-cols-4 w-full gap-3 mx-auto max-w-7xl py-6'>
            <SummaryCard label="Total Used" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.used ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
-           <SummaryCard label="Allocated Balance" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.allocated ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
-           <SummaryCard canAdjust={canAdjust} onSelectTarget={() => setAdjustTarget(selectedCard)} label="Remaining Balance" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.remaining ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
+           <SummaryCard label="Allocated" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.allocated ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
+           <SummaryCard canAdjust={canAdjust} onSelectTarget={() => setAdjustTarget(selectedCard)} label="Remaining" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.remaining ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
            <SummaryCard label="Pending" description={`${selectedCard?.leaveTypeName ?? ''} Leave`} value={selectedCard?.pending ?? 0} leaveTypeColor={selectedCard?.leaveTypeColor ?? 'default'} />
         </div>) :
         (
-          <div className='grid grid-cols-4 w-full gap-3 mx-auto max-w-7xl py-6'>
+          <div className='grid grid-cols-2 md:grid-cols-4 w-full gap-3 mx-auto max-w-7xl py-6'>
              {[0,1,2,3].map((index) => (
                <Card key={index}>
                  <CardHeader

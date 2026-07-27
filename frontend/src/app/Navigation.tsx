@@ -54,10 +54,10 @@ const Navigation = () => {
         <AppLauncher>
           <div />
         </AppLauncher>
-        <Subtitle2>Chronos {appname.currentModule?.name ? ` - ${appname.currentModule?.name}` : ''}</Subtitle2>
+        <Subtitle2 className='hidden! md:flex! items-center gap-2'>Chronos {appname.currentModule?.name ? ` - ${appname.currentModule?.name}` : ''}</Subtitle2>
       </div>
 
-      <div className={styles.navGroup}>
+      <div className={styles.navGroup + ' hidden! md:flex! items-center gap-2'}>
         <SearchBox
           placeholder={placeholder}
           className={styles.searchBox}
