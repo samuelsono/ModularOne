@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { TableColumnDefinition, TableColumnSizingOptions } from '@fluentui/react-components';
+import type { TableColumnDefinition } from '@fluentui/react-components';
 import {
   Button,
   Card,
@@ -33,6 +33,7 @@ import {
   isLeaveCurrentlyRunning,
   leaveApprovalColumns,
   leaveHistoryColumns,
+  leaveTableColumnSizing,
   sortLeaveHistoryItems,
 } from '@modules/leave/components/leaveTableUtils';
 import AppTitle from '@platform/ui/AppTitle';
@@ -157,14 +158,6 @@ export default function LeaveReportsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-
-  const leaveTableColumnSizing: TableColumnSizingOptions = {
-    department: { minWidth: 320, idealWidth: 400, defaultWidth: 360 },
-    dates: { minWidth: 200, idealWidth: 250, defaultWidth: 250 },
-    status: { minWidth: 200, idealWidth: 250, defaultWidth: 250 },
-    workingDays: { minWidth: 60, idealWidth: 80, defaultWidth: 80 },
-  };
 
   const loadReports = useCallback(async () => {
     setIsLoading(true);
@@ -777,7 +770,6 @@ export default function LeaveReportsPage() {
               selectedIds={selectedLiabilityIds}
               onSelectionChange={setSelectedLiabilityIds}
               getRowId={getLiabilityRowId}
-              enableColumnSizing={false}
             />
             </ScrollableDiv>
 

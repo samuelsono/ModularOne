@@ -9,21 +9,27 @@ import type { LeaveConfirmActionKind, LeaveActionPermissions } from '@modules/le
 import { withAuditableColumns } from '@platform/ui/auditTableColumns';
 
 export const leaveTableColumnSizing: TableColumnSizingOptions = {
-  requester: { minWidth: 140, idealWidth: 280, defaultWidth: 200 },
-  employee: { minWidth: 140, idealWidth: 280, defaultWidth: 200 },
-  department: { minWidth: 120, idealWidth: 180, defaultWidth: 150 },
-  leaveType: { minWidth: 120, idealWidth: 120, defaultWidth: 120 },
-  dates: { minWidth: 220, idealWidth: 420, defaultWidth: 300 },
-  workingDays: { minWidth: 80, idealWidth: 80, defaultWidth: 80 },
-  status: { minWidth: 180, idealWidth: 180, defaultWidth: 180 },
-  approvalStatus: { minWidth: 120, idealWidth: 120, defaultWidth: 120 },
-  document: { minWidth: 260, idealWidth: 380, defaultWidth: 300 },
-  notes: { minWidth: 160, idealWidth: 320, defaultWidth: 220 },
-  createdAt: { minWidth: 170, idealWidth: 280, defaultWidth: 210 },
-  actions: { minWidth: 150, idealWidth: 170, defaultWidth: 170 },
-  remaining: { minWidth: 100, idealWidth: 120, defaultWidth: 110 },
-  used: { minWidth: 100, idealWidth: 120, defaultWidth: 110 },
-  pending: { minWidth: 100, idealWidth: 120, defaultWidth: 110 },
+  requester: { minWidth: 140, idealWidth: 220, defaultWidth: 200 },
+  employee: { minWidth: 140, idealWidth: 220, defaultWidth: 200 },
+  department: { minWidth: 110, idealWidth: 160, defaultWidth: 140 },
+  leaveType: { minWidth: 100, idealWidth: 140, defaultWidth: 120 },
+  dates: { minWidth: 160, idealWidth: 240, defaultWidth: 210 },
+  workingDays: { minWidth: 64, idealWidth: 80, defaultWidth: 72 },
+  status: { minWidth: 110, idealWidth: 160, defaultWidth: 140 },
+  approvalStatus: { minWidth: 100, idealWidth: 130, defaultWidth: 120 },
+  document: { minWidth: 120, idealWidth: 180, defaultWidth: 160 },
+  notes: { minWidth: 120, idealWidth: 200, defaultWidth: 160 },
+  submittedAt: { minWidth: 140, idealWidth: 180, defaultWidth: 160 },
+  createdAt: { minWidth: 140, idealWidth: 180, defaultWidth: 160 },
+  createdBy: { minWidth: 120, idealWidth: 160, defaultWidth: 140 },
+  updatedAt: { minWidth: 140, idealWidth: 180, defaultWidth: 160 },
+  updatedBy: { minWidth: 120, idealWidth: 160, defaultWidth: 140 },
+  allocated: { minWidth: 80, idealWidth: 110, defaultWidth: 100 },
+  remaining: { minWidth: 80, idealWidth: 110, defaultWidth: 100 },
+  used: { minWidth: 80, idealWidth: 110, defaultWidth: 100 },
+  pending: { minWidth: 80, idealWidth: 110, defaultWidth: 100 },
+  // Sticky Actions column: fixed width so it doesn't steal space / overlap.
+  actions: { minWidth: 160, idealWidth: 180, defaultWidth: 180, autoFitColumns: false },
 };
 
 import type { PersonaProps } from '@fluentui/react-components';

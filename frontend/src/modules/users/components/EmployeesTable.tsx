@@ -378,9 +378,17 @@ export function EmployeesTable({
               checkboxIndicator: { 'aria-label': 'Select all rows' },
             }}
           >
-            {({ renderHeaderCell }) => (
-              <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
-            )}
+            {({ renderHeaderCell, columnId }) => {
+              const isActionsColumn = String(columnId) === 'actions';
+
+              return (
+                <DataGridHeaderCell
+                  className={String(columnId) === 'actions' ? 'autofit-datagrid-actions autofit-datagrid-actions--header' : undefined}
+                >
+                  {renderHeaderCell()}
+                </DataGridHeaderCell>
+              );
+            }}
           </DataGridRow>
         </DataGridHeader>
         <DataGridBody<UserListItem>>
@@ -391,11 +399,18 @@ export function EmployeesTable({
                 checkboxIndicator: { 'aria-label': 'Select row' },
               }}
             >
-              {({ renderCell }) => (
-                <DataGridCell onClick={stopDataGridRowSelection}>
-                  {renderCell(item)}
-                </DataGridCell>
-              )}
+              {({ renderCell, columnId }) => {
+                const isActionsColumn = String(columnId) === 'actions';
+
+                return (
+                  <DataGridCell
+                    onClick={stopDataGridRowSelection}
+                    className={String(columnId) === 'actions' ? 'autofit-datagrid-actions' : undefined}
+                  >
+                    {renderCell(item)}
+                  </DataGridCell>
+                );
+              }}
             </DataGridRow>
           )}
         </DataGridBody>

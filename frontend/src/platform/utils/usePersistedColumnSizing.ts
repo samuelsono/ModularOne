@@ -88,6 +88,24 @@ export function usePersistedColumnSizing<TItem>(
     [baseSizing, persistedWidths, storageKey],
   );
 
+  const resolveColumnId = useCallback((columnId: string | number): string => {
+    if (typeof columnId === 'number' && Number.isInteger(columnId)) {
+      const byIndex = columns[columnId];
+      if (byIndex) {
+        return String(byIndex.columnId);
+      }
+    }
+
+    const byExactMatch = columns.find(
+      (column) => String(column.columnId) === String(columnId),
+    );
+    if (byExactMatch) {
+      return String(byExactMatch.columnId);
+    }
+
+    return String(columnId);
+  }, [columns]);
+
   const onColumnResize = useCallback((
     _event: unknown,
     data: { columnId: string | number; width: number },
@@ -96,7 +114,7 @@ export function usePersistedColumnSizing<TItem>(
       return;
     }
 
-    const columnId = String(data.columnId);
+    const columnId = resolveColumnId(data.columnId);
     const width = Math.round(data.width);
     setPersistedWidths((current) => {
       const next = { ...current, [columnId]: width };
@@ -108,7 +126,7 @@ export function usePersistedColumnSizing<TItem>(
       }, 150);
       return next;
     });
-  }, [storageKey]);
+  }, [resolveColumnId, storageKey]);
 
   return {
     columnSizingOptions,

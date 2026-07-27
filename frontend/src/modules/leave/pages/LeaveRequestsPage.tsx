@@ -11,7 +11,6 @@ import {
   Text,
   ToggleButton,
   Tooltip,
-  type TableColumnSizingOptions,
 } from '@fluentui/react-components';
 import { AddRegular, CalendarRegular, PeopleRegular, PersonRegular } from '@fluentui/react-icons';
 import { LeaveActionConfirmDialog } from '@modules/leave/components/LeaveActionConfirmDialog';
@@ -21,6 +20,7 @@ import { LeaveRowActions } from '@modules/leave/components/LeaveRowActions';
 import { LeaveSelectableDataGrid } from '@modules/leave/components/LeaveSelectableDataGrid';
 import {
   createLeaveRequestColumnsWithDetailPopover,
+  leaveTableColumnSizing,
 } from '@modules/leave/components/leaveTableUtils';
 import { useLeaveActions } from '@modules/leave/hooks/useLeaveActions';
 import { usePermissions } from '@platform/permissions/usePermissions';
@@ -30,18 +30,6 @@ import type { LeaveRequest } from '@modules/leave/types/leave';
 import { LEAVE_STATUS_FILTERS } from '@modules/leave/types/leave';
 import { usePageSearchQuery } from '@platform/shell/PageSearchContext';
 import { filterLeaveRequests } from '@modules/leave/search/filters';
-
-
-const leaveTableColumnSizing: TableColumnSizingOptions = {
-    department: { minWidth: 320, idealWidth: 400, defaultWidth: 360 },
-    dates: { minWidth: 320, idealWidth: 400, defaultWidth: 360 },
-    createdAt: { minWidth: 200, idealWidth: 250, defaultWidth: 250 },
-    document: { minWidth: 180, idealWidth: 180, defaultWidth: 180 },
-    status: { minWidth: 200, idealWidth: 250, defaultWidth: 250 },
-    submitted: { minWidth: 200, idealWidth: 250, defaultWidth: 250 },
-    workingDays: { minWidth: 60, idealWidth: 80, defaultWidth: 80 },
-    leaveType: { minWidth: 100, idealWidth: 120, defaultWidth: 120 },
-};
 
 export default function LeaveRequestsPage() {
   const searchQuery = usePageSearchQuery();

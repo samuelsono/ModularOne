@@ -1,7 +1,8 @@
 import { useRef } from 'react';
-import { Button, makeStyles, tokens, type JSXElement } from '@fluentui/react-components';
+import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, type JSXElement } from '@fluentui/react-components';
 import type { AuthUser } from '@platform/auth/types';
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
+import { runAfterMenuDismiss } from '@platform/utils/runAfterMenuDismiss';
 import {
   getAttachDocumentLabel,
   getLeaveRowActions,
@@ -11,39 +12,12 @@ import {
   type LeaveActionPermissions,
   type LeaveConfirmActionKind,
 } from '@modules/leave/utils/leaveActionUtils';
-import { AttachRegular } from '@fluentui/react-icons';
-
-const styles = makeStyles({
-  documentButton: {
-    backgroundColor: tokens.colorStatusSuccessBackground1,
-    ":hover": {
-      backgroundColor: tokens.colorStatusSuccessBackground2,
-    },
-    color: tokens.colorBrandBackground,
-  },
-  approveButton: {
-    backgroundColor: tokens.colorStatusSuccessBackground3,
-    ":hover": {
-      backgroundColor: tokens.colorStatusSuccessForeground2,
-    },
-    color: tokens.colorNeutralCardBackground,
-  },
-  cancelButton: {
-    backgroundColor: tokens.colorStatusWarningBackground3,
-    ":hover": {
-      backgroundColor: tokens.colorStatusWarningForeground2,
-    },
-    color: tokens.colorNeutralCardBackground,
-  },
-  rejectButton: {
-    backgroundColor: tokens.colorStatusDangerBackground3,
-    ":hover": {
-      backgroundColor: tokens.colorStatusDangerForeground2,
-    },
-    color: tokens.colorNeutralCardBackground,
-  }
-
-});
+import {
+  AttachRegular,
+  CheckmarkRegular,
+  DismissRegular,
+  MoreVerticalRegular,
+} from '@fluentui/react-icons';
 
 
 
@@ -65,9 +39,9 @@ interface LeaveRowActionsProps {
 
 const actionIcons : Record<LeaveActionKind, JSXElement | null> = {
   attachDocument: <AttachRegular />,
-  approve: null,
-  reject: null,
-  cancel: null,
+  approve: <CheckmarkRegular />,
+  reject: <DismissRegular />,
+  cancel: <DismissRegular />,
 }
 
 export function LeaveRowActions({
@@ -79,22 +53,22 @@ export function LeaveRowActions({
   onAction,
   onUploadDocument,
 }: LeaveRowActionsProps) {
-  const classes = styles();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const actions = getLeaveRowActions(user, item, permissions);
-
-  const actionButtonClass: Record<LeaveActionKind, string> = {
-  approve: classes.approveButton,
-  reject: classes.rejectButton,
-  cancel: classes.cancelButton,
-  attachDocument: classes.documentButton,
-};
 
   if (actions.length === 0) {
     return <>—</>;
   }
 
   const isActing = actingId === item.id;
+  const isDisabled = disabled || isActing;
+
+  const actionLabelsWithDocument: Record<LeaveActionKind, string> = {
+    approve: actionLabels.approve,
+    reject: actionLabels.reject,
+    cancel: actionLabels.cancel,
+    attachDocument: getAttachDocumentLabel(item) || 'Attach document',
+  };
 
   return (
     <div
@@ -115,30 +89,40 @@ export function LeaveRowActions({
           }
         }}
       />
-      {actions.map((action) => (
-        <Button
-          key={action}
-          size="small"
-          appearance="primary"
-          icon={actionIcons[action]}
-          className={actionButtonClass[action]}
-          disabled={disabled || isActing}
-          onClick={() => {
-            if (action === 'attachDocument') {
-              fileInputRef.current?.click();
-              return;
-            }
+      <Menu>
+        <MenuTrigger disableButtonEnhancement>
+          <Button
+            size="small"
+            appearance="subtle"
+            icon={<MoreVerticalRegular />}
+            aria-label={isActing ? 'Working...' : 'More actions'}
+            disabled={isDisabled}
+          />
+        </MenuTrigger>
+        <MenuPopover>
+          <MenuList>
+            {actions.map((action) => (
+              <MenuItem
+                key={action}
+                icon={actionIcons[action]}
+                disabled={isDisabled}
+                onClick={() => {
+                  if (action === 'attachDocument') {
+                    runAfterMenuDismiss(() => {
+                      fileInputRef.current?.click();
+                    });
+                    return;
+                  }
 
-            onAction?.(action, item.id);
-          }}
-        >
-          {isActing
-            ? 'Working...'
-            : action === 'attachDocument'
-              ? getAttachDocumentLabel(item)
-              : actionLabels[action]}
-        </Button>
-      ))}
+                  onAction?.(action, item.id);
+                }}
+              >
+                {actionLabelsWithDocument[action]}
+              </MenuItem>
+            ))}
+          </MenuList>
+        </MenuPopover>
+      </Menu>
     </div>
   );
 }

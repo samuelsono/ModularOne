@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { TableColumnDefinition, TableColumnSizingOptions } from '@fluentui/react-components';
 import {
   DataGrid,
@@ -9,6 +9,7 @@ import {
   DataGridRow,
 } from '@fluentui/react-components';
 import { buildColumnSizingOptions } from '@platform/utils/dataGridColumnSizing';
+import { mergePersistedSizing, type StoredColumnWidths } from '@platform/utils/usePersistedColumnSizing';
 import { usePersistedColumnSizing } from '@platform/utils/usePersistedColumnSizing';
 import { stopDataGridRowSelection } from '@platform/utils/dataGrid';
 
@@ -27,6 +28,13 @@ type AutoFitDataGridProps<TItem> = {
   size?: 'small' | 'extra-small' | 'medium';
 };
 
+/**
+ * IMPORTANT: Do not pass a `style` prop to DataGridHeaderCell / DataGridCell when
+ * resizableColumns is enabled. Fluent injects width/minWidth/maxWidth via
+ * getTableHeaderCellProps / getTableCellProps, then spreads caller props on top —
+ * so a custom `style` replaces those widths and column resizing appears broken.
+ * Sticky Actions styling must use className instead.
+ */
 export function AutoFitDataGrid<TItem>({
   items,
   columns,
@@ -40,31 +48,89 @@ export function AutoFitDataGrid<TItem>({
   onSelectionChange,
   size = 'medium',
 }: AutoFitDataGridProps<TItem>) {
+  const orderedColumns = useMemo(() => {
+    const nonActionColumns = columns.filter(
+      (column) => String(column.columnId) !== 'actions',
+    );
+    const actionColumns = columns.filter(
+      (column) => String(column.columnId) === 'actions',
+    );
+
+    return [...nonActionColumns, ...actionColumns];
+  }, [columns]);
+
   const baseOverrides = useMemo(
     () => columnSizingOptions ?? {},
     [columnSizingOptions],
   );
 
+  const [sessionColumnWidths, setSessionColumnWidths] = useState<StoredColumnWidths>({});
+
   const persisted = usePersistedColumnSizing(
     enableColumnSizing ? storageKey : undefined,
-    columns,
+    orderedColumns,
     baseOverrides,
   );
 
-  const resolvedColumnSizing = useMemo(
-    () => (storageKey && enableColumnSizing
-      ? persisted.columnSizingOptions
-      : buildColumnSizingOptions(columns, columnSizingOptions)),
-    [columns, columnSizingOptions, enableColumnSizing, persisted.columnSizingOptions, storageKey],
+  const transientBaseSizing = useMemo(
+    () => buildColumnSizingOptions(orderedColumns, columnSizingOptions),
+    [columnSizingOptions, orderedColumns],
   );
+
+  const resolvedColumnSizing = useMemo(() => {
+    if (!enableColumnSizing) {
+      return transientBaseSizing;
+    }
+
+    if (storageKey) {
+      return persisted.columnSizingOptions;
+    }
+
+    return mergePersistedSizing(transientBaseSizing, sessionColumnWidths);
+  }, [enableColumnSizing, persisted.columnSizingOptions, sessionColumnWidths, storageKey, transientBaseSizing]);
+
+  const resolveColumnId = useCallback((columnId: string | number): string => {
+    if (typeof columnId === 'number' && Number.isInteger(columnId)) {
+      const byIndex = orderedColumns[columnId];
+      if (byIndex) {
+        return String(byIndex.columnId);
+      }
+    }
+    return String(columnId);
+  }, [orderedColumns]);
+
+  const handleTransientResize = useCallback((
+    _event: unknown,
+    data: { columnId: string | number; width: number },
+  ) => {
+    const columnId = resolveColumnId(data.columnId);
+    if (columnId === 'actions') {
+      return;
+    }
+
+    setSessionColumnWidths((current) => ({
+      ...current,
+      [columnId]: Math.round(data.width),
+    }));
+  }, [resolveColumnId]);
+
+  const handlePersistedResize = useCallback((
+    event: unknown,
+    data: { columnId: string | number; width: number },
+  ) => {
+    if (resolveColumnId(data.columnId) === 'actions') {
+      return;
+    }
+    persisted.onColumnResize?.(event, data);
+  }, [persisted, resolveColumnId]);
 
   const selectable = Boolean(selectionMode);
 
   return (
-    <div className="w-full min-w-0">
+    <div className="autofit-datagrid w-full min-w-0 overflow-x-auto">
       <DataGrid
         items={items}
-        columns={columns}
+        columns={orderedColumns}
         getRowId={getRowId}
         sortable={sortable}
         size={size}
@@ -79,10 +145,10 @@ export function AutoFitDataGrid<TItem>({
             resizableColumns: true,
             columnSizingOptions: resolvedColumnSizing,
             resizableColumnsOptions: { autoFitColumns: false },
-            onColumnResize: persisted.onColumnResize,
+            onColumnResize: storageKey ? handlePersistedResize : handleTransientResize,
           }
           : {})}
-        style={{ width: '100%' }}
+        style={{ minWidth: 'fit-content', width: '100%' }}
       >
         <DataGridHeader>
           <DataGridRow
@@ -90,8 +156,12 @@ export function AutoFitDataGrid<TItem>({
               ? { selectionCell: { checkboxIndicator: { 'aria-label': 'Select all rows' } } }
               : {})}
           >
-            {({ renderHeaderCell }) => (
-              <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>
+            {({ renderHeaderCell, columnId }) => (
+              <DataGridHeaderCell
+                className={String(columnId) === 'actions' ? 'autofit-datagrid-actions autofit-datagrid-actions--header' : undefined}
+              >
+                {renderHeaderCell()}
+              </DataGridHeaderCell>
             )}
           </DataGridRow>
         </DataGridHeader>
@@ -103,8 +173,11 @@ export function AutoFitDataGrid<TItem>({
                 ? { selectionCell: { checkboxIndicator: { 'aria-label': 'Select row' } } }
                 : {})}
             >
-              {({ renderCell }) => (
-                <DataGridCell onClick={stopDataGridRowSelection}>
+              {({ renderCell, columnId }) => (
+                <DataGridCell
+                  onClick={stopDataGridRowSelection}
+                  className={String(columnId) === 'actions' ? 'autofit-datagrid-actions' : undefined}
+                >
                   {renderCell(item)}
                 </DataGridCell>
               )}

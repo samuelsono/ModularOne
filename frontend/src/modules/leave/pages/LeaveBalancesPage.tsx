@@ -628,49 +628,40 @@ export default function LeaveBalancesPage() {
 
 
 
-  const requestColumns = useMemo(
-
-    () => createLeaveRequestColumnsWithDetailPopover({
-
+  const requestColumns = useMemo(() => {
+    const columns = createLeaveRequestColumnsWithDetailPopover({
       user,
-
       permissions: leavePermissions,
-
       onAction: (kind, id) => requestAction(kind, [id]),
-
       onUploadDocument: uploadDocument,
-
       renderActions: showLeaveActions
-
         ? (item) => (
-
           <LeaveRowActions
-
             item={item}
-
             user={user}
-
             permissions={leavePermissions}
-
             actingId={actingId}
-
             disabled={isWorking}
-
             onAction={(kind, id) => requestAction(kind, [id])}
-
             onUploadDocument={uploadDocument}
-
           />
-
         )
-
         : undefined,
+    });
 
-    }),
+    const employeeColumns = columns.filter((column) => {
+      const columnId = String(column.columnId);
+      return columnId === 'employee' || columnId === 'requester';
+    });
+    const otherColumns = columns.filter(
+      (column) => {
+        const columnId = String(column.columnId);
+        return columnId !== 'employee' && columnId !== 'requester';
+      },
+    );
 
-    [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, uploadDocument, user],
-
-  );
+    return [...employeeColumns, ...otherColumns];
+  }, [actingId, isWorking, leavePermissions, requestAction, showLeaveActions, uploadDocument, user]);
 
 
 

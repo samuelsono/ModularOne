@@ -99,6 +99,22 @@ button {
   background-color: var(--colorNeutralStroke3) !important;
 }
 
+/*
+ * Sticky Actions column for AutoFitDataGrid.
+ * Must NOT set width/minWidth/maxWidth here — Fluent owns those for resizableColumns.
+ */
+.autofit-datagrid-actions {
+  position: sticky !important;
+  right: 0;
+  z-index: 1;
+  background-color: var(--colorNeutralBackground1);
+  box-shadow: -3px 0 3px -3px var(--colorNeutralStroke3);
+}
+
+.autofit-datagrid-actions--header {
+  z-index: 3;
+}
+
 /* Soften Fluent drawer / dialog section dividers to match table rows. */
 .fui-DrawerHeader,
 .fui-DialogTitle,

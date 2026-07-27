@@ -44,5 +44,5 @@ export const trackingTableColumnSizing: TableColumnSizingOptions = {
   tare: { minWidth: 90, idealWidth: 110, defaultWidth: 100 },
   gvm: { minWidth: 90, idealWidth: 110, defaultWidth: 100 },
   registeredOwner: { minWidth: 160, idealWidth: 360, defaultWidth: 260 },
-  actions: { minWidth: 120, idealWidth: 140, defaultWidth: 130 },
+  actions: { minWidth: 140, idealWidth: 160, defaultWidth: 160, autoFitColumns: false },
 };

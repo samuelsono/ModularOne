@@ -73,5 +73,13 @@ export function withAuditableColumns<TItem extends AuditableFields>(
   const auditColumns = createAuditableColumns<TItem>().filter(
     (column) => !existing.has(String(column.columnId)),
   );
-  return [...columns, ...auditColumns];
+
+  const nonActionColumns = columns.filter(
+    (column) => String(column.columnId) !== 'actions',
+  );
+  const actionColumns = columns.filter(
+    (column) => String(column.columnId) === 'actions',
+  );
+
+  return [...nonActionColumns, ...auditColumns, ...actionColumns];
 }
